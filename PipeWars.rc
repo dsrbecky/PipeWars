@@ -29,7 +29,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // RT_MANIFEST
 //
 
-1                       RT_MANIFEST             "Meshes.manifest"
+1                       RT_MANIFEST             "PipeWars.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 //

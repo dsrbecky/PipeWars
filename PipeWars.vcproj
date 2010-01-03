@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
-	Name="Meshes"
+	Version="9,00"
+	Name="PipeWars"
 	ProjectGUID="{D3D09006-96D0-4629-88B8-122C0256058C}"
 	RootNamespace="Meshes"
 	Keyword="Win32Proj"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="DXUT\Core"
+				AdditionalIncludeDirectories="DXUT\Core;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -68,8 +68,9 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089"
 				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib"
-				OutputFile="$(OutDir)/Meshes.exe"
+				OutputFile="$(OutDir)/PipeWars.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/Meshes.pdb"
@@ -366,15 +367,15 @@
 			>
 		</File>
 		<File
-			RelativePath="Meshes.cpp"
+			RelativePath=".\PipeWars.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\Meshes.manifest"
+			RelativePath=".\PipeWars.manifest"
 			>
 		</File>
 		<File
-			RelativePath=".\Meshes.rc"
+			RelativePath=".\PipeWars.rc"
 			>
 		</File>
 		<File
