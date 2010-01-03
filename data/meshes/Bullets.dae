@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA version="1.4.0" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+	<asset>
+		<contributor>
+			<author>Illusoft Collada 1.4.0 plugin for Blender - http://colladablender.illusoft.com</author>
+			<authoring_tool>Blender v:243 - Illusoft Collada Exporter v:0.3.143</authoring_tool>
+			<comments></comments>
+			<copyright></copyright>
+			<source_data>file://E:/Juliet/data/meshes/Bullets.blend</source_data>
+		</contributor>
+		<created>2007-04-19T16:49:54.753000</created>
+		<modified>2007-04-19T16:49:54.753000</modified>
+		<unit meter="0.01" name="centimeter"/>
+		<up_axis>Z_UP</up_axis>
+	</asset>
+	<library_cameras>
+		<camera id="Camera-Camera" name="Camera-Camera">
+			<optics>
+				<technique_common>
+					<perspective>
+						<yfov>49.13434</yfov>
+						<znear>0.1</znear>
+						<zfar>100.0</zfar>
+					</perspective>
+				</technique_common>
+			</optics>
+		</camera>
+	</library_cameras>
+	<library_effects>
+		<effect id="Material_003-fx" name="Material_003-fx">
+			<profile_COMMON>
+				<technique sid="blender">
+					<phong>
+						<emission>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</emission>
+						<ambient>
+							<color>0.21653 0.21653 0.21653 1</color>
+						</ambient>
+						<diffuse>
+							<color>0.43307 0.43307 0.43307 1</color>
+						</diffuse>
+						<specular>
+							<color>0.50000 0.50000 0.50000 1</color>
+						</specular>
+						<shininess>
+							<float>12.5</float>
+						</shininess>
+						<reflective>
+							<color>1.00000 1.00000 1.00000 1</color>
+						</reflective>
+						<reflectivity>
+							<float>0.8</float>
+						</reflectivity>
+						<transparent>
+							<color>1 1 1 1</color>
+						</transparent>
+						<transparency>
+							<float>0.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+		<effect id="Material_002-fx" name="Material_002-fx">
+			<profile_COMMON>
+				<technique sid="blender">
+					<phong>
+						<emission>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</emission>
+						<ambient>
+							<color>0.33996 0.33884 0.33996 1</color>
+						</ambient>
+						<diffuse>
+							<color>0.67992 0.67769 0.67992 1</color>
+						</diffuse>
+						<specular>
+							<color>0.50000 0.50000 0.50000 1</color>
+						</specular>
+						<shininess>
+							<float>12.5</float>
+						</shininess>
+						<reflective>
+							<color>1.00000 1.00000 1.00000 1</color>
+						</reflective>
+						<reflectivity>
+							<float>0.8</float>
+						</reflectivity>
+						<transparent>
+							<color>1 1 1 1</color>
+						</transparent>
+						<transparency>
+							<float>0.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+		<effect id="Material_009-fx" name="Material_009-fx">
+			<profile_COMMON>
+				<technique sid="blender">
+					<phong>
+						<emission>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</emission>
+						<ambient>
+							<color>0.40000 0.40000 0.40000 1</color>
+						</ambient>
+						<diffuse>
+							<color>0.80000 0.80000 0.80000 1</color>
+						</diffuse>
+						<specular>
+							<color>0.50000 0.50000 0.50000 1</color>
+						</specular>
+						<shininess>
+							<float>12.5</float>
+						</shininess>
+						<reflective>
+							<color>1.00000 1.00000 1.00000 1</color>
+						</reflective>
+						<reflectivity>
+							<float>0.8</float>
+						</reflectivity>
+						<transparent>
+							<color>1 1 1 1</color>
+						</transparent>
+						<transparency>
+							<float>0.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+		<effect id="Material_001-fx" name="Material_001-fx">
+			<profile_COMMON>
+				<technique sid="blender">
+					<phong>
+						<emission>
+							<color>0.00000 0.00000 0.00000 1</color>
+						</emission>
+						<ambient>
+							<color>0.46116 0.36331 0.16538 1</color>
+						</ambient>
+						<diffuse>
+							<color>0.92231 0.72661 0.33075 1</color>
+						</diffuse>
+						<specular>
+							<color>0.50000 0.50000 0.50000 1</color>
+						</specular>
+						<shininess>
+							<float>12.5</float>
+						</shininess>
+						<reflective>
+							<color>1.00000 1.00000 1.00000 1</color>
+						</reflective>
+						<reflectivity>
+							<float>0.8</float>
+						</reflectivity>
+						<transparent>
+							<color>1 1 1 1</color>
+						</transparent>
+						<transparency>
+							<float>0.0</float>
+						</transparency>
+					</phong>
+				</technique>
+			</profile_COMMON>
+		</effect>
+	</library_effects>
+	<library_geometries>
+		<geometry id="Nail-Geometry" name="Nail-Geometry">
+			<mesh>
+				<source id="Nail-Geometry-Position">
+					<float_array count="78" id="Nail-Geometry-Position-array">-0.02319 0.01563 -0.00833 -0.02319 -0.00001 -0.01735 -0.02319 -0.01565 -0.00831 -0.02319 -0.01563 0.00975 -0.02319 0.00001 0.01877 -0.02319 0.01565 0.00972 -0.01541 0.01563 -0.00833 -0.01541 -0.00001 -0.01735 -0.01541 -0.01565 -0.00831 -0.01541 -0.01563 0.00975 -0.01541 0.00001 0.01877 -0.01541 0.01565 0.00973 -0.02319 -0.00000 0.00071 -0.01489 0.00486 -0.00211 -0.01489 -0.00000 -0.00491 -0.01489 -0.00486 -0.00210 -0.01489 -0.00486 0.00351 -0.01489 0.00000 0.00631 -0.01489 0.00486 0.00350 0.04736 0.00486 -0.00211 0.04736 -0.00000 -0.00491 0.04736 -0.00486 -0.00210 0.04736 -0.00486 0.00351 0.04736 0.00000 0.00631 0.04736 0.00486 0.00350 0.05972 -0.00000 0.00116</float_array>
+					<technique_common>
+						<accessor count="26" source="#Nail-Geometry-Position-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="Nail-Geometry-Normals">
+					<float_array count="90" id="Nail-Geometry-Normals-array">-1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 -1.00000 0.00000 0.00000 -0.00000 0.49935 -0.86640 -0.00000 -0.50065 -0.86565 0.00000 -1.00000 0.00075 0.00000 -0.49935 0.86640 0.00000 0.50065 0.86565 0.00000 1.00000 -0.00075 0.99884 0.02409 -0.04180 0.99884 -0.02415 -0.04177 0.99884 -0.04822 0.00004 0.99884 -0.02406 0.04175 0.99884 0.02412 0.04171 0.99884 0.04822 -0.00004 -0.00000 0.49935 -0.86640 -0.00000 -0.50065 -0.86565 -0.00000 -1.00000 0.00075 0.00000 -0.49935 0.86640 0.00000 0.50065 0.86565 0.00000 1.00000 -0.00075 0.39111 -0.46077 -0.79670 0.39139 0.45952 -0.79728 0.36607 0.93059 -0.00069 0.33960 0.47089 0.81421 0.33929 -0.46973 0.81500 0.36548 -0.93082 0.00070</float_array>
+					<technique_common>
+						<accessor count="30" source="#Nail-Geometry-Normals-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="Nail-Geometry-Vertex">
+					<input semantic="POSITION" source="#Nail-Geometry-Position"/>
+				</vertices>
+				<polygons count="30" material="Material_003">
+					<input offset="0" semantic="VERTEX" source="#Nail-Geometry-Vertex"/>
+					<input offset="1" semantic="NORMAL" source="#Nail-Geometry-Normals"/>
+					<p>12 0 0 0 1 0</p>
+					<p>12 1 1 1 2 1</p>
+					<p>12 2 2 2 3 2</p>
+					<p>12 3 3 3 4 3</p>
+					<p>12 4 4 4 5 4</p>
+					<p>5 5 0 5 12 5</p>
+					<p>0 6 6 6 7 6 1 6</p>
+					<p>1 7 7 7 8 7 2 7</p>
+					<p>2 8 8 8 9 8 3 8</p>
+					<p>3 9 9 9 10 9 4 9</p>
+					<p>4 10 10 10 11 10 5 10</p>
+					<p>6 11 0 11 5 11 11 11</p>
+					<p>7 12 6 12 13 12 14 12</p>
+					<p>8 13 7 13 14 13 15 13</p>
+					<p>9 14 8 14 15 14 16 14</p>
+					<p>10 15 9 15 16 15 17 15</p>
+					<p>11 16 10 16 17 16 18 16</p>
+					<p>6 17 11 17 18 17 13 17</p>
+					<p>14 18 13 18 19 18 20 18</p>
+					<p>15 19 14 19 20 19 21 19</p>
+					<p>16 20 15 20 21 20 22 20</p>
+					<p>17 21 16 21 22 21 23 21</p>
+					<p>18 22 17 22 23 22 24 22</p>
+					<p>13 23 18 23 24 23 19 23</p>
+					<p>20 24 25 24 21 24</p>
+					<p>19 25 25 25 20 25</p>
+					<p>19 26 24 26 25 26</p>
+					<p>23 27 25 27 24 27</p>
+					<p>22 28 25 28 23 28</p>
+					<p>21 29 25 29 22 29</p>
+				</polygons>
+			</mesh>
+		</geometry>
+		<geometry id="ShotgunPellet-Geometry" name="ShotgunPellet-Geometry">
+			<mesh>
+				<source id="ShotgunPellet-Geometry-Position">
+					<float_array count="36" id="ShotgunPellet-Geometry-Position-array">0.00000 0.00000 -0.02411 0.01745 -0.01268 -0.01078 -0.00666 -0.02051 -0.01078 -0.02157 0.00000 -0.01078 -0.00666 0.02051 -0.01078 0.01745 0.01268 -0.01078 0.00666 -0.02051 0.01078 -0.01745 -0.01268 0.01078 -0.01745 0.01268 0.01078 0.00666 0.02051 0.01078 0.02157 -0.00000 0.01078 0.00000 -0.00000 0.02411</float_array>
+					<technique_common>
+						<accessor count="12" source="#ShotgunPellet-Geometry-Position-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="ShotgunPellet-Geometry-Normals">
+					<float_array count="60" id="ShotgunPellet-Geometry-Normals-array">0.18760 -0.57735 -0.79465 0.60706 0.00000 -0.79465 -0.49112 -0.35683 -0.79465 -0.49112 0.35683 -0.79465 0.18760 0.57735 -0.79465 0.98225 0.00000 -0.18760 0.30354 -0.93417 -0.18759 -0.79465 -0.57736 -0.18759 -0.79465 0.57736 -0.18759 0.30354 0.93417 -0.18759 0.79465 -0.57736 0.18759 -0.30354 -0.93417 0.18759 -0.98225 0.00000 0.18760 -0.30354 0.93417 0.18759 0.79465 0.57736 0.18759 0.49112 -0.35683 0.79465 -0.18760 -0.57735 0.79465 -0.60706 0.00000 0.79465 -0.18760 0.57735 0.79465 0.49112 0.35683 0.79465</float_array>
+					<technique_common>
+						<accessor count="20" source="#ShotgunPellet-Geometry-Normals-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="ShotgunPellet-Geometry-Vertex">
+					<input semantic="POSITION" source="#ShotgunPellet-Geometry-Position"/>
+				</vertices>
+				<polygons count="20" material="Material_002">
+					<input offset="0" semantic="VERTEX" source="#ShotgunPellet-Geometry-Vertex"/>
+					<input offset="1" semantic="NORMAL" source="#ShotgunPellet-Geometry-Normals"/>
+					<p>2 0 0 0 1 0</p>
+					<p>1 1 0 1 5 1</p>
+					<p>3 2 0 2 2 2</p>
+					<p>4 3 0 3 3 3</p>
+					<p>5 4 0 4 4 4</p>
+					<p>1 5 5 5 10 5</p>
+					<p>2 6 1 6 6 6</p>
+					<p>3 7 2 7 7 7</p>
+					<p>4 8 3 8 8 8</p>
+					<p>5 9 4 9 9 9</p>
+					<p>10 10 6 10 1 10</p>
+					<p>6 11 7 11 2 11</p>
+					<p>7 12 8 12 3 12</p>
+					<p>8 13 9 13 4 13</p>
+					<p>9 14 10 14 5 14</p>
+					<p>6 15 10 15 11 15</p>
+					<p>7 16 6 16 11 16</p>
+					<p>8 17 7 17 11 17</p>
+					<p>9 18 8 18 11 18</p>
+					<p>10 19 9 19 11 19</p>
+				</polygons>
+			</mesh>
+		</geometry>
+		<geometry id="AKBullet-Geometry" name="AKBullet-Geometry">
+			<mesh>
+				<source id="AKBullet-Geometry-Position">
+					<float_array count="72" id="AKBullet-Geometry-Position-array">-0.05274 0.01780 0.01155 -0.05271 0.00022 0.02172 -0.05274 -0.01737 0.01158 -0.05278 -0.01739 -0.00872 -0.05280 0.00019 -0.01889 -0.05278 0.01778 -0.00875 0.04650 0.00108 0.00191 0.04650 0.00021 0.00242 0.04650 -0.00067 0.00192 0.04650 -0.00067 0.00090 0.04650 0.00020 0.00040 0.04650 0.00108 0.00090 0.03161 0.00900 0.00649 0.03162 0.00021 0.01158 0.03161 -0.00858 0.00651 0.03159 -0.00859 -0.00364 0.03158 0.00020 -0.00873 0.03159 0.00899 -0.00366 0.00444 0.01780 0.01160 0.00446 0.00022 0.02177 0.00444 -0.01737 0.01163 0.00440 -0.01739 -0.00867 0.00438 0.00019 -0.01884 0.00440 0.01778 -0.00870</float_array>
+					<technique_common>
+						<accessor count="24" source="#AKBullet-Geometry-Position-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="AKBullet-Geometry-Normals">
+					<float_array count="63" id="AKBullet-Geometry-Normals-array">-1.00000 -0.00000 0.00204 -1.00000 0.00000 0.00204 0.00000 1.00000 -0.00086 -0.00069 0.50074 0.86560 -0.00069 -0.49926 0.86645 -0.00000 -1.00000 0.00086 0.00069 -0.50074 -0.86560 0.00069 0.49925 -0.86645 1.00000 0.00001 -0.00204 0.46903 0.88318 -0.00171 0.47007 0.44239 0.76376 0.47007 -0.44107 0.76452 0.46903 -0.88318 -0.00020 0.46799 -0.44211 -0.76520 0.46799 0.44079 -0.76595 0.30781 0.95145 -0.00145 0.30896 0.47652 0.82309 0.30896 -0.47510 0.82391 0.30782 -0.95145 0.00019 0.30667 -0.47634 -0.82404 0.30667 0.47493 -0.82486</float_array>
+					<technique_common>
+						<accessor count="21" source="#AKBullet-Geometry-Normals-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="AKBullet-Geometry-Vertex">
+					<input semantic="POSITION" source="#AKBullet-Geometry-Position"/>
+				</vertices>
+				<polygons count="21" material="Material_001">
+					<input offset="0" semantic="VERTEX" source="#AKBullet-Geometry-Vertex"/>
+					<input offset="1" semantic="NORMAL" source="#AKBullet-Geometry-Normals"/>
+					<p>4 0 3 0 2 0 1 0</p>
+					<p>1 1 0 1 5 1 4 1</p>
+					<p>5 2 0 2 18 2 23 2</p>
+					<p>0 3 1 3 19 3 18 3</p>
+					<p>20 4 19 4 1 4 2 4</p>
+					<p>21 5 20 5 2 5 3 5</p>
+					<p>22 6 21 6 3 6 4 6</p>
+					<p>23 7 22 7 4 7 5 7</p>
+					<p>10 8 7 8 8 8 9 8</p>
+					<p>17 9 12 9 6 9 11 9</p>
+					<p>12 10 13 10 7 10 6 10</p>
+					<p>13 11 14 11 8 11 7 11</p>
+					<p>14 12 15 12 9 12 8 12</p>
+					<p>15 13 16 13 10 13 9 13</p>
+					<p>16 14 17 14 11 14 10 14</p>
+					<p>23 15 18 15 12 15 17 15</p>
+					<p>18 16 19 16 13 16 12 16</p>
+					<p>19 17 20 17 14 17 13 17</p>
+					<p>20 18 21 18 15 18 14 18</p>
+					<p>21 19 22 19 16 19 15 19</p>
+					<p>22 20 23 20 17 20 16 20</p>
+				</polygons>
+			</mesh>
+		</geometry>
+		<geometry id="RevolverBullet-Geometry" name="RevolverBullet-Geometry">
+			<mesh>
+				<source id="RevolverBullet-Geometry-Position">
+					<float_array count="72" id="RevolverBullet-Geometry-Position-array">-0.03840 0.01371 0.00792 -0.03838 -0.00040 0.01608 -0.03840 -0.01452 0.00795 -0.03843 -0.01453 -0.00835 -0.03845 -0.00042 -0.01651 -0.03843 0.01370 -0.00838 0.02845 0.00029 0.00019 0.02845 -0.00041 0.00059 0.02845 -0.00111 0.00019 0.02845 -0.00111 -0.00063 0.02844 -0.00041 -0.00103 0.02845 0.00029 -0.00063 0.02162 0.00665 0.00386 0.02162 -0.00040 0.00794 0.02162 -0.00746 0.00387 0.02160 -0.00747 -0.00427 0.02159 -0.00042 -0.00836 0.02160 0.00664 -0.00429 0.00750 0.01371 0.00796 0.00752 -0.00040 0.01612 0.00750 -0.01452 0.00798 0.00747 -0.01453 -0.00831 0.00745 -0.00042 -0.01648 0.00747 0.01370 -0.00834</float_array>
+					<technique_common>
+						<accessor count="24" source="#RevolverBullet-Geometry-Position-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<source id="RevolverBullet-Geometry-Normals">
+					<float_array count="63" id="RevolverBullet-Geometry-Normals-array">-1.00000 -0.00000 0.00204 -1.00000 -0.00000 0.00204 0.00000 1.00000 -0.00086 -0.00069 0.50074 0.86560 -0.00069 -0.49926 0.86645 -0.00000 -1.00000 0.00086 0.00069 -0.50074 -0.86560 0.00069 0.49925 -0.86646 1.00000 0.00001 -0.00204 0.68068 0.73258 -0.00202 0.68197 0.36684 0.63273 0.68197 -0.36575 0.63336 0.68068 -0.73258 -0.00076 0.67939 -0.36683 -0.63551 0.67938 0.36574 -0.63614 0.44696 0.89455 -0.00168 0.44854 0.44794 0.77341 0.44854 -0.44661 0.77418 0.44696 -0.89455 -0.00014 0.44538 -0.44794 -0.77523 0.44538 0.44661 -0.77600</float_array>
+					<technique_common>
+						<accessor count="21" source="#RevolverBullet-Geometry-Normals-array" stride="3">
+							<param type="float" name="X"></param>
+							<param type="float" name="Y"></param>
+							<param type="float" name="Z"></param>
+						</accessor>
+					</technique_common>
+				</source>
+				<vertices id="RevolverBullet-Geometry-Vertex">
+					<input semantic="POSITION" source="#RevolverBullet-Geometry-Position"/>
+				</vertices>
+				<polygons count="21" material="Material_001">
+					<input offset="0" semantic="VERTEX" source="#RevolverBullet-Geometry-Vertex"/>
+					<input offset="1" semantic="NORMAL" source="#RevolverBullet-Geometry-Normals"/>
+					<p>4 0 3 0 2 0 1 0</p>
+					<p>1 1 0 1 5 1 4 1</p>
+					<p>5 2 0 2 18 2 23 2</p>
+					<p>0 3 1 3 19 3 18 3</p>
+					<p>20 4 19 4 1 4 2 4</p>
+					<p>21 5 20 5 2 5 3 5</p>
+					<p>22 6 21 6 3 6 4 6</p>
+					<p>23 7 22 7 4 7 5 7</p>
+					<p>10 8 7 8 8 8 9 8</p>
+					<p>17 9 12 9 6 9 11 9</p>
+					<p>12 10 13 10 7 10 6 10</p>
+					<p>13 11 14 11 8 11 7 11</p>
+					<p>14 12 15 12 9 12 8 12</p>
+					<p>15 13 16 13 10 13 9 13</p>
+					<p>16 14 17 14 11 14 10 14</p>
+					<p>23 15 18 15 12 15 17 15</p>
+					<p>18 16 19 16 13 16 12 16</p>
+					<p>19 17 20 17 14 17 13 17</p>
+					<p>20 18 21 18 15 18 14 18</p>
+					<p>21 19 22 19 16 19 15 19</p>
+					<p>22 20 23 20 17 20 16 20</p>
+				</polygons>
+			</mesh>
+		</geometry>
+	</library_geometries>
+	<library_lights>
+		<light id="Spot-Light" name="Spot-Light">
+			<technique_common>
+				<point>
+					<color>1.00000 1.00000 1.00000</color>
+					<constant_attenuation>0.0</constant_attenuation>
+					<linear_attenuation>0.0</linear_attenuation>
+					<quadratic_attenuation>0.0</quadratic_attenuation>
+				</point>
+			</technique_common>
+		</light>
+	</library_lights>
+	<library_materials>
+		<material id="Material_003" name="Material_003">
+			<instance_effect url="#Material_003-fx"/>
+		</material>
+		<material id="Material_002" name="Material_002">
+			<instance_effect url="#Material_002-fx"/>
+		</material>
+		<material id="Material_009" name="Material_009">
+			<instance_effect url="#Material_009-fx"/>
+		</material>
+		<material id="Material_001" name="Material_001">
+			<instance_effect url="#Material_001-fx"/>
+		</material>
+	</library_materials>
+	<library_visual_scenes>
+		<visual_scene id="Scene" name="Scene">
+			<node layer="L1" id="Nail" name="Nail">
+				<translate sid="translate">-2.39500 -0.03676 0.03752</translate>
+				<rotate sid="rotateZ">0 0 1 0.00000</rotate>
+				<rotate sid="rotateY">0 1 0 0.00000</rotate>
+				<rotate sid="rotateX">1 0 0 0.00000</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_geometry url="#Nail-Geometry">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material_003" target="#Material_003"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node layer="L1" id="ShotgunPellet" name="ShotgunPellet">
+				<translate sid="translate">-2.34109 -0.00108 0.05444</translate>
+				<rotate sid="rotateZ">0 0 1 0.00000</rotate>
+				<rotate sid="rotateY">0 1 0 0.00000</rotate>
+				<rotate sid="rotateX">1 0 0 90.00000</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_geometry url="#ShotgunPellet-Geometry">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material_002" target="#Material_002"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node layer="L1" id="AKBullet" name="AKBullet">
+				<translate sid="translate">-2.26264 0.05600 0.04814</translate>
+				<rotate sid="rotateZ">0 0 1 0.00000</rotate>
+				<rotate sid="rotateY">0 1 0 0.00000</rotate>
+				<rotate sid="rotateX">1 0 0 0.00000</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_geometry url="#AKBullet-Geometry">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material_009" target="#Material_009"/>
+							<instance_material symbol="Material_001" target="#Material_001"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+			<node layer="L1" id="Spot" name="Spot">
+				<translate sid="translate">4.07625 1.00545 5.90386</translate>
+				<rotate sid="rotateZ">0 0 1 106.93632</rotate>
+				<rotate sid="rotateY">0 1 0 3.16371</rotate>
+				<rotate sid="rotateX">1 0 0 37.26105</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_light url="#Spot-Light"/>
+			</node>
+			<node layer="L1" id="Camera" name="Camera">
+				<translate sid="translate">7.48113 -6.50764 5.34367</translate>
+				<rotate sid="rotateZ">0 0 1 46.69194</rotate>
+				<rotate sid="rotateY">0 1 0 0.61977</rotate>
+				<rotate sid="rotateX">1 0 0 63.55930</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_camera url="#Camera-Camera"/>
+			</node>
+			<node layer="L1" id="RevolverBullet" name="RevolverBullet">
+				<translate sid="translate">-2.20179 0.00171 0.05807</translate>
+				<rotate sid="rotateZ">0 0 1 0.00000</rotate>
+				<rotate sid="rotateY">0 1 0 0.00000</rotate>
+				<rotate sid="rotateX">1 0 0 0.00000</rotate>
+				<scale sid="scale">1.00000 1.00000 1.00000</scale>
+				<instance_geometry url="#RevolverBullet-Geometry">
+					<bind_material>
+						<technique_common>
+							<instance_material symbol="Material_009" target="#Material_009"/>
+							<instance_material symbol="Material_001" target="#Material_001"/>
+						</technique_common>
+					</bind_material>
+				</instance_geometry>
+			</node>
+		</visual_scene>
+	</library_visual_scenes>
+	<library_physics_materials>
+		<physics_material id="Nail-PhysicsMaterial" name="Nail-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0</dynamic_friction>
+				<restitution>0</restitution>
+				<static_friction>0</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material id="ShotgunPellet-PhysicsMaterial" name="ShotgunPellet-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0</dynamic_friction>
+				<restitution>0</restitution>
+				<static_friction>0</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material id="AKBullet-PhysicsMaterial" name="AKBullet-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0</dynamic_friction>
+				<restitution>0</restitution>
+				<static_friction>0</static_friction>
+			</technique_common>
+		</physics_material>
+		<physics_material id="RevolverBullet-PhysicsMaterial" name="RevolverBullet-PhysicsMaterial">
+			<technique_common>
+				<dynamic_friction>0</dynamic_friction>
+				<restitution>0</restitution>
+				<static_friction>0</static_friction>
+			</technique_common>
+		</physics_material>
+	</library_physics_materials>
+	<library_physics_models>
+		<physics_model id="Nail-PhysicsModel" name="Nail-PhysicsModel">
+			<rigid_body name="Nail-RigidBody" sid="Nail-RigidBody">
+				<technique_common>
+					<dynamic>false</dynamic>
+					<mass>1.0</mass>
+					<instance_physics_material url="#Nail-PhysicsMaterial"/>
+					<shape>
+						<instance_geometry url="#Nail-Geometry"/>
+					</shape>
+				</technique_common>
+			</rigid_body>
+		</physics_model>
+		<physics_model id="ShotgunPellet-PhysicsModel" name="ShotgunPellet-PhysicsModel">
+			<rigid_body name="ShotgunPellet-RigidBody" sid="ShotgunPellet-RigidBody">
+				<technique_common>
+					<dynamic>false</dynamic>
+					<mass>1.0</mass>
+					<instance_physics_material url="#ShotgunPellet-PhysicsMaterial"/>
+					<shape>
+						<instance_geometry url="#ShotgunPellet-Geometry"/>
+					</shape>
+				</technique_common>
+			</rigid_body>
+		</physics_model>
+		<physics_model id="AKBullet-PhysicsModel" name="AKBullet-PhysicsModel">
+			<rigid_body name="AKBullet-RigidBody" sid="AKBullet-RigidBody">
+				<technique_common>
+					<dynamic>false</dynamic>
+					<mass>1.0</mass>
+					<instance_physics_material url="#AKBullet-PhysicsMaterial"/>
+					<shape>
+						<instance_geometry url="#AKBullet-Geometry"/>
+					</shape>
+				</technique_common>
+			</rigid_body>
+		</physics_model>
+		<physics_model id="RevolverBullet-PhysicsModel" name="RevolverBullet-PhysicsModel">
+			<rigid_body name="RevolverBullet-RigidBody" sid="RevolverBullet-RigidBody">
+				<technique_common>
+					<dynamic>false</dynamic>
+					<mass>1.0</mass>
+					<instance_physics_material url="#RevolverBullet-PhysicsMaterial"/>
+					<shape>
+						<instance_geometry url="#RevolverBullet-Geometry"/>
+					</shape>
+				</technique_common>
+			</rigid_body>
+		</physics_model>
+	</library_physics_models>
+	<library_physics_scenes>
+		<physics_scene id="Scene-Physics" name="Scene-Physics">
+			<instance_physics_model url="#Nail-PhysicsModel">
+				<instance_rigid_body body="Nail-RigidBody" target="#Nail"/>
+			</instance_physics_model>
+			<instance_physics_model url="#ShotgunPellet-PhysicsModel">
+				<instance_rigid_body body="ShotgunPellet-RigidBody" target="#ShotgunPellet"/>
+			</instance_physics_model>
+			<instance_physics_model url="#AKBullet-PhysicsModel">
+				<instance_rigid_body body="AKBullet-RigidBody" target="#AKBullet"/>
+			</instance_physics_model>
+			<instance_physics_model url="#RevolverBullet-PhysicsModel">
+				<instance_rigid_body body="RevolverBullet-RigidBody" target="#RevolverBullet"/>
+			</instance_physics_model>
+		</physics_scene>
+	</library_physics_scenes>
+	<scene>
+		<instance_visual_scene url="#Scene"/>
+		<instance_physics_scene url="#Scene-Physics"/>
+	</scene>
+</COLLADA>

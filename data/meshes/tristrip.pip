@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<pipeline>
+	<fullname>Tristrip</fullname>
+	<description>Converts mesh format to tristrips</description>
+	<input name="input77ff806f-de0e-48fb-96e9-5a54ddbefd67" number="0">
+		<file>/E:/eclipse/Juliet/data/meshes/Merman.dae</file>
+		<display>
+			<x>273</x>
+			<y>13</y>
+		</display>
+	</input>
+	<input name="input15033a73-87e0-48d7-853c-a6cb9bda0c3b" number="1">
+		<file>/E:/eclipse/Juliet/data/meshes/pipe.dae</file>
+		<display>
+			<x>337</x>
+			<y>15</y>
+		</display>
+	</input>
+	<input name="input27595c73-f3a2-4892-9e6b-fb73ab6bc3b3" number="2">
+		<file>/E:/eclipse/Juliet/data/meshes/Shiny.dae</file>
+		<display>
+			<x>463</x>
+			<y>12</y>
+		</display>
+	</input>
+	<input name="inputb19136f4-f4f4-4177-b21c-341723759282" number="3">
+		<file>/E:/eclipse/Juliet/data/meshes/skull.dae</file>
+		<display>
+			<x>535</x>
+			<y>13</y>
+		</display>
+	</input>
+	<input name="inputad543a52-b620-4f50-b6b0-ce496a65cc85" number="4">
+		<file>/E:/eclipse/Juliet/data/meshes/suzanne.dae</file>
+		<display>
+			<x>597</x>
+			<y>12</y>
+		</display>
+	</input>
+	<input name="input186c4c0b-f710-48f8-bf8f-292b611ed2e0" number="5">
+		<file>/E:/eclipse/Juliet/data/meshes/tank.dae</file>
+		<display>
+			<x>652</x>
+			<y>12</y>
+		</display>
+	</input>
+	<input name="inputa86c7bac-aa02-4720-9cb8-b642c6511668" number="6">
+		<file>/E:/eclipse/Juliet/data/meshes/Weapons.dae</file>
+		<display>
+			<x>710</x>
+			<y>15</y>
+		</display>
+	</input>
+	<input name="input4d462dea-3fbf-4f0f-8571-fa760caf33db" number="7">
+		<file>/E:/eclipse/Juliet/data/meshes/Health.dae</file>
+		<display>
+			<x>143</x>
+			<y>13</y>
+		</display>
+	</input>
+	<input name="inputd6788c7a-bfda-433f-a2ed-bd5318185603" number="8">
+		<file>/E:/eclipse/Juliet/data/meshes/Bullets.dae</file>
+		<display>
+			<x>200</x>
+			<y>13</y>
+		</display>
+	</input>
+	<input name="input77e51975-952f-4a95-8636-eda1bb7e6956" number="9">
+		<file>/E:/eclipse/Juliet/data/meshes/Ammo.dae</file>
+		<display>
+			<x>394</x>
+			<y>13</y>
+		</display>
+	</input>
+	<input name="inputa1f8d1a7-19a9-4134-99a8-d83309f6e5af" number="10">
+		<file>/E:/eclipse/Juliet/data/meshes/Monkey.dae</file>
+		<display>
+			<x>767</x>
+			<y>15</y>
+		</display>
+	</input>
+	<output name="output2fe75efa-ec0a-4e1f-9c95-1735446ca951" number="0">
+		<file>/E:/eclipse/Juliet/data/meshes/Merman.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>245</x>
+			<y>505</y>
+		</display>
+	</output>
+	<output name="output16b7932e-fa0f-407f-8c0b-be1734117502" number="1">
+		<file>/E:/eclipse/Juliet/data/meshes/pipe.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>303</x>
+			<y>508</y>
+		</display>
+	</output>
+	<output name="output4e75a919-c607-43d2-a792-5e240f87b076" number="2">
+		<file>/E:/eclipse/Juliet/data/meshes/Shiny.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>452</x>
+			<y>503</y>
+		</display>
+	</output>
+	<output name="outputcb0a73ae-7abc-4479-9c54-845004fc487f" number="3">
+		<file>/E:/eclipse/Juliet/data/meshes/skull.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>510</x>
+			<y>502</y>
+		</display>
+	</output>
+	<output name="outputf2401d1d-366b-4695-bf58-88f44eebb1f3" number="4">
+		<file>/E:/eclipse/Juliet/data/meshes/suzanne.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>580</x>
+			<y>500</y>
+		</display>
+	</output>
+	<output name="output7db29ddd-2542-4c9a-9d34-0b88ef7b32e2" number="5">
+		<file>/E:/eclipse/Juliet/data/meshes/tank.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>638</x>
+			<y>502</y>
+		</display>
+	</output>
+	<output name="outputf1b33d58-afde-466b-9c89-70197437a8e1" number="6">
+		<file>/E:/eclipse/Juliet/data/meshes/Weapons.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>700</x>
+			<y>498</y>
+		</display>
+	</output>
+	<output name="outputd0060365-c9ef-4686-be22-96b3d8fa07ab" number="7">
+		<file>/E:/eclipse/Juliet/data/meshes/Health.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>122</x>
+			<y>507</y>
+		</display>
+	</output>
+	<output name="output9d9911bf-4177-45a3-abe6-fdf3d182fa49" number="8">
+		<file>/E:/eclipse/Juliet/data/meshes/Bullets.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>185</x>
+			<y>505</y>
+		</display>
+	</output>
+	<output name="outputbf4e4c7b-9551-4629-a64a-5ba7b44ced20" number="9">
+		<file>/E:/eclipse/Juliet/data/meshes/Ammo.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>382</x>
+			<y>508</y>
+		</display>
+	</output>
+	<output name="outputa8146992-d51c-46d7-92c4-d67c36009e80" number="10">
+		<file>/E:/eclipse/Juliet/data/meshes/Monkey.dae</file>
+		<execute>no</execute>
+		<command></command>
+		<workingDir></workingDir>
+		<display>
+			<x>768</x>
+			<y>497</y>
+		</display>
+	</output>
+
+	<conditioner name="tristripper-3" idname="tristripper-3700ca22b-b176-4c4f-a9a2-f95a30deef41" libname="tristripper">
+		<display>
+			<x>266</x>
+			<y>370</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-4" idname="tristripper-4c53b0e42-16cc-4ae5-a49f-4b3570420025" libname="tristripper">
+		<display>
+			<x>363</x>
+			<y>156</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-6" idname="tristripper-678bc75c9-e8b5-46d4-8bf9-7350e49268c2" libname="tristripper">
+		<display>
+			<x>472</x>
+			<y>368</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-7" idname="tristripper-756b8ee6f-5b4b-4c95-a0e4-aeb71713f757" libname="tristripper">
+		<display>
+			<x>560</x>
+			<y>154</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-8" idname="tristripper-82982eeae-435b-4c8c-93ae-fdd77aea55d4" libname="tristripper">
+		<display>
+			<x>618</x>
+			<y>257</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-9" idname="tristripper-95a5a0545-31cb-4c7a-ada7-0e5583167b36" libname="tristripper">
+		<display>
+			<x>661</x>
+			<y>368</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-10" idname="tristripper-1089a38a93-adff-41d5-84dc-9f857fdfd52e" libname="tristripper">
+		<display>
+			<x>737</x>
+			<y>151</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-11" idname="tristripper-11083d8cad-ab82-4ccf-9b70-d71e58a1e1a7" libname="tristripper">
+		<display>
+			<x>418</x>
+			<y>257</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-12" idname="tristripper-12f2fa809b-9386-45ba-bbc2-89c44f36655d" libname="tristripper">
+		<display>
+			<x>212</x>
+			<y>261</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-13" idname="tristripper-134fbed377-d931-484b-bd4f-187db7451315" libname="tristripper">
+		<display>
+			<x>161</x>
+			<y>157</y>
+		</display>
+	</conditioner>
+	<conditioner name="tristripper-14" idname="tristripper-141c39f0b5-558b-45c2-bee1-c922c404bdab" libname="tristripper">
+		<display>
+			<x>787</x>
+			<y>258</y>
+		</display>
+	</conditioner>
+
+
+	<link start="input77ff806f-de0e-48fb-96e9-5a54ddbefd67" startNb="0" end="tristripper-3700ca22b-b176-4c4f-a9a2-f95a30deef41" endNb="0"/>
+	<link start="tristripper-3700ca22b-b176-4c4f-a9a2-f95a30deef41" startNb="0" end="output2fe75efa-ec0a-4e1f-9c95-1735446ca951" endNb="0"/>
+	<link start="tristripper-4c53b0e42-16cc-4ae5-a49f-4b3570420025" startNb="0" end="output16b7932e-fa0f-407f-8c0b-be1734117502" endNb="0"/>
+	<link start="input15033a73-87e0-48d7-853c-a6cb9bda0c3b" startNb="0" end="tristripper-4c53b0e42-16cc-4ae5-a49f-4b3570420025" endNb="0"/>
+	<link start="tristripper-678bc75c9-e8b5-46d4-8bf9-7350e49268c2" startNb="0" end="output4e75a919-c607-43d2-a792-5e240f87b076" endNb="0"/>
+	<link start="input27595c73-f3a2-4892-9e6b-fb73ab6bc3b3" startNb="0" end="tristripper-678bc75c9-e8b5-46d4-8bf9-7350e49268c2" endNb="0"/>
+	<link start="inputb19136f4-f4f4-4177-b21c-341723759282" startNb="0" end="tristripper-756b8ee6f-5b4b-4c95-a0e4-aeb71713f757" endNb="0"/>
+	<link start="tristripper-756b8ee6f-5b4b-4c95-a0e4-aeb71713f757" startNb="0" end="outputcb0a73ae-7abc-4479-9c54-845004fc487f" endNb="0"/>
+	<link start="tristripper-82982eeae-435b-4c8c-93ae-fdd77aea55d4" startNb="0" end="outputf2401d1d-366b-4695-bf58-88f44eebb1f3" endNb="0"/>
+	<link start="inputad543a52-b620-4f50-b6b0-ce496a65cc85" startNb="0" end="tristripper-82982eeae-435b-4c8c-93ae-fdd77aea55d4" endNb="0"/>
+	<link start="input186c4c0b-f710-48f8-bf8f-292b611ed2e0" startNb="0" end="tristripper-95a5a0545-31cb-4c7a-ada7-0e5583167b36" endNb="0"/>
+	<link start="tristripper-95a5a0545-31cb-4c7a-ada7-0e5583167b36" startNb="0" end="output7db29ddd-2542-4c9a-9d34-0b88ef7b32e2" endNb="0"/>
+	<link start="tristripper-1089a38a93-adff-41d5-84dc-9f857fdfd52e" startNb="0" end="outputf1b33d58-afde-466b-9c89-70197437a8e1" endNb="0"/>
+	<link start="inputa86c7bac-aa02-4720-9cb8-b642c6511668" startNb="0" end="tristripper-1089a38a93-adff-41d5-84dc-9f857fdfd52e" endNb="0"/>
+	<link start="input77e51975-952f-4a95-8636-eda1bb7e6956" startNb="0" end="tristripper-11083d8cad-ab82-4ccf-9b70-d71e58a1e1a7" endNb="0"/>
+	<link start="tristripper-11083d8cad-ab82-4ccf-9b70-d71e58a1e1a7" startNb="0" end="outputbf4e4c7b-9551-4629-a64a-5ba7b44ced20" endNb="0"/>
+	<link start="input4d462dea-3fbf-4f0f-8571-fa760caf33db" startNb="0" end="tristripper-134fbed377-d931-484b-bd4f-187db7451315" endNb="0"/>
+	<link start="tristripper-134fbed377-d931-484b-bd4f-187db7451315" startNb="0" end="outputd0060365-c9ef-4686-be22-96b3d8fa07ab" endNb="0"/>
+	<link start="tristripper-12f2fa809b-9386-45ba-bbc2-89c44f36655d" startNb="0" end="output9d9911bf-4177-45a3-abe6-fdf3d182fa49" endNb="0"/>
+	<link start="inputd6788c7a-bfda-433f-a2ed-bd5318185603" startNb="0" end="tristripper-12f2fa809b-9386-45ba-bbc2-89c44f36655d" endNb="0"/>
+	<link start="inputa1f8d1a7-19a9-4134-99a8-d83309f6e5af" startNb="0" end="tristripper-141c39f0b5-558b-45c2-bee1-c922c404bdab" endNb="0"/>
+	<link start="tristripper-141c39f0b5-558b-45c2-bee1-c922c404bdab" startNb="0" end="outputa8146992-d51c-46d7-92c4-d67c36009e80" endNb="0"/>
+
+</pipeline>

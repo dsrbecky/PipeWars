@@ -1,0 +1,45 @@
+<David mode="Del,M,HiPoly">
+tri
+  FPS: 393.5 (2.54 ms)
+  Test geometry: (none)
+  Vertices: 63.192 M/sec  0.161 M/frm
+  Triangles: 21.064 M/sec  0.054 M/frm
+  Pixels: 170.023 M/sec  0.432 M/frm
+
+tristrip
+  FPS: 215.4 (4.64 ms)
+  Test geometry: (none)
+  Vertices: 15.326 M/sec  0.071 M/frm
+  Triangles: 13.478 M/sec  0.063 M/frm
+  Pixels: 93.064 M/sec  0.432 M/frm
+
+poly
+  FPS: 41.8 (23.90 ms)
+  Test geometry: (none)
+  Vertices: 5.083 M/sec  0.121 M/frm
+  Triangles: 2.240 M/sec  0.054 M/frm
+  Pixels: 18.081 M/sec  0.432 M/frm
+</David>
+
+<PWF mode="Del,M,HiPoly">
+tri
+  FPS: 16.3 (61.17 ms)
+  Test geometry: (none)
+  Vertices: 2.644 M/sec  0.162 M/frm
+  Triangles: 0.881 M/sec  0.054 M/frm
+  Pixels: 7.388 M/sec  0.452 M/frm
+
+tristrip
+  FPS: 28.3 (35.29 ms)
+  Test geometry: (none)
+  Vertices: 2.049 M/sec  0.072 M/frm
+  Triangles: 1.784 M/sec  0.063 M/frm
+  Pixels: 12.804 M/sec  0.452 M/frm
+
+poly
+  FPS: 27.5 (36.39 ms)
+  Test geometry: (none)
+  Vertices: 3.370 M/sec  0.123 M/frm
+  Triangles: 1.482 M/sec  0.054 M/frm
+  Pixels: 12.418 M/sec  0.452 M/frm
+</PWF>
