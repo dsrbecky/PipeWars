@@ -1,5 +1,8 @@
-/Debug/
+/bin/
 /dom/build/
 /PipeWars.suo
 /PipeWars.ncb
 *.user
+
+/dom/projects/vc9-1.4/dom.ncb
+/dom/projects/vc9-1.4/dom.suo

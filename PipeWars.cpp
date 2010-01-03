@@ -1,30 +1,4 @@
-//-----------------------------------------------------------------------------
-// File: Meshes.cpp
-//
-// Desc: For advanced geometry, most apps will prefer to load pre-authored
-//       Meshes from a file. Fortunately, when using Meshes, D3DX does most of
-//       the work for this, parsing a geometry file and creating vertx buffers
-//       (and index buffers) for us. This tutorial shows how to use a D3DXMESH
-//       object, including loading it from a file and rendering it. One thing
-//       D3DX does not handle for us is the materials and textures for a mesh,
-//       so note that we have to handle those manually.
-//
-//       Note: one advanced (but nice) feature that we don't show here is that
-//       when cloning a mesh we can specify the FVF. So, regardless of how the
-//       mesh was authored, we can add/remove normals, add more texture
-//       coordinate sets (for multi-texturing), etc.
-//
-// Copyright (c) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#include <Windows.h>
-#include <mmsystem.h>
-#include <d3dx9.h>
-#pragma warning( disable : 4996 ) // disable deprecated warning 
-#include <strsafe.h>
-#pragma warning( default : 4996 )
-
-
-
+#include "StdAfx.h"
 
 //-----------------------------------------------------------------------------
 // Global variables
@@ -86,6 +60,13 @@ HRESULT InitD3D( HWND hWnd )
 //-----------------------------------------------------------------------------
 HRESULT InitGeometry()
 {
+	DAE dae;
+	domCOLLADA* doc = dae.open("..\\data\\meshes\\suzanne.dae");
+	if (doc == NULL) {
+		MessageBox(NULL, L"Could open suzanne.dae", L"COLLADA", MB_OK);
+        return E_FAIL;
+	}
+
     LPD3DXBUFFER pD3DXMtrlBuffer;
 
     // Load the mesh from the specified file

@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="bin"
+			IntermediateDirectory="bin"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
@@ -44,13 +44,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200"
 				Optimization="0"
-				AdditionalIncludeDirectories="DXUT\Core;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS"
+				AdditionalIncludeDirectories=".\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
@@ -67,13 +68,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib"
+				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib libcollada14dom21-d.lib libboost_filesystem-d.lib libboost_system-d.lib"
 				OutputFile="$(OutDir)/PipeWars.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
+				AdditionalLibraryDirectories=".\bin;&quot;.\dom\external-libs\boost\lib\vc9&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/Meshes.pdb"
+				ProgramDatabaseFile="$(OutDir)/PipeWars.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -380,6 +381,10 @@
 		</File>
 		<File
 			RelativePath=".\resource.h"
+			>
+		</File>
+		<File
+			RelativePath=".\StdAfx.h"
 			>
 		</File>
 	</Files>
