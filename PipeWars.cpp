@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 // Global variables
@@ -66,14 +67,68 @@ HRESULT InitGeometry()
 		MessageBox(NULL, L"Could open suzanne.dae", L"COLLADA", MB_OK);
         return E_FAIL;
 	}
+	
+	domGeometry_Array geoms = doc->getLibrary_geometries_array().get(0)->getGeometry_array();
+	domMeshRef mesh;
+	for(u_int i = 0; i < geoms.getCount(); i++) {
+		if (geoms.get(i)->getName() == std::string("Suzanne-Geometry")) {
+			mesh = geoms.get(i)->getMesh();
+			break;
+		}
+	}
+	
+	for(u_int i = 0; i < mesh->getTristrips_array().getCount(); i++) {
+		domTristripsRef tristrips = mesh->getTristrips_array().get(i);
 
+		int posOffset = -1; domListOfFloats* posSrc;
+		int norOffset = -1; domListOfFloats* norSrc;
+		int texOffset = -1; domListOfFloats* texSrc;
+		int colOffset = -1; domListOfFloats* colSrc;
+
+		for(u_int j = 0; j < tristrips->getInput_array().getCount(); j++) {
+			domInputLocalOffsetRef input = tristrips->getInput_array().get(j);
+			daeElementRef source = input->getSource().getElement();
+			if (source->typeID() == domVertices::ID()) {
+				source = daeSafeCast<domVertices>(source)->getInput_array().get(0)->getSource().getElement();
+			}
+			int offset = (int)input->getOffset();
+			domListOfFloats* src = &(daeSafeCast<domSource>(source)->getFloat_array()->getValue());
+			if (input->getSemantic() == string("VERTEX")) {
+				posOffset = offset;
+				posSrc = src;
+			}
+			if (input->getSemantic() == string("NORMAL")) {
+				norOffset = offset;
+				norSrc = src;
+			}
+			if (input->getSemantic() == string("TEXCOORD")) {
+				texOffset = offset;
+				texSrc = src;
+			}
+			if (input->getSemantic() == string("COLOR")) {
+				colOffset = offset;
+				colSrc = src;
+			}
+		}
+
+		int stride = 0;
+		stride = max(stride, posOffset + 1);
+		stride = max(stride, norOffset + 1);
+		stride = max(stride, texOffset + 1);
+		stride = max(stride, colOffset + 1);
+
+		for(u_int j = 0; j < tristrips->getP_array().getCount(); j++) {
+			domListOfUInts p = tristrips->getP_array().get(j)->getValue();
+		}
+	}
+	
     LPD3DXBUFFER pD3DXMtrlBuffer;
-
+	
     // Load the mesh from the specified file
     if( FAILED( D3DXLoadMeshFromX( L"Tiger.x", D3DXMESH_SYSTEMMEM,
                                    g_pd3dDevice, NULL,
                                    &pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
-                                   &g_pMesh ) ) )
+                                    &g_pMesh ) ) )
     {
         // If model is not in current folder, try parent folder
         if( FAILED( D3DXLoadMeshFromX( L"..\\Tiger.x", D3DXMESH_SYSTEMMEM,
