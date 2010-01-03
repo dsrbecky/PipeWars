@@ -1,7 +1,5 @@
-
-/Meshes_2008.ncb
-*.user
-/PipeWars.suo
 /Debug/
-
+/dom/build/
+/PipeWars.suo
 /PipeWars.ncb
+*.user
