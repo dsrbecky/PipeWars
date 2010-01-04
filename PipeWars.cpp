@@ -55,20 +55,22 @@ HRESULT InitD3D( HWND hWnd )
 class Tristrip
 {
 public:
-	int vbOffset;
+	DWORD fvf;
+	IDirect3DVertexBuffer9* vb;
+	int vbStride;
+	int vbStart;
 	int vbCount;
 	string material;
-	DWORD fvf;
 };
 
 class Mesh
 {
 public:
 	vector<Tristrip> tristrips;
-	IDirect3DVertexBuffer9* vb;
 };
 
 Mesh suzzane;
+IDirect3DTexture9* tex;
 
 //-----------------------------------------------------------------------------
 // Name: InitGeometry()
@@ -93,11 +95,12 @@ HRESULT InitGeometry()
 	}
 
 	Mesh outMesh;
-	vector<float> vb;
-	DWORD fvf = 0;
 	
 	for(u_int i = 0; i < mesh->getTristrips_array().getCount(); i++) {
 		domTristripsRef tristrips = mesh->getTristrips_array().get(i);
+
+		DWORD fvf = 0;
+		int vbStride = 0;
 
 		int posOffset = -1; domListOfFloats* posSrc;
 		int norOffset = -1; domListOfFloats* norSrc;
@@ -116,21 +119,25 @@ HRESULT InitGeometry()
 				posOffset = offset;
 				posSrc = src;
 				fvf = fvf | D3DFVF_XYZ;
+				vbStride += 3 * sizeof(float);
 			}
 			if (input->getSemantic() == string("NORMAL")) {
 				norOffset = offset;
 				norSrc = src;
 				fvf = fvf | D3DFVF_NORMAL;
+				vbStride += 3 * sizeof(float);
 			}
 			if (input->getSemantic() == string("COLOR")) {
 				colOffset = offset;
 				colSrc = src;
 				fvf = fvf | D3DFVF_DIFFUSE;
+				vbStride += 4;
 			}
 			if (input->getSemantic() == string("TEXCOORD")) {
 				texOffset = offset;
 				texSrc = src;
 				fvf = fvf | D3DFVF_TEX2;
+				vbStride += 2 * sizeof(float);
 			}
 		}
 
@@ -140,15 +147,19 @@ HRESULT InitGeometry()
 		stride = max(stride, colOffset + 1);
 		stride = max(stride, texOffset + 1);
 
+		vector<float> vb;
+		vector<Tristrip> outTristrips;
+
 		for(u_int j = 0; j < tristrips->getP_array().getCount(); j++) {
 			domListOfUInts p = tristrips->getP_array().get(j)->getValue();
 
 			Tristrip outTs;
-			outTs.vbOffset = vb.size();
+			outTs.fvf = fvf;
+			outTs.vbStride = vbStride;
+			outTs.vbStart = vb.size() * sizeof(float) / vbStride;
 			outTs.vbCount = (p.getCount() / stride) - 2;
 			outTs.material = tristrips->getMaterial();
-			outTs.fvf = fvf;
-			outMesh.tristrips.push_back(outTs);
+			outTristrips.push_back(outTs);
 
 			for(u_int k = 0; k < p.getCount(); k += stride) {
 				if (posOffset != -1) {
@@ -167,28 +178,40 @@ HRESULT InitGeometry()
 
 				if (colOffset != -1) {
 					int index = (int)p.get(k + colOffset);
-					vb.push_back((float)colSrc->get(4 * index + 3)); // A
-					vb.push_back((float)colSrc->get(4 * index + 0)); // R
-					vb.push_back((float)colSrc->get(4 * index + 1)); // G
-					vb.push_back((float)colSrc->get(4 * index + 2)); // B
+					int r = (int)((colSrc->get(4 * index + 0)) * 255);
+					int g = (int)((colSrc->get(4 * index + 1)) * 255);
+					int b = (int)((colSrc->get(4 * index + 2)) * 255);
+					int a = (int)((colSrc->get(4 * index + 3)) * 255);
+					u_int argb = (a << 24) + (r << 16) + (g << 8) + (b);
+					vb.push_back(*((float*)&argb));
 				}
 
 				if (texOffset != -1) {
 					int index = (int)p.get(k + texOffset);
 					vb.push_back((float)texSrc->get(2 * index + 0));
-					vb.push_back((float)texSrc->get(2 * index + 1));
+					vb.push_back(1 - (float)texSrc->get(2 * index + 1));
 				}
 			}
 		}
+
+		IDirect3DVertexBuffer9* vertexBuffer;
+		g_pd3dDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &vertexBuffer, NULL);
+		void* vbData;
+		vertexBuffer->Lock(0, vb.size() * sizeof(float), &vbData, 0);
+		copy(vb.begin(), vb.end(), (float*)vbData);
+		vertexBuffer->Unlock();
+
+		for(int i = 0; i < (int)outTristrips.size(); i++) {
+			outTristrips[i].vb = vertexBuffer;
+			outMesh.tristrips.push_back(outTristrips[i]);
+		}
 	}
 
-	g_pd3dDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &outMesh.vb, NULL);
-	void* vbData;
-	outMesh.vb->Lock(0, vb.size() * sizeof(float), &vbData, 0);
-	copy(vb.begin(), vb.end(), (float*)vbData);
-	outMesh.vb->Unlock();
-
 	suzzane = outMesh;
+
+	if (FAILED(D3DXCreateTextureFromFileA(g_pd3dDevice, "..\\data\\meshes\\suzanne.png", &tex))) {
+        MessageBox( NULL, L"Could not find texture map", L"COLLADA", MB_OK );
+    }
 
     LPD3DXBUFFER pD3DXMtrlBuffer;
 	
@@ -355,11 +378,12 @@ VOID Render()
             // g_pMesh->DrawSubset( i );
         }
 
-		g_pd3dDevice->SetStreamSource(0, suzzane.vb, 0, 12 * sizeof(float));
-		for(int i = 0; i < suzzane.tristrips.size(); i++) {
+		for(int i = 0; i < (int)suzzane.tristrips.size(); i++) {
 			Tristrip ts = suzzane.tristrips[i];
+			g_pd3dDevice->SetStreamSource(0, ts.vb, 0, ts.vbStride);
 			g_pd3dDevice->SetFVF(ts.fvf);
-			g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, ts.vbOffset / 12, ts.vbCount);
+			g_pd3dDevice->SetTexture(0, tex);
+			g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, ts.vbStart, ts.vbCount);
 		}
 
         // End the scene
