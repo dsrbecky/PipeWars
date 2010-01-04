@@ -47,7 +47,7 @@
 				AdditionalOptions="/Zm200"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML"
+				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -364,6 +364,22 @@
 	<References>
 	</References>
 	<Files>
+		<File
+			RelativePath=".\ColladaImport.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\ColladaImport.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Database.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Database.h"
+			>
+		</File>
 		<File
 			RelativePath="DXUT\Optional\directx.ico"
 			>
