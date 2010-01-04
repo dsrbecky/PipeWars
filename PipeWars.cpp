@@ -52,8 +52,23 @@ HRESULT InitD3D( HWND hWnd )
     return S_OK;
 }
 
+class Tristrip
+{
+public:
+	int vbOffset;
+	int vbCount;
+	string material;
+	DWORD fvf;
+};
 
+class Mesh
+{
+public:
+	vector<Tristrip> tristrips;
+	IDirect3DVertexBuffer9* vb;
+};
 
+Mesh suzzane;
 
 //-----------------------------------------------------------------------------
 // Name: InitGeometry()
@@ -76,14 +91,18 @@ HRESULT InitGeometry()
 			break;
 		}
 	}
+
+	Mesh outMesh;
+	vector<float> vb;
+	DWORD fvf = 0;
 	
 	for(u_int i = 0; i < mesh->getTristrips_array().getCount(); i++) {
 		domTristripsRef tristrips = mesh->getTristrips_array().get(i);
 
 		int posOffset = -1; domListOfFloats* posSrc;
 		int norOffset = -1; domListOfFloats* norSrc;
-		int texOffset = -1; domListOfFloats* texSrc;
 		int colOffset = -1; domListOfFloats* colSrc;
+		int texOffset = -1; domListOfFloats* texSrc;
 
 		for(u_int j = 0; j < tristrips->getInput_array().getCount(); j++) {
 			domInputLocalOffsetRef input = tristrips->getInput_array().get(j);
@@ -96,32 +115,81 @@ HRESULT InitGeometry()
 			if (input->getSemantic() == string("VERTEX")) {
 				posOffset = offset;
 				posSrc = src;
+				fvf = fvf | D3DFVF_XYZ;
 			}
 			if (input->getSemantic() == string("NORMAL")) {
 				norOffset = offset;
 				norSrc = src;
-			}
-			if (input->getSemantic() == string("TEXCOORD")) {
-				texOffset = offset;
-				texSrc = src;
+				fvf = fvf | D3DFVF_NORMAL;
 			}
 			if (input->getSemantic() == string("COLOR")) {
 				colOffset = offset;
 				colSrc = src;
+				fvf = fvf | D3DFVF_DIFFUSE;
+			}
+			if (input->getSemantic() == string("TEXCOORD")) {
+				texOffset = offset;
+				texSrc = src;
+				fvf = fvf | D3DFVF_TEX2;
 			}
 		}
 
 		int stride = 0;
 		stride = max(stride, posOffset + 1);
 		stride = max(stride, norOffset + 1);
-		stride = max(stride, texOffset + 1);
 		stride = max(stride, colOffset + 1);
+		stride = max(stride, texOffset + 1);
 
 		for(u_int j = 0; j < tristrips->getP_array().getCount(); j++) {
 			domListOfUInts p = tristrips->getP_array().get(j)->getValue();
+
+			Tristrip outTs;
+			outTs.vbOffset = vb.size();
+			outTs.vbCount = (p.getCount() / stride) - 2;
+			outTs.material = tristrips->getMaterial();
+			outTs.fvf = fvf;
+			outMesh.tristrips.push_back(outTs);
+
+			for(u_int k = 0; k < p.getCount(); k += stride) {
+				if (posOffset != -1) {
+					int index = (int)p.get(k + posOffset);
+					vb.push_back((float)posSrc->get(3 * index + 0));
+					vb.push_back((float)posSrc->get(3 * index + 1));
+					vb.push_back((float)posSrc->get(3 * index + 2));
+				}
+
+				if (norOffset != -1) {
+					int index = (int)p.get(k + norOffset);
+					vb.push_back((float)norSrc->get(3 * index + 0));
+					vb.push_back((float)norSrc->get(3 * index + 1));
+					vb.push_back((float)norSrc->get(3 * index + 2));
+				}
+
+				if (colOffset != -1) {
+					int index = (int)p.get(k + colOffset);
+					vb.push_back((float)colSrc->get(4 * index + 3)); // A
+					vb.push_back((float)colSrc->get(4 * index + 0)); // R
+					vb.push_back((float)colSrc->get(4 * index + 1)); // G
+					vb.push_back((float)colSrc->get(4 * index + 2)); // B
+				}
+
+				if (texOffset != -1) {
+					int index = (int)p.get(k + texOffset);
+					vb.push_back((float)texSrc->get(2 * index + 0));
+					vb.push_back((float)texSrc->get(2 * index + 1));
+				}
+			}
 		}
 	}
-	
+
+	g_pd3dDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &outMesh.vb, NULL);
+	void* vbData;
+	outMesh.vb->Lock(0, vb.size() * sizeof(float), &vbData, 0);
+	copy(vb.begin(), vb.end(), (float*)vbData);
+	outMesh.vb->Unlock();
+
+	suzzane = outMesh;
+
     LPD3DXBUFFER pD3DXMtrlBuffer;
 	
     // Load the mesh from the specified file
@@ -284,8 +352,15 @@ VOID Render()
             g_pd3dDevice->SetTexture( 0, g_pMeshTextures[i] );
 
             // Draw the mesh subset
-            g_pMesh->DrawSubset( i );
+            // g_pMesh->DrawSubset( i );
         }
+
+		g_pd3dDevice->SetStreamSource(0, suzzane.vb, 0, 12 * sizeof(float));
+		for(int i = 0; i < suzzane.tristrips.size(); i++) {
+			Tristrip ts = suzzane.tristrips[i];
+			g_pd3dDevice->SetFVF(ts.fvf);
+			g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, ts.vbOffset / 12, ts.vbCount);
+		}
 
         // End the scene
         g_pd3dDevice->EndScene();
