@@ -4,16 +4,8 @@ using namespace std;
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------
-LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
-LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device
-
-LPD3DXMESH          g_pMesh = NULL; // Our mesh object in sysmem
-D3DMATERIAL9*       g_pMeshMaterials = NULL; // Materials for our mesh
-LPDIRECT3DTEXTURE9* g_pMeshTextures = NULL; // Textures for our mesh
-DWORD               g_dwNumMaterials = 0L;   // Number of mesh materials
-
-
-
+LPDIRECT3D9         pD3D = NULL; // Used to create the D3DDevice
+LPDIRECT3DDEVICE9   pD3DDevice = NULL; // Our rendering device
 
 //-----------------------------------------------------------------------------
 // Name: InitD3D()
@@ -22,7 +14,7 @@ DWORD               g_dwNumMaterials = 0L;   // Number of mesh materials
 HRESULT InitD3D( HWND hWnd )
 {
     // Create the D3D object.
-    if( NULL == ( g_pD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) )
+    if( NULL == ( pD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) )
         return E_FAIL;
 
     // Set up the structure used to create the D3DDevice. Since we are now
@@ -36,80 +28,130 @@ HRESULT InitD3D( HWND hWnd )
     d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
     // Create the D3DDevice
-    if( FAILED( g_pD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
+    if( FAILED( pD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
                                       D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-                                      &d3dpp, &g_pd3dDevice ) ) )
+                                      &d3dpp, &pD3DDevice ) ) )
     {
         return E_FAIL;
     }
 
     // Turn on the zbuffer
-    g_pd3dDevice->SetRenderState( D3DRS_ZENABLE, TRUE );
+    pD3DDevice->SetRenderState( D3DRS_ZENABLE, TRUE );
 
     // Turn on ambient lighting 
-    g_pd3dDevice->SetRenderState( D3DRS_AMBIENT, 0xffffffff );
+    pD3DDevice->SetRenderState( D3DRS_AMBIENT, 0xffffffff );
 
     return S_OK;
 }
 
+// Define one or more tristrips that share same material
 class Tristrip
 {
 public:
 	DWORD fvf;
+	int vbStride; // in bytes
 	IDirect3DVertexBuffer9* vb;
-	int vbStride;
-	int vbStart;
-	int vbCount;
-	string material;
+	vector<int> vertexCounts; // framgmentation of tristrips into groups
+	D3DMATERIAL9 material;
+	IDirect3DTexture9* texure;
+
+	void Render()
+	{
+		pD3DDevice->SetStreamSource(0, vb, 0, vbStride);
+		pD3DDevice->SetFVF(fvf);
+		pD3DDevice->SetTexture(0, texure);
+		pD3DDevice->SetMaterial(&material);
+		int start = 0;
+		for(int j = 0; j < (int)vertexCounts.size(); j++) {
+			int vertexCount = vertexCounts[j];
+			pD3DDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, start, vertexCount - 2);
+			start += vertexCount;
+		}
+	}
 };
 
 class Mesh
 {
 public:
 	vector<Tristrip> tristrips;
+
+	void Render()
+	{
+		for(int i = 0; i < (int)tristrips.size(); i++) {
+			tristrips[i].Render();
+		}
+	}
 };
 
-Mesh suzzane;
-IDirect3DTexture9* tex;
+DAE dae;
 
-//-----------------------------------------------------------------------------
-// Name: InitGeometry()
-// Desc: Load the mesh and build the material and texture arrays
-//-----------------------------------------------------------------------------
-HRESULT InitGeometry()
+map<string, domCOLLADA*> loadedFiles;
+
+domCOLLADA* loadCollada(string filename)
 {
-	DAE dae;
-	domCOLLADA* doc = dae.open("..\\data\\meshes\\suzanne.dae");
-	if (doc == NULL) {
-		MessageBox(NULL, L"Could open suzanne.dae", L"COLLADA", MB_OK);
-        return E_FAIL;
+	// Cached
+	if (loadedFiles.count(filename) > 0) {
+		return loadedFiles[filename];
+	} else {
+		domCOLLADA* doc = dae.open(filename);
+		if (doc == NULL) {
+			MessageBoxA(NULL, ("Could not open " + filename).c_str(), "COLLADA", MB_OK);
+			exit(1);
+		}
+		loadedFiles[filename] = doc;
+		return doc;
 	}
-	
+}
+
+map<string, Mesh*> loadedMeshes;
+
+Mesh* loadMesh(string filename, string geometryName)
+{
+	string filenameAndGeometryName = filename + "\\" + geometryName;
+	// Cached
+	if (loadedMeshes.count(filenameAndGeometryName) > 0) {
+		return loadedMeshes[filenameAndGeometryName];
+	}
+
+	domCOLLADA* doc = loadCollada(filename);
+
+	// Get the mesh in COLLADA file
 	domGeometry_Array geoms = doc->getLibrary_geometries_array().get(0)->getGeometry_array();
-	domMeshRef mesh;
+	domMeshRef meshRef;
 	for(u_int i = 0; i < geoms.getCount(); i++) {
-		if (geoms.get(i)->getName() == std::string("Suzanne-Geometry")) {
-			mesh = geoms.get(i)->getMesh();
+		if (geoms.get(i)->getName() == geometryName) {
+			meshRef = geoms.get(i)->getMesh();
 			break;
 		}
 	}
+	if (meshRef == NULL) {
+		MessageBoxA(NULL, ("Could not mesh " + filenameAndGeometryName).c_str(), "COLLADA", MB_OK);
+		exit(1);
+	}
 
-	Mesh outMesh;
+	Mesh* mesh = new Mesh();
+	loadedMeshes[filenameAndGeometryName] = mesh;  // Cache
 	
-	for(u_int i = 0; i < mesh->getTristrips_array().getCount(); i++) {
-		domTristripsRef tristrips = mesh->getTristrips_array().get(i);
+	// Load the <tristrips/> elements
+	// (other types are ignored for now)
 
-		DWORD fvf = 0;
-		int vbStride = 0;
+	for(u_int i = 0; i < meshRef->getTristrips_array().getCount(); i++) {
+		domTristripsRef tristripsRef = meshRef->getTristrips_array().get(i);
+
+		Tristrip ts;
+		ts.fvf = 0;
+
+		// Resolve all data sources
 
 		int posOffset = -1; domListOfFloats* posSrc;
 		int norOffset = -1; domListOfFloats* norSrc;
 		int colOffset = -1; domListOfFloats* colSrc;
 		int texOffset = -1; domListOfFloats* texSrc;
 
-		for(u_int j = 0; j < tristrips->getInput_array().getCount(); j++) {
-			domInputLocalOffsetRef input = tristrips->getInput_array().get(j);
+		for(u_int j = 0; j < tristripsRef->getInput_array().getCount(); j++) {
+			domInputLocalOffsetRef input = tristripsRef->getInput_array().get(j);
 			daeElementRef source = input->getSource().getElement();
+			// Defined per vertex - forward
 			if (source->typeID() == domVertices::ID()) {
 				source = daeSafeCast<domVertices>(source)->getInput_array().get(0)->getSource().getElement();
 			}
@@ -118,50 +160,38 @@ HRESULT InitGeometry()
 			if (input->getSemantic() == string("VERTEX")) {
 				posOffset = offset;
 				posSrc = src;
-				fvf = fvf | D3DFVF_XYZ;
-				vbStride += 3 * sizeof(float);
-			}
-			if (input->getSemantic() == string("NORMAL")) {
+				ts.fvf |= D3DFVF_XYZ;
+			} else if (input->getSemantic() == string("NORMAL")) {
 				norOffset = offset;
 				norSrc = src;
-				fvf = fvf | D3DFVF_NORMAL;
-				vbStride += 3 * sizeof(float);
-			}
-			if (input->getSemantic() == string("COLOR")) {
+				ts.fvf |= D3DFVF_NORMAL;
+			} else if (input->getSemantic() == string("COLOR")) {
 				colOffset = offset;
 				colSrc = src;
-				fvf = fvf | D3DFVF_DIFFUSE;
-				vbStride += 4;
-			}
-			if (input->getSemantic() == string("TEXCOORD")) {
+				ts.fvf |= D3DFVF_DIFFUSE;
+			} else if (input->getSemantic() == string("TEXCOORD")) {
 				texOffset = offset;
 				texSrc = src;
-				fvf = fvf | D3DFVF_TEX2;
-				vbStride += 2 * sizeof(float);
+				ts.fvf |= D3DFVF_TEX2;
 			}
 		}
 
-		int stride = 0;
-		stride = max(stride, posOffset + 1);
-		stride = max(stride, norOffset + 1);
-		stride = max(stride, colOffset + 1);
-		stride = max(stride, texOffset + 1);
+		// Load the <P/> elementes
 
-		vector<float> vb;
-		vector<Tristrip> outTristrips;
+		int pStride = 0;
+		pStride = max(pStride, posOffset + 1);
+		pStride = max(pStride, norOffset + 1);
+		pStride = max(pStride, colOffset + 1);
+		pStride = max(pStride, texOffset + 1);
 
-		for(u_int j = 0; j < tristrips->getP_array().getCount(); j++) {
-			domListOfUInts p = tristrips->getP_array().get(j)->getValue();
+		vector<float> vb; // Vertex buffer data
 
-			Tristrip outTs;
-			outTs.fvf = fvf;
-			outTs.vbStride = vbStride;
-			outTs.vbStart = vb.size() * sizeof(float) / vbStride;
-			outTs.vbCount = (p.getCount() / stride) - 2;
-			outTs.material = tristrips->getMaterial();
-			outTristrips.push_back(outTs);
+		for(u_int j = 0; j < tristripsRef->getP_array().getCount(); j++) {
+			domListOfUInts p = tristripsRef->getP_array().get(j)->getValue();
 
-			for(u_int k = 0; k < p.getCount(); k += stride) {
+			ts.vertexCounts.push_back(p.getCount() / pStride);
+
+			for(u_int k = 0; k < p.getCount(); k += pStride) {
 				if (posOffset != -1) {
 					int index = (int)p.get(k + posOffset);
 					vb.push_back((float)posSrc->get(3 * index + 0));
@@ -191,125 +221,62 @@ HRESULT InitGeometry()
 					vb.push_back((float)texSrc->get(2 * index + 0));
 					vb.push_back(1 - (float)texSrc->get(2 * index + 1));
 				}
+
+				// Note vertex buffer stride (bytes)
+				if (j == 0 && k == 0) {
+					ts.vbStride = vb.size() * sizeof(float);
+				}
 			}
 		}
 
-		IDirect3DVertexBuffer9* vertexBuffer;
-		g_pd3dDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &vertexBuffer, NULL);
-		void* vbData;
-		vertexBuffer->Lock(0, vb.size() * sizeof(float), &vbData, 0);
-		copy(vb.begin(), vb.end(), (float*)vbData);
-		vertexBuffer->Unlock();
+		// Copy the buffer to graphic card memory
 
-		for(int i = 0; i < (int)outTristrips.size(); i++) {
-			outTristrips[i].vb = vertexBuffer;
-			outMesh.tristrips.push_back(outTristrips[i]);
+		pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, ts.fvf, D3DPOOL_DEFAULT, &ts.vb, NULL);
+		void* vbData;
+		ts.vb->Lock(0, vb.size() * sizeof(float), &vbData, 0);
+		copy(vb.begin(), vb.end(), (float*)vbData);
+		ts.vb->Unlock();
+
+		// Load the material
+
+		// Default
+		D3DCOLORVALUE white; white.a = white.r = white.g = white.b = 1;
+		D3DCOLORVALUE black; black.a = 1; black.r = black.g = black.b = 0;
+		ts.material.Ambient = ts.material.Diffuse = ts.material.Specular = white;
+		ts.material.Emissive = black;
+		ts.material.Power = 12.5;
+
+		if (FAILED(D3DXCreateTextureFromFileA(pD3DDevice, "..\\data\\meshes\\suzanne.png", &ts.texure))) {
+			MessageBox( NULL, L"Could not find texture map", L"COLLADA", MB_OK );
+			exit(1);
 		}
+
+		// Done with this <tristrips/>
+
+		mesh->tristrips.push_back(ts);
 	}
 
-	suzzane = outMesh;
-
-	if (FAILED(D3DXCreateTextureFromFileA(g_pd3dDevice, "..\\data\\meshes\\suzanne.png", &tex))) {
-        MessageBox( NULL, L"Could not find texture map", L"COLLADA", MB_OK );
-    }
-
-    LPD3DXBUFFER pD3DXMtrlBuffer;
-	
-    // Load the mesh from the specified file
-    if( FAILED( D3DXLoadMeshFromX( L"Tiger.x", D3DXMESH_SYSTEMMEM,
-                                   g_pd3dDevice, NULL,
-                                   &pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
-                                    &g_pMesh ) ) )
-    {
-        // If model is not in current folder, try parent folder
-        if( FAILED( D3DXLoadMeshFromX( L"..\\Tiger.x", D3DXMESH_SYSTEMMEM,
-                                       g_pd3dDevice, NULL,
-                                       &pD3DXMtrlBuffer, NULL, &g_dwNumMaterials,
-                                       &g_pMesh ) ) )
-        {
-            MessageBox( NULL, L"Could not find tiger.x", L"Meshes.exe", MB_OK );
-            return E_FAIL;
-        }
-    }
-
-    // We need to extract the material properties and texture names from the 
-    // pD3DXMtrlBuffer
-    D3DXMATERIAL* d3dxMaterials = ( D3DXMATERIAL* )pD3DXMtrlBuffer->GetBufferPointer();
-    g_pMeshMaterials = new D3DMATERIAL9[g_dwNumMaterials];
-    if( g_pMeshMaterials == NULL )
-        return E_OUTOFMEMORY;
-    g_pMeshTextures = new LPDIRECT3DTEXTURE9[g_dwNumMaterials];
-    if( g_pMeshTextures == NULL )
-        return E_OUTOFMEMORY;
-
-    for( DWORD i = 0; i < g_dwNumMaterials; i++ )
-    {
-        // Copy the material
-        g_pMeshMaterials[i] = d3dxMaterials[i].MatD3D;
-
-        // Set the ambient color for the material (D3DX does not do this)
-        g_pMeshMaterials[i].Ambient = g_pMeshMaterials[i].Diffuse;
-
-        g_pMeshTextures[i] = NULL;
-        if( d3dxMaterials[i].pTextureFilename != NULL &&
-            lstrlenA( d3dxMaterials[i].pTextureFilename ) > 0 )
-        {
-            // Create the texture
-            if( FAILED( D3DXCreateTextureFromFileA( g_pd3dDevice,
-                                                    d3dxMaterials[i].pTextureFilename,
-                                                    &g_pMeshTextures[i] ) ) )
-            {
-                // If texture is not in current folder, try parent folder
-                const CHAR* strPrefix = "..\\";
-                CHAR strTexture[MAX_PATH];
-                strcpy_s( strTexture, MAX_PATH, strPrefix );
-                strcat_s( strTexture, MAX_PATH, d3dxMaterials[i].pTextureFilename );
-                // If texture is not in current folder, try parent folder
-                if( FAILED( D3DXCreateTextureFromFileA( g_pd3dDevice,
-                                                        strTexture,
-                                                        &g_pMeshTextures[i] ) ) )
-                {
-                    MessageBox( NULL, L"Could not find texture map", L"Meshes.exe", MB_OK );
-                }
-            }
-        }
-    }
-
-    // Done with the material buffer
-    pD3DXMtrlBuffer->Release();
-
-    return S_OK;
+	return mesh;
 }
 
+Mesh* suzzane;
 
-
+void InitGeometry()
+{
+	suzzane = loadMesh("..\\data\\meshes\\suzanne.dae", "Suzanne-Geometry");
+}
 
 //-----------------------------------------------------------------------------
 // Name: Cleanup()
 // Desc: Releases all previously initialized objects
 //-----------------------------------------------------------------------------
-VOID Cleanup()
+void Cleanup()
 {
-    if( g_pMeshMaterials != NULL )
-        delete[] g_pMeshMaterials;
+    if( pD3DDevice != NULL )
+        pD3DDevice->Release();
 
-    if( g_pMeshTextures )
-    {
-        for( DWORD i = 0; i < g_dwNumMaterials; i++ )
-        {
-            if( g_pMeshTextures[i] )
-                g_pMeshTextures[i]->Release();
-        }
-        delete[] g_pMeshTextures;
-    }
-    if( g_pMesh != NULL )
-        g_pMesh->Release();
-
-    if( g_pd3dDevice != NULL )
-        g_pd3dDevice->Release();
-
-    if( g_pD3D != NULL )
-        g_pD3D->Release();
+    if( pD3D != NULL )
+        pD3D->Release();
 }
 
 
@@ -318,12 +285,12 @@ VOID Cleanup()
 // Name: SetupMatrices()
 // Desc: Sets up the world, view, and projection transform matrices.
 //-----------------------------------------------------------------------------
-VOID SetupMatrices()
+void SetupMatrices()
 {
     // Set up world matrix
     D3DXMATRIXA16 matWorld;
     D3DXMatrixRotationY( &matWorld, timeGetTime() / 1000.0f );
-    g_pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
+    pD3DDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
     // Set up our view matrix. A view matrix can be defined given an eye point,
     // a point to lookat, and a direction for which way is up. Here, we set the
@@ -334,7 +301,7 @@ VOID SetupMatrices()
     D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
     D3DXMATRIXA16 matView;
     D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-    g_pd3dDevice->SetTransform( D3DTS_VIEW, &matView );
+    pD3DDevice->SetTransform( D3DTS_VIEW, &matView );
 
     // For the projection matrix, we set up a perspective transform (which
     // transforms geometry from 3D view space to 2D viewport space, with
@@ -344,7 +311,7 @@ VOID SetupMatrices()
     // what distances geometry should be no longer be rendered).
     D3DXMATRIXA16 matProj;
     D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, 1.0f, 1.0f, 100.0f );
-    g_pd3dDevice->SetTransform( D3DTS_PROJECTION, &matProj );
+    pD3DDevice->SetTransform( D3DTS_PROJECTION, &matProj );
 }
 
 
@@ -354,48 +321,27 @@ VOID SetupMatrices()
 // Name: Render()
 // Desc: Draws the scene
 //-----------------------------------------------------------------------------
-VOID Render()
+void Render()
 {
     // Clear the backbuffer and the zbuffer
-    g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+    pD3DDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
                          D3DCOLOR_XRGB( 0, 0, 255 ), 1.0f, 0 );
 
     // Begin the scene
-    if( SUCCEEDED( g_pd3dDevice->BeginScene() ) )
+    if( SUCCEEDED( pD3DDevice->BeginScene() ) )
     {
         // Setup the world, view, and projection matrices
         SetupMatrices();
 
-        // Meshes are divided into subsets, one for each material. Render them in
-        // a loop
-        for( DWORD i = 0; i < g_dwNumMaterials; i++ )
-        {
-            // Set the material and texture for this subset
-            g_pd3dDevice->SetMaterial( &g_pMeshMaterials[i] );
-            g_pd3dDevice->SetTexture( 0, g_pMeshTextures[i] );
-
-            // Draw the mesh subset
-            // g_pMesh->DrawSubset( i );
-        }
-
-		for(int i = 0; i < (int)suzzane.tristrips.size(); i++) {
-			Tristrip ts = suzzane.tristrips[i];
-			g_pd3dDevice->SetStreamSource(0, ts.vb, 0, ts.vbStride);
-			g_pd3dDevice->SetFVF(ts.fvf);
-			g_pd3dDevice->SetTexture(0, tex);
-			g_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, ts.vbStart, ts.vbCount);
-		}
+		suzzane->Render();
 
         // End the scene
-        g_pd3dDevice->EndScene();
+        pD3DDevice->EndScene();
     }
 
     // Present the backbuffer contents to the display
-    g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
+    pD3DDevice->Present( NULL, NULL, NULL, NULL );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: MsgProc()
@@ -413,9 +359,6 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
     return DefWindowProc( hWnd, msg, wParam, lParam );
 }
-
-
-
 
 //-----------------------------------------------------------------------------
 // Name: WinMain()
@@ -441,31 +384,27 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
     if( SUCCEEDED( InitD3D( hWnd ) ) )
     {
         // Create the scene geometry
-        if( SUCCEEDED( InitGeometry() ) )
-        {
-            // Show the window
-            ShowWindow( hWnd, SW_SHOWDEFAULT );
-            UpdateWindow( hWnd );
+        InitGeometry();
+        
+        // Show the window
+        ShowWindow( hWnd, SW_SHOWDEFAULT );
+        UpdateWindow( hWnd );
 
-            // Enter the message loop
-            MSG msg;
-            ZeroMemory( &msg, sizeof( msg ) );
-            while( msg.message != WM_QUIT )
+        // Enter the message loop
+        MSG msg;
+        ZeroMemory( &msg, sizeof( msg ) );
+        while( msg.message != WM_QUIT )
+        {
+            if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
             {
-                if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-                {
-                    TranslateMessage( &msg );
-                    DispatchMessage( &msg );
-                }
-                else
-                    Render();
+                TranslateMessage( &msg );
+                DispatchMessage( &msg );
             }
+            else
+                Render();
         }
     }
 
     UnregisterClass( L"D3D Tutorial", wc.hInstance );
     return 0;
 }
-
-
-
