@@ -7,4 +7,5 @@
 #pragma warning( disable : 4995 ) // disable deprecated warning
 #include <dae.h>
 #include <dom/domCOLLADA.h>
+#include <dom/domProfile_COMMON.h>
 #pragma warning( default : 4995 )

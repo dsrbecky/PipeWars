@@ -105,6 +105,67 @@ domCOLLADA* loadCollada(string filename)
 
 map<string, Mesh*> loadedMeshes;
 
+u_int getColor(domListOfFloats* src, int offset = 0)
+{
+	int r = (int)(src->get(4 * offset + 0) * 255);
+	int g = (int)(src->get(4 * offset + 1) * 255);
+	int b = (int)(src->get(4 * offset + 2) * 255);
+	int a = (int)(src->get(4 * offset + 3) * 255);
+	u_int argb = (a << 24) + (r << 16) + (g << 8) + (b);
+	return argb;
+}
+
+D3DCOLORVALUE getD3DColor(domListOfFloats color)
+{
+	D3DCOLORVALUE ret;
+	ret.r = (float)color.get(0);
+	ret.g = (float)color.get(1);
+	ret.b = (float)color.get(2);
+	ret.a = (float)color.get(3);
+	return ret;
+}
+
+D3DCOLORVALUE getD3DColor(daeElement* colorElement, D3DCOLORVALUE def)
+{
+	domCommon_color_or_texture_type* color = daeSafeCast<domCommon_color_or_texture_type>(colorElement);
+	if (color != NULL && color->getColor() != NULL) {
+		return getD3DColor(color->getColor()->getValue());
+	} else {
+		return def;
+	}
+}
+
+void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* material, /* out */ IDirect3DTexture9** texture)
+{
+	domMaterial* mat = daeSafeCast<domMaterial>(dae.getDatabase()->idLookup(materialName, doc->getDocument()));
+	domEffect* effect = daeSafeCast<domEffect>(mat->getInstance_effect()->getUrl().getElement());
+
+	// Get colors
+	D3DCOLORVALUE white; white.a = white.r = white.g = white.b = 1;
+	D3DCOLORVALUE black; black.a = 1; black.r = black.g = black.b = 0;
+
+	material->Ambient = getD3DColor(effect->getDescendant("ambient"), white);
+	material->Diffuse = getD3DColor(effect->getDescendant("diffuse"), white);
+	material->Emissive = getD3DColor(effect->getDescendant("emission"), black);
+	material->Specular = getD3DColor(effect->getDescendant("specular"), white);
+	material->Power = 12.5;
+
+	// Get texture
+	domCommon_color_or_texture_type* diffuse = daeSafeCast<domCommon_color_or_texture_type>(effect->getDescendant("diffuse"));
+	if (diffuse != NULL && diffuse->getTexture() != NULL) {
+		string texName = diffuse->getTexture()->getTexture();
+		domImage* tex = daeSafeCast<domImage>(dae.getDatabase()->idLookup(texName, doc->getDocument()));
+		string texFilename = tex->getInit_from()->getCharData();
+		if (FAILED(D3DXCreateTextureFromFileA(pD3DDevice, ("..\\data\\meshes\\" + texFilename).c_str(), texture))) {
+			MessageBoxA(NULL, ("Could not find texture" + texFilename).c_str() , "COLLADA", MB_OK );
+			exit(1);
+		}
+		material->Diffuse = white;
+	} else {
+		*texture = NULL;
+	}
+}
+
 Mesh* loadMesh(string filename, string geometryName)
 {
 	string filenameAndGeometryName = filename + "\\" + geometryName;
@@ -208,11 +269,7 @@ Mesh* loadMesh(string filename, string geometryName)
 
 				if (colOffset != -1) {
 					int index = (int)p.get(k + colOffset);
-					int r = (int)((colSrc->get(4 * index + 0)) * 255);
-					int g = (int)((colSrc->get(4 * index + 1)) * 255);
-					int b = (int)((colSrc->get(4 * index + 2)) * 255);
-					int a = (int)((colSrc->get(4 * index + 3)) * 255);
-					u_int argb = (a << 24) + (r << 16) + (g << 8) + (b);
+					u_int argb = getColor(colSrc, index);
 					vb.push_back(*((float*)&argb));
 				}
 
@@ -237,19 +294,9 @@ Mesh* loadMesh(string filename, string geometryName)
 		copy(vb.begin(), vb.end(), (float*)vbData);
 		ts.vb->Unlock();
 
-		// Load the material
+		// Load the material		
 
-		// Default
-		D3DCOLORVALUE white; white.a = white.r = white.g = white.b = 1;
-		D3DCOLORVALUE black; black.a = 1; black.r = black.g = black.b = 0;
-		ts.material.Ambient = ts.material.Diffuse = ts.material.Specular = white;
-		ts.material.Emissive = black;
-		ts.material.Power = 12.5;
-
-		if (FAILED(D3DXCreateTextureFromFileA(pD3DDevice, "..\\data\\meshes\\suzanne.png", &ts.texure))) {
-			MessageBox( NULL, L"Could not find texture map", L"COLLADA", MB_OK );
-			exit(1);
-		}
+		loadMaterial(doc, tristripsRef->getMaterial(), &ts.material, &ts.texure);
 
 		// Done with this <tristrips/>
 
