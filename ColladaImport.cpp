@@ -61,8 +61,8 @@ void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* 
 	domEffect* effect = daeSafeCast<domEffect>(mat->getInstance_effect()->getUrl().getElement());
 
 	// Get colors
-	D3DCOLORVALUE white; white.a = white.r = white.g = white.b = 1;
-	D3DCOLORVALUE black; black.a = 1; black.r = black.g = black.b = 0;
+	D3DCOLORVALUE white = {1, 1, 1, 1};
+	D3DCOLORVALUE black = {0, 0, 0, 1};
 
 	material->Ambient = getD3DColor(effect->getDescendant("ambient"), white);
 	material->Diffuse = getD3DColor(effect->getDescendant("diffuse"), white);
