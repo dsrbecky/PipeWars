@@ -2,6 +2,7 @@
 #define __DATABASE__
 
 #include "StdAfx.h"
+using namespace std;
 
 extern LPDIRECT3D9 pD3D;
 extern LPDIRECT3DDEVICE9 pD3DDevice;
@@ -25,6 +26,18 @@ class Mesh
 public:
 	std::vector<Tristrip> tristrips;
 
+	void Render();
+};
+
+class Grid
+{
+	int fvf;
+	int size;
+	vector<float> vb;
+	IDirect3DVertexBuffer9* buffer;
+	D3DMATERIAL9 material;
+public:
+	Grid();
 	void Render();
 };
 

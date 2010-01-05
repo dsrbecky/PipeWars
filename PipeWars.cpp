@@ -29,10 +29,12 @@ HRESULT InitD3D( HWND hWnd )
 }
 
 Mesh* suzzane;
+Grid* grid;
 
 void InitGeometry()
 {
 	suzzane = loadMesh("..\\data\\meshes\\suzanne.dae", "Suzanne-Geometry");
+	grid = new Grid();
 }
 
 void Cleanup()
@@ -97,6 +99,7 @@ void Render()
 		SetupLight();
 
 		suzzane->Render();
+		grid->Render();
 
         pD3DDevice->EndScene();
     }
