@@ -106,7 +106,7 @@ Mesh* loadMesh(string filename, string geometryName)
 		}
 	}
 	if (meshRef == NULL) {
-		MessageBoxA(NULL, ("Could not mesh " + filenameAndGeometryName).c_str(), "COLLADA", MB_OK);
+		MessageBoxA(NULL, ("Could not find mesh " + filenameAndGeometryName).c_str(), "COLLADA", MB_OK);
 		exit(1);
 	}
 
@@ -216,7 +216,8 @@ Mesh* loadMesh(string filename, string geometryName)
 
 		// Load the material		
 
-		loadMaterial(doc, tristripsRef->getMaterial(), &ts.material, &ts.texure);
+		ts.materialName = tristripsRef->getMaterial();
+		loadMaterial(doc, ts.materialName, &ts.material, &ts.texure);
 
 		// Done with this <tristrips/>
 

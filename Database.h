@@ -15,6 +15,7 @@ public:
 	int vbStride; // in bytes
 	IDirect3DVertexBuffer9* vb;
 	std::vector<int> vertexCounts; // framgmentation of tristrips into groups
+	string materialName;
 	D3DMATERIAL9 material;
 	IDirect3DTexture9* texure;
 
@@ -29,7 +30,29 @@ public:
 	void Render();
 };
 
-class Grid
+class Vec3
+{
+public:
+	float x, y, z;
+};
+
+class Entity
+{
+public:
+	Vec3 position;
+	float rotY;
+	float scale;
+	Entity()
+	{
+		position.x = position.y = position.z = 0;
+		rotY = 0;
+		scale = 1;
+	}
+	virtual ~Entity() {}
+	virtual void Render() = 0;
+};
+
+class Grid: public Entity
 {
 	int fvf;
 	int size;
@@ -40,5 +63,22 @@ public:
 	Grid();
 	void Render();
 };
+
+class MeshEntity: public Entity
+{
+public:
+	Mesh* mesh;
+	MeshEntity(Mesh* m): mesh(m) {}
+	void Render() { mesh->Render(); };
+};
+
+class Database
+{
+public:
+	vector<Entity*> entities;
+	void Render();
+};
+
+extern Database db;
 
 #endif __DATABASE__

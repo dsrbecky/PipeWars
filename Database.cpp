@@ -4,6 +4,7 @@ using namespace std;
 
 LPDIRECT3D9 pD3D = NULL;
 LPDIRECT3DDEVICE9 pD3DDevice = NULL;
+Database db;
 
 void Tristrip::Render()
 {
@@ -60,4 +61,30 @@ void Grid::Render()
 	pD3DDevice->SetTexture(0, NULL);
 	pD3DDevice->SetMaterial(&material);
 	pD3DDevice->DrawPrimitive(D3DPT_LINELIST, 0, vb.size() / 6);
+}
+
+void Database::Render()
+{
+	for(int i = 0; i < (int)db.entities.size(); i++) {
+		Entity* entity = entities[i];
+
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity(&matWorld);
+
+		D3DXMATRIXA16 matScale;
+		D3DXMatrixScaling(&matScale, entity->scale, entity->scale, entity->scale);
+		D3DXMatrixMultiply(&matWorld, &matWorld, &matScale);
+
+		D3DXMATRIXA16 matRot;
+		D3DXMatrixRotationY(&matRot, entity->rotY);
+		D3DXMatrixMultiply(&matWorld, &matWorld, &matRot);
+
+		D3DXMATRIXA16 matTrans;
+		D3DXMatrixTranslation(&matTrans, entity->position.x, entity->position.y, entity->position.z);
+		D3DXMatrixMultiply(&matWorld, &matWorld, &matTrans);
+
+		pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
+
+		entity->Render();
+	}
 }

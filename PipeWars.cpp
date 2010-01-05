@@ -28,13 +28,19 @@ HRESULT InitD3D( HWND hWnd )
     return S_OK;
 }
 
-Mesh* suzzane;
-Grid* grid;
+MeshEntity* suzzane;
+MeshEntity* merman;
 
 void InitGeometry()
 {
-	suzzane = loadMesh("..\\data\\meshes\\suzanne.dae", "Suzanne-Geometry");
-	grid = new Grid();
+	suzzane = new MeshEntity(loadMesh("..\\data\\meshes\\suzanne.dae", "Suzanne-Geometry"));
+	suzzane->position.x = 2;
+	suzzane->scale = 0.25;
+	merman = new MeshEntity(loadMesh("..\\data\\meshes\\Merman.dae", "DualRevolver-Geometry"));
+	Grid* grid = new Grid();
+	db.entities.push_back(suzzane);
+	db.entities.push_back(merman);
+	db.entities.push_back(grid);
 }
 
 void Cleanup()
@@ -54,7 +60,7 @@ void SetupMatrices()
     pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	// View matrix
-    D3DXVECTOR3 vEyePt(0.0f, 3.0f,-5.0f);
+    D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);
     D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
     D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
     D3DXMATRIXA16 matView;
@@ -63,7 +69,7 @@ void SetupMatrices()
 
     // Projection matrix
     D3DXMATRIXA16 matProj;
-    D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 600.0f / 400.0f, 1.0f, 100.0f);
+    D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 800.0f / 600.0f, 1.0f, 100.0f);
     pD3DDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 
@@ -92,14 +98,15 @@ void SetupLight()
 
 void Render()
 {
-    pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
+    pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(150, 150, 150), 1.0f, 0);
 
     if(SUCCEEDED(pD3DDevice->BeginScene())) {
         SetupMatrices();
 		SetupLight();
 
-		suzzane->Render();
-		grid->Render();
+		suzzane->rotY = timeGetTime() / 1000.0f;
+		merman->rotY = timeGetTime() / 1200.0f;
+		db.Render();
 
         pD3DDevice->EndScene();
     }
@@ -135,7 +142,7 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
 
     // Create the application's window
     HWND hWnd = CreateWindow( L"PipeWars", L"PipeWars",
-                              WS_OVERLAPPEDWINDOW, 100, 100, 600, 400,
+                              WS_OVERLAPPEDWINDOW, 100, 100, 800, 600,
                               NULL, NULL, wc.hInstance, NULL );
 
     // Initialize Direct3D
