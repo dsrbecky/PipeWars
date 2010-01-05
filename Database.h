@@ -15,16 +15,24 @@ typedef int datetime;
 // Defines one or more tristrips that share same material
 class Tristrip
 {
-public:
 	DWORD fvf;
 	int vbStride; // in bytes
-	IDirect3DVertexBuffer9* vb;
+	vector<float> vb; // Vertex buffer data
+	IDirect3DVertexBuffer9* buffer; // The buffer is created on demand
 	std::vector<int> vertexCounts; // framgmentation of tristrips into groups
 	string materialName;
 	D3DMATERIAL9 material;
 	IDirect3DTexture9* texure;
 
+	friend Mesh* loadMesh(string filename, string geometryName);
+public:
 	void Render();
+	void ReleaseDeviceResources() {
+		if (buffer != NULL) {
+			buffer->Release();
+			buffer = NULL;
+		}
+	}
 };
 
 class Mesh
@@ -33,6 +41,11 @@ public:
 	std::vector<Tristrip> tristrips;
 
 	void Render();
+	void ReleaseDeviceResources() {
+		for(int i = 0; i < (int)tristrips.size(); i++) {
+			tristrips[i].ReleaseDeviceResources();
+		}
+	}
 };
 
 // Visual unit-grid for debuging
@@ -44,8 +57,16 @@ class Grid
 	IDirect3DVertexBuffer9* buffer;
 	D3DMATERIAL9 material;
 public:
-	Grid();
+	Grid(): buffer(NULL), size(10) {
+		ZeroMemory(&material, sizeof(material));
+	}
 	void Render();
+	void ReleaseDeviceResources() {
+		if (buffer != NULL) {
+			buffer->Release();
+			buffer = NULL;
+		}
+	}
 };
 
 class Vec3
@@ -202,6 +223,15 @@ public:
 	}
 
 	void loadTestMap();
+
+	void clear() {
+		for(int i = 0; i < (int)entities.size(); i++) {
+			delete entities[i];
+		}
+		entities.clear();
+	}
+
+	~Database() { clear(); }
 };
 
 extern Database db;

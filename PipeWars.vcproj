@@ -385,6 +385,57 @@
 			>
 		</File>
 		<File
+			RelativePath=".\DXUT\DXUT.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					PreprocessorDefinitions="DXUT_AUTOLIB"
+					UsePrecompiledHeader="0"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\DXUT\DXUT.h"
+			>
+		</File>
+		<File
+			RelativePath=".\DXUT\DXUTenum.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					PreprocessorDefinitions="DXUT_AUTOLIB"
+					UsePrecompiledHeader="0"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\DXUT\DXUTenum.h"
+			>
+		</File>
+		<File
+			RelativePath=".\DXUT\DXUTmisc.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					PreprocessorDefinitions="DXUT_AUTOLIB"
+					UsePrecompiledHeader="0"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\DXUT\DXUTmisc.h"
+			>
+		</File>
+		<File
 			RelativePath=".\PipeWars.cpp"
 			>
 		</File>

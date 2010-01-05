@@ -125,6 +125,7 @@ Mesh* loadMesh(string filename, string geometryName)
 
 		Tristrip ts;
 		ts.fvf = 0;
+		ts.buffer = NULL;
 
 		// Resolve all data sources
 
@@ -169,7 +170,7 @@ Mesh* loadMesh(string filename, string geometryName)
 		pStride = max(pStride, colOffset + 1);
 		pStride = max(pStride, texOffset + 1);
 
-		vector<float> vb; // Vertex buffer data
+		vector<float>& vb = ts.vb; // Vertex buffer data
 
 		for(u_int j = 0; j < tristripsRef->getP_array().getCount(); j++) {
 			domListOfUInts p = tristripsRef->getP_array().get(j)->getValue();
@@ -209,14 +210,6 @@ Mesh* loadMesh(string filename, string geometryName)
 				}
 			}
 		}
-
-		// Copy the buffer to graphic card memory
-
-		pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, ts.fvf, D3DPOOL_DEFAULT, &ts.vb, NULL);
-		void* vbData;
-		ts.vb->Lock(0, vb.size() * sizeof(float), &vbData, 0);
-		copy(vb.begin(), vb.end(), (float*)vbData);
-		ts.vb->Unlock();
 
 		// Load the material		
 

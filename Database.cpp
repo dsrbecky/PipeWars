@@ -2,13 +2,21 @@
 #include "Database.h"
 using namespace std;
 
-LPDIRECT3D9 pD3D = NULL;
 LPDIRECT3DDEVICE9 pD3DDevice = NULL;
 Database db;
 
 void Tristrip::Render()
 {
-	pD3DDevice->SetStreamSource(0, vb, 0, vbStride);
+	// Create buffer on demand
+	if (buffer == NULL) {
+		pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &buffer, NULL);
+		void* vbData;
+		buffer->Lock(0, vb.size() * sizeof(float), &vbData, 0);
+		copy(vb.begin(), vb.end(), (float*)vbData);
+		buffer->Unlock();
+	}
+
+	pD3DDevice->SetStreamSource(0, buffer, 0, vbStride);
 	pD3DDevice->SetFVF(fvf);
 	pD3DDevice->SetTexture(0, texure);
 	pD3DDevice->SetMaterial(&material);
@@ -27,35 +35,38 @@ void Mesh::Render()
 	}
 }
 
-Grid::Grid()
-{
-	fvf = D3DFVF_XYZ;
-	size = 10;
-
-	for(int i = -size; i <= size; i++) {
-		// Along X
-		vb.push_back((float)-size); vb.push_back(0); vb.push_back((float)i);
-		vb.push_back((float)+size); vb.push_back(0); vb.push_back((float)i);
-		/// Along Z
-		vb.push_back((float)i); vb.push_back(0); vb.push_back((float)-size);
-		vb.push_back((float)i); vb.push_back(0); vb.push_back((float)+size);
-	}
-
-	// Copy the buffer to graphic card memory
-
-	pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &buffer, NULL);
-	void* bufferData;
-	buffer->Lock(0, vb.size() * sizeof(float), &bufferData, 0);
-	copy(vb.begin(), vb.end(), (float*)bufferData);
-	buffer->Unlock();
-
-	ZeroMemory(&material, sizeof(material));
-	material.Emissive.r = 0.5;
-	material.Emissive.a = 1;
-}
-
 void Grid::Render()
 {
+	// Create buffer on demand
+	if (buffer == NULL) {
+		fvf = D3DFVF_XYZ;
+
+		vb.clear();
+		for(int i = -size; i <= size; i++) {
+			// Along X
+			vb.push_back((float)-size); vb.push_back(0); vb.push_back((float)i);
+			vb.push_back((float)+size); vb.push_back(0); vb.push_back((float)i);
+			/// Along Z
+			vb.push_back((float)i); vb.push_back(0); vb.push_back((float)-size);
+			vb.push_back((float)i); vb.push_back(0); vb.push_back((float)+size);
+		}
+
+		// Copy the buffer to graphic card memory
+
+		pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &buffer, NULL);
+		void* bufferData;
+		buffer->Lock(0, vb.size() * sizeof(float), &bufferData, 0);
+		copy(vb.begin(), vb.end(), (float*)bufferData);
+		buffer->Unlock();
+
+		material.Emissive.r = 0.5;
+		material.Emissive.a = 1;
+	}
+
+	D3DXMATRIXA16 matWorld;
+	D3DXMatrixIdentity(&matWorld);
+	pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
+
 	pD3DDevice->SetStreamSource(0, buffer, 0, 3 * sizeof(float));
 	pD3DDevice->SetFVF(fvf);
 	pD3DDevice->SetTexture(0, NULL);
