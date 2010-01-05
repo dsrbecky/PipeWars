@@ -86,29 +86,33 @@ void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* 
 	}
 }
 
+string dataPath = "..\\data\\meshes";
+
 Mesh* loadMesh(string filename, string geometryName)
 {
-	string filenameAndGeometryName = filename + "\\" + geometryName;
+	string filenameAndGeometryName = dataPath + "\\" + filename + "\\" + geometryName;
 	// Cached
 	if (loadedMeshes.count(filenameAndGeometryName) > 0) {
 		return loadedMeshes[filenameAndGeometryName];
 	}
 
-	domCOLLADA* doc = loadCollada(filename);
+	domCOLLADA* doc = loadCollada(dataPath + "\\" + filename);
 
-	// Get the mesh in COLLADA file
-	domGeometry_Array geoms = doc->getLibrary_geometries_array().get(0)->getGeometry_array();
-	domMeshRef meshRef;
-	for(u_int i = 0; i < geoms.getCount(); i++) {
-		if (geoms.get(i)->getName() == geometryName) {
-			meshRef = geoms.get(i)->getMesh();
-			break;
-		}
+	// Look for the geometry
+	domGeometry* geom = NULL;
+	domElement* elem = dae.getDatabase()->idLookup(geometryName, doc->getDocument());
+	if (elem != NULL && elem->typeID() == domNode::ID()) {
+		// Forward from node name
+		domNode* node = daeSafeCast<domNode>(elem);
+		geom = daeSafeCast<domGeometry>(node->getInstance_geometry_array().get(0)->getUrl().getElement());
+	} else {
+		geom = daeSafeCast<domGeometry>(elem);
 	}
-	if (meshRef == NULL) {
+	if (geom == NULL) {
 		MessageBoxA(NULL, ("Could not find mesh " + filenameAndGeometryName).c_str(), "COLLADA", MB_OK);
 		exit(1);
 	}
+	domMeshRef meshRef = geom->getMesh();
 
 	Mesh* mesh = new Mesh();
 	loadedMeshes[filenameAndGeometryName] = mesh;  // Cache

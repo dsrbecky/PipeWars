@@ -30,17 +30,18 @@ HRESULT InitD3D( HWND hWnd )
 
 MeshEntity* suzzane;
 MeshEntity* merman;
+Grid* grid;
 
 void InitGeometry()
 {
-	suzzane = new MeshEntity(loadMesh("..\\data\\meshes\\suzanne.dae", "Suzanne-Geometry"));
+	suzzane = new MeshEntity("suzanne.dae", "Suzanne");
 	suzzane->position.x = 2;
 	suzzane->scale = 0.25;
-	merman = new MeshEntity(loadMesh("..\\data\\meshes\\Merman.dae", "DualRevolver-Geometry"));
-	Grid* grid = new Grid();
+	merman = new MeshEntity("Merman.dae", "DualRevolver");
+	grid = new Grid();
 	db.entities.push_back(suzzane);
 	db.entities.push_back(merman);
-	db.entities.push_back(grid);
+	db.loadTestMap();
 }
 
 void Cleanup()
@@ -60,8 +61,8 @@ void SetupMatrices()
     pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	// View matrix
-    D3DXVECTOR3 vEyePt(0.0f, 3.0f, -5.0f);
-    D3DXVECTOR3 vLookatPt(0.0f, 0.0f, 0.0f);
+    D3DXVECTOR3 vEyePt(50.0f, 50.0f, -50.0f);
+    D3DXVECTOR3 vLookatPt(20.0f, 0.0f, 0.0f);
     D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
     D3DXMATRIXA16 matView;
     D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
@@ -69,7 +70,7 @@ void SetupMatrices()
 
     // Projection matrix
     D3DXMATRIXA16 matProj;
-    D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 800.0f / 600.0f, 1.0f, 100.0f);
+    D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 800.0f / 600.0f, 5.0f, 400.0f);
     pD3DDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 

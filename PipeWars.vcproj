@@ -49,7 +49,7 @@
 				AdditionalIncludeDirectories=".\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
-				BasicRuntimeChecks="0"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
