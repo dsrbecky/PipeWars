@@ -65,12 +65,36 @@ void SetupMatrices()
     pD3DDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 
+void SetupLight()
+{
+	D3DLIGHT9 light;
+	ZeroMemory(&light, sizeof(light));
+	
+	D3DCOLORVALUE white = {1, 1, 1, 1};
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse  = white;
+	light.Ambient  = white;
+	light.Specular = white;
+
+	light.Direction.x = 250.0f;
+	light.Direction.y = 5000.0f;
+	light.Direction.z = -250.0f;
+	    
+	// Don't attenuate.
+	light.Attenuation0 = 1.0f; 
+	light.Range        = 10000.0f;
+	
+	pD3DDevice->SetLight(0, &light);
+	pD3DDevice->LightEnable(0, TRUE);
+}
+
 void Render()
 {
     pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 255), 1.0f, 0);
 
     if(SUCCEEDED(pD3DDevice->BeginScene())) {
         SetupMatrices();
+		SetupLight();
 
 		suzzane->Render();
 
