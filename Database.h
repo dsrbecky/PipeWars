@@ -69,6 +69,20 @@ public:
 	}
 };
 
+class TextWriter
+{
+	ID3DXFont* font;
+public:
+	TextWriter(): font(NULL) {}
+	void Render();
+	void ReleaseDeviceResources() {
+		if (font != NULL) {
+			font->Release();
+			font = NULL;
+		}
+	}
+};
+
 class Vec3
 {
 public:

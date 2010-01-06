@@ -74,6 +74,17 @@ void Grid::Render()
 	pD3DDevice->DrawPrimitive(D3DPT_LINELIST, 0, vb.size() / 6);
 }
 
+void TextWriter::Render()
+{
+	if (font == NULL) {
+		D3DXCreateFont( pD3DDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+						OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+						L"Arial", &font );
+	}
+	RECT rect = {8, 8, 20, 20};
+	font->DrawTextW(NULL, DXUTGetFrameStats(true), -1, &rect, DT_NOCLIP, D3DCOLOR_XRGB(0xff, 0xff, 0xff));
+}
+
 void Database::Render()
 {
 	for(int i = 0; i < (int)db.entities.size(); i++) {

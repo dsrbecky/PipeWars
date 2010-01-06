@@ -6,8 +6,8 @@
 #include "Database.h"
 using namespace std;
 
-ID3DXFont* g_pFont = NULL;         // Font for drawing text
 Grid grid;
+TextWriter textWriter;
 extern Database db;
 
 //--------------------------------------------------------------------------------------
@@ -19,13 +19,7 @@ extern Database db;
 //--------------------------------------------------------------------------------------
 HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	HRESULT hr;
-
-    // Initialize the font
-    V_RETURN( D3DXCreateFont( pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-                              OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-                              L"Arial", &g_pFont ) );
-
+	pD3DDevice = pd3dDevice;
     return S_OK;
 }
 
@@ -39,14 +33,7 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice,
                                 const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	HRESULT hr;
-
-	pD3DDevice = pd3dDevice;
-
-    if( g_pFont )
-        V_RETURN( g_pFont->OnResetDevice() );
-
-    return S_OK;
+	return S_OK;
 }
 
 //--------------------------------------------------------------------------------------
@@ -127,6 +114,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		grid.Render();
 		db.Render();
+		textWriter.Render();
         
         V( pd3dDevice->EndScene() );
     }
@@ -141,9 +129,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 //--------------------------------------------------------------------------------------
 void CALLBACK OnLostDevice( void* pUserContext )
 {
-    if( g_pFont )
-        g_pFont->OnLostDevice();
-
+	textWriter.ReleaseDeviceResources();
 	grid.ReleaseDeviceResources();
 	
 	map<string, Mesh*>::iterator it = loadedMeshes.begin();
@@ -161,7 +147,7 @@ void CALLBACK OnLostDevice( void* pUserContext )
 //--------------------------------------------------------------------------------------
 void CALLBACK OnDestroyDevice( void* pUserContext )
 {
-    SAFE_RELEASE( g_pFont );
+
 }
 
 //--------------------------------------------------------------------------------------
@@ -206,6 +192,10 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
     }
 }
 
+void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, bool bSideButton1Down, bool bSideButton2Down, int nMouseWheelDelta, int xPos, int yPos, void* pUserContext )
+{
+}
+
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
 // loop. Idle time is used to render the scene.
@@ -233,6 +223,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
     DXUTSetCallbackD3D9DeviceDestroyed( OnDestroyDevice );
     DXUTSetCallbackMsgProc( MsgProc );
     DXUTSetCallbackKeyboard( KeyboardProc );
+	DXUTSetCallbackMouse( MouseProc, true );
 
     // Show the cursor and clip it when in full screen
     DXUTSetCursorSettings( true, true );
