@@ -15,4 +15,30 @@ public:
 	virtual void ReleaseDeviceResources() {}
 };
 
+// Implementation of layer which keeps track of key states
+class InputLayer: public Layer
+{
+public:
+	static const int maxKey = 0x100;
+
+	bool keyDown[maxKey];
+	bool keyToggled[maxKey];
+
+	InputLayer()
+	{
+		ZeroMemory(&keyDown, sizeof(keyDown));
+		ZeroMemory(&keyToggled, sizeof(keyToggled));
+	}
+
+	virtual bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
+	{
+		if (nChar < maxKey) {
+			keyDown[nChar] = bKeyDown;
+			if (bKeyDown)
+				keyToggled[nChar] = !keyToggled[nChar];
+		}
+		return false;
+	}
+};
+
 #endif

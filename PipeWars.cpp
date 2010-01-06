@@ -10,6 +10,7 @@ Database db;
 
 LayerChain layers;
 
+class RenderState; extern RenderState renderState;
 class Camera; extern Camera camera;
 class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
@@ -17,6 +18,7 @@ class MeshRenderer; extern MeshRenderer meshRenderer;
 
 void InitLayers()
 {
+	layers.add(&renderState);
 	layers.add(&camera);
 	layers.add(&debugStats);
 	layers.add(&debugGrid);
@@ -62,29 +64,6 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	layers.FrameMove(fTime, fElapsedTime);
 }
 
-void SetupLight(IDirect3DDevice9* dev)
-{
-	D3DLIGHT9 light;
-	ZeroMemory(&light, sizeof(light));
-	
-	D3DCOLORVALUE white = {1, 1, 1, 1};
-	light.Type = D3DLIGHT_DIRECTIONAL;
-	light.Diffuse  = white;
-	light.Ambient  = white;
-	light.Specular = white;
-
-	light.Direction.x = 250.0f;
-	light.Direction.y = 5000.0f;
-	light.Direction.z = -250.0f;
-	    
-	// Don't attenuate.
-	light.Attenuation0 = 1.0f; 
-	light.Range        = 10000.0f;
-	
-	dev->SetLight(0, &light);
-	dev->LightEnable(0, TRUE);
-}
-
 //--------------------------------------------------------------------------------------
 // This callback function will be called at the end of every frame to perform all the 
 // rendering calls for the scene, and it will also be called if the window needs to be 
@@ -95,24 +74,17 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* dev, double fTime, float fElapsed
 {
 	HRESULT hr;
 
-	layers.PreRender(dev);
-
     // Clear the render target and the zbuffer 
     V( dev->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 45, 50, 170 ), 1.0f, 0 ) );
 
-    // Render the scene
-    if( SUCCEEDED( dev->BeginScene() ) )
-    {
-		dev->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-        dev->SetRenderState(D3DRS_LIGHTING, TRUE);
-	    dev->SetRenderState(D3DRS_ZENABLE, TRUE);
-	    dev->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
+	layers.PreRender(dev);
 
-		SetupLight(dev);
+    // Render the scene
+    if(SUCCEEDED(dev->BeginScene())) {
 
 		layers.Render(dev);
-        
-        V( dev->EndScene() );
+
+		V( dev->EndScene() );
     }
 }
 
