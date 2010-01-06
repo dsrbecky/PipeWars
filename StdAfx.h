@@ -12,3 +12,5 @@
 #pragma warning( default : 4995 )
 
 #include "DXUT/DXUT.h"
+
+using namespace std;

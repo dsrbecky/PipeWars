@@ -4,11 +4,22 @@
 
 #include "StdAfx.h"
 #include "Database.h"
+#include "Layers/LayerChain.h"
 using namespace std;
 
 Grid grid;
 TextWriter textWriter;
 extern Database db;
+
+class Camera; 
+extern Camera camera;
+
+LayerChain layers;
+
+void Init()
+{
+	layers.add(&camera);
+}
 
 //--------------------------------------------------------------------------------------
 // This callback function will be called immediately after the Direct3D device has been 
@@ -47,22 +58,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	if (fTime > 1 && db.entities.size() == 0) {
 		db.loadTestMap();
 	}
-}
-
-void SetupMatrices()
-{
-	// View matrix
-    D3DXVECTOR3 vEyePt(50.0f, 50.0f, -50.0f);
-    D3DXVECTOR3 vLookatPt(20.0f, 0.0f, 0.0f);
-    D3DXVECTOR3 vUpVec(0.0f, 1.0f, 0.0f);
-    D3DXMATRIXA16 matView;
-    D3DXMatrixLookAtLH(&matView, &vEyePt, &vLookatPt, &vUpVec);
-    pD3DDevice->SetTransform(D3DTS_VIEW, &matView);
-
-    // Projection matrix
-    D3DXMATRIXA16 matProj;
-    D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, 640.0f / 480.0f, 5.0f, 400.0f);
-    pD3DDevice->SetTransform(D3DTS_PROJECTION, &matProj);
+	layers.FrameMove(fTime, fElapsedTime);
 }
 
 void SetupLight()
@@ -98,6 +94,8 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 {
 	HRESULT hr;
 
+	layers.PreRender();
+
     // Clear the render target and the zbuffer 
     V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 45, 50, 170 ), 1.0f, 0 ) );
 
@@ -109,12 +107,13 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	    pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 	    pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 
-		SetupMatrices();
 		SetupLight();
 
 		grid.Render();
 		db.Render();
 		textWriter.Render();
+
+		layers.Render();
         
         V( pd3dDevice->EndScene() );
     }
@@ -184,16 +183,12 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 //--------------------------------------------------------------------------------------
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
-    if( bKeyDown ) {
-        switch( nChar ) {
-            case VK_F1:
-                break;
-        }
-    }
+	layers.KeyboardProc(nChar, bKeyDown, bAltDown);
 }
 
 void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, bool bSideButton1Down, bool bSideButton2Down, int nMouseWheelDelta, int xPos, int yPos, void* pUserContext )
 {
+	layers.MouseProc(bLeftButtonDown, bRightButtonDown, bMiddleButtonDown, nMouseWheelDelta, xPos, yPos);
 }
 
 //--------------------------------------------------------------------------------------
@@ -206,6 +201,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 #if defined(DEBUG) | defined(_DEBUG)
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
+
+	Init();
 
     // Set the callback functions. These functions allow DXUT to notify
     // the application about device changes, user input, and windows messages.  The 

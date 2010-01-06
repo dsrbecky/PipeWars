@@ -365,6 +365,10 @@
 	</References>
 	<Files>
 		<File
+			RelativePath=".\Layers\Camera.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\ColladaImport.cpp"
 			>
 		</File>
@@ -433,6 +437,14 @@
 		</File>
 		<File
 			RelativePath=".\DXUT\DXUTmisc.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Layers\Layer.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Layers\LayerChain.h"
 			>
 		</File>
 		<File
