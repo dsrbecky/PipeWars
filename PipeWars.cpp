@@ -7,18 +7,19 @@
 #include "Layers/LayerChain.h"
 using namespace std;
 
-Grid grid;
 TextWriter textWriter;
 extern Database db;
 
-class Camera; 
-extern Camera camera;
 
 LayerChain layers;
+
+class Camera; extern Camera camera;
+class DebugGrid; extern DebugGrid debugGrid;
 
 void Init()
 {
 	layers.add(&camera);
+	layers.add(&debugGrid);
 }
 
 //--------------------------------------------------------------------------------------
@@ -109,7 +110,6 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		SetupLight();
 
-		grid.Render();
 		db.Render();
 		textWriter.Render();
 
@@ -129,7 +129,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 void CALLBACK OnLostDevice( void* pUserContext )
 {
 	textWriter.ReleaseDeviceResources();
-	grid.ReleaseDeviceResources();
+	layers.ReleaseDeviceResources();
 	
 	map<string, Mesh*>::iterator it = loadedMeshes.begin();
 	while(it != loadedMeshes.end()) {

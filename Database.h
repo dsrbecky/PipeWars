@@ -48,27 +48,6 @@ public:
 	}
 };
 
-// Visual unit-grid for debuging
-class Grid
-{
-	int fvf;
-	int size;
-	vector<float> vb;
-	IDirect3DVertexBuffer9* buffer;
-	D3DMATERIAL9 material;
-public:
-	Grid(): buffer(NULL), size(10) {
-		ZeroMemory(&material, sizeof(material));
-	}
-	void Render();
-	void ReleaseDeviceResources() {
-		if (buffer != NULL) {
-			buffer->Release();
-			buffer = NULL;
-		}
-	}
-};
-
 class TextWriter
 {
 	ID3DXFont* font;

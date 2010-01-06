@@ -16,7 +16,7 @@ public:
 
 	Camera(): yaw(D3DX_PI / 4), pitch(-D3DX_PI / 4), distance(60), lastMouseX(0), lastMouseY(0) {}
 
-	virtual bool Camera::MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
+	bool Camera::MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
 		if (bMiddleButtonDown) {
 			int deltaX = xPos - lastMouseX;
@@ -36,7 +36,7 @@ public:
 		return FALSE;
 	}
 
-	virtual void Camera::PreRender()
+	void Camera::PreRender()
 	{
 		// View matrix
 		D3DXMATRIXA16 matPitch;

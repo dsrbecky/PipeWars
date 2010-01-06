@@ -16,7 +16,7 @@ public:
 	// Return TRUE to indicate that the event was handled and
 	// should be no longer processed
 
-	virtual bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
+	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
 		for(int i = 0; i < (int)layers.size(); i++) {
 			bool handled = layers[i]->KeyboardProc(nChar, bKeyDown, bAltDown);
@@ -26,7 +26,7 @@ public:
 		return true;
 	}
 
-	virtual bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
+	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
 		for(int i = 0; i < (int)layers.size(); i++) {
 			bool handled = layers[i]->MouseProc(bLeftButtonDown, bRightButtonDown, bMiddleButtonDown, nMouseWheelDelta, xPos, yPos);
@@ -36,24 +36,31 @@ public:
 		return true;
 	}
 
-	virtual void FrameMove(double fTime, float fElapsedTime)
+	void FrameMove(double fTime, float fElapsedTime)
 	{
 		for(int i = 0; i < (int)layers.size(); i++) {
 			layers[i]->FrameMove(fTime, fElapsedTime);
 		}
 	}
 
-	virtual void PreRender()
+	void PreRender()
 	{
 		for(int i = 0; i < (int)layers.size(); i++) {
 			layers[i]->PreRender();
 		}
 	}
 
-	virtual void Render()
+	void Render()
 	{
 		for(int i = layers.size() - 1; i >= 0; i--) {
 			layers[i]->Render();
+		}
+	}
+
+	void ReleaseDeviceResources()
+	{
+		for(int i = 0; i < (int)layers.size(); i++) {
+			layers[i]->ReleaseDeviceResources();
 		}
 	}
 };
