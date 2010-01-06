@@ -57,9 +57,38 @@ void CALLBACK OnFrameRender(IDirect3DDevice9* dev, double fTime, float fElapsedT
     }
 }
 
-void CALLBACK OnLostDevice( void* pUserContext )
+void CALLBACK OnLostDevice(void* pUserContext)
 {
 	layers.ReleaseDeviceResources();
+}
+
+void RenderSplashScreen(IDirect3DDevice9* dev)
+{
+	string textureFilename = "..\\data\\images\\Splash.jpg";
+	IDirect3DTexture9* texture;
+	if (FAILED(D3DXCreateTextureFromFileA(dev, textureFilename.c_str(), &texture))) {
+		MessageBoxA(NULL, ("Could not find texture " + textureFilename).c_str() , "COLLADA", MB_OK);
+		exit(1);
+	}
+
+    dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 0, 0, 0 ), 1.0f, 0);
+
+    if(SUCCEEDED(dev->BeginScene())) {
+		ID3DXSprite* sprite;
+		D3DXCreateSprite(dev, &sprite);
+		sprite->Begin(0);
+		D3DXMATRIX scale;
+		D3DXMatrixScaling(&scale, 800.0f / 1024, 300.0f / 512, 1.0f);
+		sprite->SetTransform(&scale);
+		sprite->Draw(texture, NULL, NULL, NULL, 0xFFFFFFFF);
+		sprite->End();
+		sprite->Release();
+		dev->EndScene();
+    }
+
+	dev->Present(NULL, NULL, NULL, NULL);
+
+	texture->Release();
 }
 
 INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
@@ -82,7 +111,11 @@ INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
     DXUTInit( true, true ); // Parse the command line and show msgboxes
     DXUTSetHotkeyHandling( true, true, false );  // handle the defaul hotkeys
     DXUTCreateWindow( L"PipeWars" );
-    DXUTCreateDevice( true, 640, 480 );
+    DXUTCreateDevice( true, 800, 600 );
+
+	RenderSplashScreen(DXUTGetD3D9Device());
+
+	db.loadTestMap();
 
     DXUTMainLoop();
 
