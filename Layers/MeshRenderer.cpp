@@ -7,6 +7,12 @@ extern map<string, Mesh*> loadedMeshes; // ColladaImport.cpp
 class MeshRenderer: public Layer
 {
 public:
+	void FrameMove(double fTime, float fElapsedTime)
+	{
+		if (fTime > 1 && db.entities.size() == 0) {
+			db.loadTestMap();
+		}
+	}
 
 	void Render(IDirect3DDevice9* dev)
 	{

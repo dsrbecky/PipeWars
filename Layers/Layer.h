@@ -23,19 +23,26 @@ public:
 
 	bool keyDown[maxKey];
 	bool keyToggled[maxKey];
+	bool keyToggled_Alt[maxKey];
 
 	InputLayer()
 	{
 		ZeroMemory(&keyDown, sizeof(keyDown));
 		ZeroMemory(&keyToggled, sizeof(keyToggled));
+		ZeroMemory(&keyToggled_Alt, sizeof(keyToggled_Alt));
 	}
 
 	virtual bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
 		if (nChar < maxKey) {
 			keyDown[nChar] = bKeyDown;
-			if (bKeyDown)
-				keyToggled[nChar] = !keyToggled[nChar];
+			if (bKeyDown) {
+				if (bAltDown) {
+					keyToggled_Alt[nChar] = !keyToggled_Alt[nChar];
+				} else {
+					keyToggled[nChar] = !keyToggled[nChar];
+				}
+			}
 		}
 		return false;
 	}
