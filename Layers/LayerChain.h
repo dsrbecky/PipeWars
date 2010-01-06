@@ -13,8 +13,7 @@ public:
 		layers.push_back((Layer*)layer);
 	}
 
-	// Return TRUE to indicate that the event was handled and
-	// should be no longer processed
+	// Return TRUE to indicate that the event was handled and should no longer be processed
 
 	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
@@ -43,17 +42,17 @@ public:
 		}
 	}
 
-	void PreRender()
+	void PreRender(IDirect3DDevice9* dev)
 	{
 		for(int i = 0; i < (int)layers.size(); i++) {
-			layers[i]->PreRender();
+			layers[i]->PreRender(dev);
 		}
 	}
 
-	void Render()
+	void Render(IDirect3DDevice9* dev)
 	{
 		for(int i = layers.size() - 1; i >= 0; i--) {
-			layers[i]->Render();
+			layers[i]->Render(dev);
 		}
 	}
 

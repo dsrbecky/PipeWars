@@ -1,3 +1,6 @@
+#ifndef __STDAFX__
+#define __STDAFX__
+
 #include <Windows.h>
 #include <mmsystem.h>
 #include <d3dx9.h>
@@ -14,3 +17,5 @@
 #include "DXUT/DXUT.h"
 
 using namespace std;
+
+#endif

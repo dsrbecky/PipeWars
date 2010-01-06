@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
 
 // Sets the camera angle
 class Camera: public Layer
@@ -36,7 +35,7 @@ public:
 		return FALSE;
 	}
 
-	void Camera::PreRender()
+	void Camera::PreRender(IDirect3DDevice9* dev)
 	{
 		// View matrix
 		D3DXMATRIXA16 matPitch;
@@ -49,12 +48,12 @@ public:
 		D3DXMatrixTranslation(&matMove, 0, 0, distance);
 		D3DXMATRIXA16 matView;
 		D3DXMatrixMultiply(&matView, &matYawPitch, &matMove);
-		pD3DDevice->SetTransform(D3DTS_VIEW, &matView);
+		dev->SetTransform(D3DTS_VIEW, &matView);
 
 		// Prespective
 		D3DXMATRIXA16 matProj;
 		D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, (float)DXUTGetWindowWidth() / DXUTGetWindowHeight(), 1.0f, 4000.0f);
-		pD3DDevice->SetTransform(D3DTS_PROJECTION, &matProj);
+		dev->SetTransform(D3DTS_PROJECTION, &matProj);
 	}
 };
 

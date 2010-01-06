@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
 
 class DebugGrid: public Layer
 {
@@ -16,7 +15,7 @@ public:
 		ZeroMemory(&material, sizeof(material));
 	}
 
-	void Render()
+	void Render(IDirect3DDevice9* dev)
 	{
 		static int fvf = D3DFVF_XYZ;
 
@@ -34,7 +33,7 @@ public:
 
 			// Copy the buffer to graphic card memory
 
-			pD3DDevice->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &buffer, NULL);
+			dev->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &buffer, NULL);
 			void* bufferData;
 			buffer->Lock(0, vb.size() * sizeof(float), &bufferData, 0);
 			copy(vb.begin(), vb.end(), (float*)bufferData);
@@ -46,13 +45,13 @@ public:
 
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity(&matWorld);
-		pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
+		dev->SetTransform(D3DTS_WORLD, &matWorld);
 
-		pD3DDevice->SetStreamSource(0, buffer, 0, 3 * sizeof(float));
-		pD3DDevice->SetFVF(fvf);
-		pD3DDevice->SetTexture(0, NULL);
-		pD3DDevice->SetMaterial(&material);
-		pD3DDevice->DrawPrimitive(D3DPT_LINELIST, 0, vb.size() / 6);
+		dev->SetStreamSource(0, buffer, 0, 3 * sizeof(float));
+		dev->SetFVF(fvf);
+		dev->SetTexture(0, NULL);
+		dev->SetMaterial(&material);
+		dev->DrawPrimitive(D3DPT_LINELIST, 0, vb.size() / 6);
 	}
 
 	void ReleaseDeviceResources()

@@ -2,15 +2,9 @@
 #define __DATABASE__
 
 #include "StdAfx.h"
-#include "ColladaImport.h"
-using namespace std;
 
-extern LPDIRECT3D9 pD3D;
-extern LPDIRECT3DDEVICE9 pD3DDevice;
-
+class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
 const int WeaponCount = 5;
-
-typedef int datetime;
 
 // Defines one or more tristrips that share same material
 class Tristrip
@@ -22,15 +16,20 @@ class Tristrip
 	std::vector<int> vertexCounts; // framgmentation of tristrips into groups
 	string materialName;
 	D3DMATERIAL9 material;
-	IDirect3DTexture9* texure;
+	string textureFilename;
+	IDirect3DTexture9* texture;
 
 	friend Mesh* loadMesh(string filename, string geometryName);
 public:
-	void Render();
+	void Render(IDirect3DDevice9* dev);
 	void ReleaseDeviceResources() {
 		if (buffer != NULL) {
 			buffer->Release();
 			buffer = NULL;
+		}
+		if (texture != NULL) {
+			texture->Release();
+			texture = NULL;
 		}
 	}
 };
@@ -40,24 +39,10 @@ class Mesh
 public:
 	std::vector<Tristrip> tristrips;
 
-	void Render();
+	void Render(IDirect3DDevice9* dev);
 	void ReleaseDeviceResources() {
 		for(int i = 0; i < (int)tristrips.size(); i++) {
 			tristrips[i].ReleaseDeviceResources();
-		}
-	}
-};
-
-class TextWriter
-{
-	ID3DXFont* font;
-public:
-	TextWriter(): font(NULL) {}
-	void Render();
-	void ReleaseDeviceResources() {
-		if (font != NULL) {
-			font->Release();
-			font = NULL;
 		}
 	}
 };
@@ -119,7 +104,9 @@ public:
 		position(Vec3::Zero()), velocity(Vec3::Zero()),
 		rotY(0), rotY_velocity(0), scale(1) {}
 
-	void Render() { mesh->Render(); };
+	void Render(IDirect3DDevice9* dev) {
+		mesh->Render(dev);
+	};
 };
 
 class Player: public MeshEntity
@@ -172,9 +159,9 @@ class PowerUp: public MeshEntity
 public:
 	ItemType itemType;
 	bool present;
-	datetime rechargeAt;
+	float rechargeAfter;
 
-	PowerUp(ItemType _itemType): MeshEntity("Shiny.dae", "Green"), itemType(_itemType), present(true), rechargeAt(0) {}
+	PowerUp(ItemType _itemType): MeshEntity("Shiny.dae", "Green"), itemType(_itemType), present(true), rechargeAfter(0) {}
 };
 
 class RespawnPoint: public Entity
@@ -188,11 +175,11 @@ public:
 class ChatMessage: public Entity
 {
 public:
-	datetime time;
+	float time;
 	Player* sender;
 	string message;
 
-	ChatMessage(datetime _time, Player* _sender, string _message):
+	ChatMessage(float _time, Player* _sender, string _message):
 		time(_time), sender(_sender), message(_message) {}
 };
 

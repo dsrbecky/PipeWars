@@ -1,11 +1,10 @@
 #include "StdAfx.h"
 #include "Database.h"
-#include "ColladaImport.h"
-using namespace std;
 
 DAE dae;
-
 map<string, domCOLLADA*> loadedFiles;
+map<string, Mesh*> loadedMeshes;
+string dataPath = "..\\data\\meshes";
 
 domCOLLADA* loadCollada(string filename)
 {
@@ -22,8 +21,6 @@ domCOLLADA* loadCollada(string filename)
 		return doc;
 	}
 }
-
-map<string, Mesh*> loadedMeshes;
 
 u_int getColor(domListOfFloats* src, int offset = 0)
 {
@@ -55,7 +52,7 @@ D3DCOLORVALUE getD3DColor(daeElement* colorElement, D3DCOLORVALUE def)
 	}
 }
 
-void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* material, /* out */ IDirect3DTexture9** texture)
+void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* material, /* out */ string* textureFilename)
 {
 	domMaterial* mat = daeSafeCast<domMaterial>(dae.getDatabase()->idLookup(materialName, doc->getDocument()));
 	domEffect* effect = daeSafeCast<domEffect>(mat->getInstance_effect()->getUrl().getElement());
@@ -74,19 +71,13 @@ void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* 
 	domCommon_color_or_texture_type* diffuse = daeSafeCast<domCommon_color_or_texture_type>(effect->getDescendant("diffuse"));
 	if (diffuse != NULL && diffuse->getTexture() != NULL) {
 		string texName = diffuse->getTexture()->getTexture();
-		domImage* tex = daeSafeCast<domImage>(dae.getDatabase()->idLookup(texName, doc->getDocument()));
-		string texFilename = tex->getInit_from()->getCharData();
-		if (FAILED(D3DXCreateTextureFromFileA(pD3DDevice, ("..\\data\\meshes\\" + texFilename).c_str(), texture))) {
-			MessageBoxA(NULL, ("Could not find texture" + texFilename).c_str() , "COLLADA", MB_OK );
-			exit(1);
-		}
+		domImage* image = daeSafeCast<domImage>(dae.getDatabase()->idLookup(texName, doc->getDocument()));
+		*textureFilename = "..\\data\\meshes\\" + image->getInit_from()->getCharData();
 		material->Diffuse = white;
 	} else {
-		*texture = NULL;
+		*textureFilename = "";
 	}
 }
-
-string dataPath = "..\\data\\meshes";
 
 Mesh* loadMesh(string filename, string geometryName)
 {
@@ -126,6 +117,7 @@ Mesh* loadMesh(string filename, string geometryName)
 		Tristrip ts;
 		ts.fvf = 0;
 		ts.buffer = NULL;
+		ts.texture = NULL;
 
 		// Resolve all data sources
 
@@ -214,7 +206,7 @@ Mesh* loadMesh(string filename, string geometryName)
 		// Load the material		
 
 		ts.materialName = tristripsRef->getMaterial();
-		loadMaterial(doc, ts.materialName, &ts.material, &ts.texure);
+		loadMaterial(doc, ts.materialName, &ts.material, &ts.textureFilename);
 
 		// Done with this <tristrips/>
 

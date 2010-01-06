@@ -2,11 +2,13 @@
 #include "Layer.h"
 #include "../Database.h"
 
+extern map<string, Mesh*> loadedMeshes; // ColladaImport.cpp
+
 class MeshRenderer: public Layer
 {
 public:
 
-	void Render()
+	void Render(IDirect3DDevice9* dev)
 	{
 		for(int i = 0; i < (int)db.entities.size(); i++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
@@ -28,9 +30,18 @@ public:
 			D3DXMatrixTranslation(&matTrans, entity->position.x, entity->position.y, entity->position.z);
 			D3DXMatrixMultiply(&matWorld, &matWorld, &matTrans);
 
-			pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
+			dev->SetTransform(D3DTS_WORLD, &matWorld);
 
-			entity->Render();
+			entity->Render(dev);
+		}
+	}
+
+	void ReleaseDeviceResources()
+	{
+		map<string, Mesh*>::iterator it = loadedMeshes.begin();
+		while(it != loadedMeshes.end()) {
+			it->second->ReleaseDeviceResources();
+			it++;
 		}
 	}
 };

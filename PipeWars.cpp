@@ -5,21 +5,20 @@
 #include "StdAfx.h"
 #include "Database.h"
 #include "Layers/LayerChain.h"
-using namespace std;
 
-TextWriter textWriter;
-extern Database db;
-
+Database db;
 
 LayerChain layers;
 
 class Camera; extern Camera camera;
+class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
 class MeshRenderer; extern MeshRenderer meshRenderer;
 
 void InitLayers()
 {
 	layers.add(&camera);
+	layers.add(&debugStats);
 	layers.add(&debugGrid);
 	layers.add(&meshRenderer);
 }
@@ -33,7 +32,6 @@ void InitLayers()
 //--------------------------------------------------------------------------------------
 HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	pD3DDevice = pd3dDevice;
     return S_OK;
 }
 
@@ -64,7 +62,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	layers.FrameMove(fTime, fElapsedTime);
 }
 
-void SetupLight()
+void SetupLight(IDirect3DDevice9* dev)
 {
 	D3DLIGHT9 light;
 	ZeroMemory(&light, sizeof(light));
@@ -83,8 +81,8 @@ void SetupLight()
 	light.Attenuation0 = 1.0f; 
 	light.Range        = 10000.0f;
 	
-	pD3DDevice->SetLight(0, &light);
-	pD3DDevice->LightEnable(0, TRUE);
+	dev->SetLight(0, &light);
+	dev->LightEnable(0, TRUE);
 }
 
 //--------------------------------------------------------------------------------------
@@ -93,30 +91,28 @@ void SetupLight()
 // repainted. After this function has returned, DXUT will call 
 // IDirect3DDevice9::Present to display the contents of the next buffer in the swap chain
 //--------------------------------------------------------------------------------------
-void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float fElapsedTime, void* pUserContext )
+void CALLBACK OnFrameRender( IDirect3DDevice9* dev, double fTime, float fElapsedTime, void* pUserContext )
 {
 	HRESULT hr;
 
-	layers.PreRender();
+	layers.PreRender(dev);
 
     // Clear the render target and the zbuffer 
-    V( pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 45, 50, 170 ), 1.0f, 0 ) );
+    V( dev->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 45, 50, 170 ), 1.0f, 0 ) );
 
     // Render the scene
-    if( SUCCEEDED( pd3dDevice->BeginScene() ) )
+    if( SUCCEEDED( dev->BeginScene() ) )
     {
-		pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-        pd3dDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-	    pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-	    pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
+		dev->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+        dev->SetRenderState(D3DRS_LIGHTING, TRUE);
+	    dev->SetRenderState(D3DRS_ZENABLE, TRUE);
+	    dev->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
 
-		SetupLight();
+		SetupLight(dev);
 
-		textWriter.Render();
-
-		layers.Render();
+		layers.Render(dev);
         
-        V( pd3dDevice->EndScene() );
+        V( dev->EndScene() );
     }
 }
 
@@ -129,14 +125,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 //--------------------------------------------------------------------------------------
 void CALLBACK OnLostDevice( void* pUserContext )
 {
-	textWriter.ReleaseDeviceResources();
 	layers.ReleaseDeviceResources();
-	
-	map<string, Mesh*>::iterator it = loadedMeshes.begin();
-	while(it != loadedMeshes.end()) {
-		it->second->ReleaseDeviceResources();
-		it++;
-	}
 }
 
 //--------------------------------------------------------------------------------------
