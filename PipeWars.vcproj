@@ -452,6 +452,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\MeshRenderer.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\PipeWars.cpp"
 			>
 		</File>

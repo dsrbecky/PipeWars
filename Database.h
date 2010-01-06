@@ -201,8 +201,6 @@ class Database
 public:
 	vector<Entity*> entities;
 
-	void Render();
-
 	void add(Entity* entity)
 	{
 		entities.push_back(entity);

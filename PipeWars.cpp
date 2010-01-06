@@ -15,11 +15,13 @@ LayerChain layers;
 
 class Camera; extern Camera camera;
 class DebugGrid; extern DebugGrid debugGrid;
+class MeshRenderer; extern MeshRenderer meshRenderer;
 
-void Init()
+void InitLayers()
 {
 	layers.add(&camera);
 	layers.add(&debugGrid);
+	layers.add(&meshRenderer);
 }
 
 //--------------------------------------------------------------------------------------
@@ -110,7 +112,6 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		SetupLight();
 
-		db.Render();
 		textWriter.Render();
 
 		layers.Render();
@@ -202,7 +203,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif
 
-	Init();
+	InitLayers();
 
     // Set the callback functions. These functions allow DXUT to notify
     // the application about device changes, user input, and windows messages.  The 
