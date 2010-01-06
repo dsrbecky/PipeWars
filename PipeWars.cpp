@@ -4,6 +4,8 @@
 
 Database db;
 
+Player* localPlayer = NULL;
+
 // Layers have interface that allows them to both handle user input and participate in
 // the rendering.  Usually, the layer will set some internal state based on the input
 // and later render the coresponding output (or adjust the rendering state).
@@ -17,6 +19,7 @@ class RenderState; extern RenderState renderState;
 class Camera; extern Camera camera;
 class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
+class PlayerControl; extern PlayerControl playerControl;
 class MeshRenderer; extern MeshRenderer meshRenderer;
 
 void InitLayers()
@@ -25,6 +28,7 @@ void InitLayers()
 	layers.add(&camera);
 	layers.add(&debugStats);
 	layers.add(&debugGrid);
+	layers.add(&playerControl);
 	layers.add(&meshRenderer);
 }
 

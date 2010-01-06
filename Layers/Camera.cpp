@@ -1,5 +1,8 @@
 #include "StdAfx.h"
 #include "Layer.h"
+#include "../Database.h"
+
+extern Player* localPlayer;
 
 // Sets the camera angle
 class Camera: public Layer
@@ -13,9 +16,9 @@ class Camera: public Layer
 
 public:
 
-	Camera(): yaw(D3DX_PI / 4), pitch(-D3DX_PI / 4), distance(60), lastMouseX(0), lastMouseY(0) {}
+	Camera(): yaw(D3DX_PI / 4), pitch(-D3DX_PI / 4), distance(10), lastMouseX(0), lastMouseY(0) {}
 
-	bool Camera::MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
+	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
 		if (bMiddleButtonDown) {
 			int deltaX = xPos - lastMouseX;
@@ -27,15 +30,16 @@ public:
 
 		if (nMouseWheelDelta != 0) {
 			distance -= (float)nMouseWheelDelta / 120.0f * 3;
-			distance = max(distance, 6);
+			distance = max(distance, 4);
 		}
 
 		lastMouseX = xPos;
 		lastMouseY = yPos;
-		return FALSE;
+
+		return false;
 	}
 
-	void Camera::PreRender(IDirect3DDevice9* dev)
+	void PreRender(IDirect3DDevice9* dev)
 	{
 		// View matrix
 		D3DXMATRIXA16 matPitch;
@@ -44,11 +48,19 @@ public:
 		D3DXMatrixRotationY(&matYaw, yaw);
 		D3DXMATRIXA16 matYawPitch;
 		D3DXMatrixMultiply(&matYawPitch, &matYaw, &matPitch);
-		D3DXMATRIXA16 matMove;
-		D3DXMatrixTranslation(&matMove, 0, 0, distance);
+		D3DXMATRIXA16 matZoom;
+		D3DXMatrixTranslation(&matZoom, 0, 0, distance);
 		D3DXMATRIXA16 matView;
-		D3DXMatrixMultiply(&matView, &matYawPitch, &matMove);
-		dev->SetTransform(D3DTS_VIEW, &matView);
+		D3DXMatrixMultiply(&matView, &matYawPitch, &matZoom);
+		D3DXMATRIXA16 matMove;
+		if (localPlayer == NULL) {
+			D3DXMatrixIdentity(&matMove);
+		} else {
+			D3DXMatrixTranslation(&matMove, -localPlayer->position.x, -localPlayer->position.y, -localPlayer->position.z);
+		}
+		D3DXMATRIXA16 matMoveView;
+		D3DXMatrixMultiply(&matMoveView, &matMove, &matView);
+		dev->SetTransform(D3DTS_VIEW, &matMoveView);
 
 		// Prespective
 		D3DXMATRIXA16 matProj;

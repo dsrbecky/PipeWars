@@ -29,9 +29,9 @@ public:
 
 	void PreRender(IDirect3DDevice9* dev)
 	{
-		dev->SetRenderState(D3DRS_FILLMODE, keyToggled['W'] ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
-        dev->SetRenderState(D3DRS_LIGHTING, !keyToggled['L']);
-	    dev->SetRenderState(D3DRS_ZENABLE, !keyToggled['Z']);
+		dev->SetRenderState(D3DRS_FILLMODE, keyToggled_Alt['W'] ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+        dev->SetRenderState(D3DRS_LIGHTING, !keyToggled_Alt['L']);
+	    dev->SetRenderState(D3DRS_ZENABLE, !keyToggled_Alt['Z']);
 	    dev->SetRenderState(D3DRS_AMBIENT, 0x40404040);
 
 		SetupLight(dev);

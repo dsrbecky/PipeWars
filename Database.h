@@ -49,16 +49,6 @@ public:
 	}
 };
 
-class Vec3
-{
-public:
-	float x, y, z;
-
-	Vec3(float _x, float _y, float _z): x(_x), y(_y), z(_z) {}
-
-	static Vec3 Zero() { return Vec3(0, 0, 0); }
-};
-
 enum ItemType {
 	Weapon_Revolver,
 	Weapon_Shotgun,
@@ -95,21 +85,25 @@ class MeshEntity: public Entity
 {
 public:
 	Mesh* mesh;
-	Vec3 position;
-	Vec3 velocity;
+	D3DXVECTOR3 position;
+	D3DXVECTOR3 velocity;
 	float rotY;
 	float rotY_velocity;
 	float scale;
 
 	MeshEntity(string filename, string geometryName):
 		mesh(loadMesh(filename, geometryName)),
-		position(Vec3::Zero()), velocity(Vec3::Zero()),
+		position(D3DXVECTOR3(0,0,0)), velocity(D3DXVECTOR3(0,0,0)),
 		rotY(0), rotY_velocity(0), scale(1) {}
 };
+
+static const float PlayerMoveSpeed = 5.0f;
+static const float PlayerStrafeSpeed = 3.0f;
 
 class Player: public MeshEntity
 {
 public:
+
 	string name;
 	int health;
 	int armour;
@@ -165,9 +159,9 @@ public:
 class RespawnPoint: public Entity
 {
 public:
-	Vec3 position;
+	D3DXVECTOR3 position;
 
-	RespawnPoint(double x, double y, double z): position(Vec3((float)x, (float)y, (float)z)) {}
+	RespawnPoint(double x, double y, double z): position(D3DXVECTOR3((float)x, (float)y, (float)z)) {}
 };
 
 class ChatMessage: public Entity
@@ -193,7 +187,7 @@ public:
 
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
 	{
-		entity->position = Vec3((float)x, (float)y, (float)z);
+		entity->position = D3DXVECTOR3((float)x, (float)y, (float)z);
 		entity->rotY = angle;
 		entities.push_back(entity);
 	}

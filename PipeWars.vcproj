@@ -468,6 +468,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\PlayerControl.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\Layers\RenderState.cpp"
 			>
 		</File>
