@@ -32,7 +32,7 @@ public:
 
 			dev->SetTransform(D3DTS_WORLD, &matWorld);
 
-			entity->Render(dev);
+			entity->mesh->Render(dev, "OuterWall", "-Hi");
 		}
 	}
 

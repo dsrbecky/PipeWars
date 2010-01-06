@@ -31,10 +31,15 @@ void Tristrip::Render(IDirect3DDevice9* dev)
 	}
 }
 
-void Mesh::Render(IDirect3DDevice9* dev)
+void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2)
 {
 	for(int i = 0; i < (int)tristrips.size(); i++) {
-		tristrips[i].Render(dev);
+		Tristrip& ts = tristrips[i];
+		if (hide1.size() > 0 && ts.getMaterialName().find(hide1) != -1)
+			continue;
+		if (hide2.size() > 0 && ts.getMaterialName().find(hide2) != -1)
+			continue;
+		ts.Render(dev);
 	}
 }
 

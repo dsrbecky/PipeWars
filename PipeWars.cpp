@@ -78,7 +78,7 @@ void RenderSplashScreen(IDirect3DDevice9* dev)
 		D3DXCreateSprite(dev, &sprite);
 		sprite->Begin(0);
 		D3DXMATRIX scale;
-		D3DXMatrixScaling(&scale, 800.0f / 1024, 300.0f / 512, 1.0f);
+		D3DXMatrixScaling(&scale, 800.0f / 1024, 600.0f / 1024, 1.0f);
 		sprite->SetTransform(&scale);
 		sprite->Draw(texture, NULL, NULL, NULL, 0xFFFFFFFF);
 		sprite->End();
@@ -90,6 +90,8 @@ void RenderSplashScreen(IDirect3DDevice9* dev)
 
 	texture->Release();
 }
+
+extern void releaseLoadedMeshes();
 
 INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
@@ -118,6 +120,10 @@ INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	db.loadTestMap();
 
     DXUTMainLoop();
+
+	layers.ReleaseDeviceResources();
+	db.clear();
+	releaseLoadedMeshes();
 
     return DXUTGetExitCode();
 }

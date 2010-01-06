@@ -21,6 +21,8 @@ class Tristrip
 
 	friend Mesh* loadMesh(string filename, string geometryName);
 public:
+	string getMaterialName() { return materialName; }
+
 	void Render(IDirect3DDevice9* dev);
 	void ReleaseDeviceResources() {
 		if (buffer != NULL) {
@@ -39,7 +41,7 @@ class Mesh
 public:
 	std::vector<Tristrip> tristrips;
 
-	void Render(IDirect3DDevice9* dev);
+	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "");
 	void ReleaseDeviceResources() {
 		for(int i = 0; i < (int)tristrips.size(); i++) {
 			tristrips[i].ReleaseDeviceResources();
@@ -103,10 +105,6 @@ public:
 		mesh(loadMesh(filename, geometryName)),
 		position(Vec3::Zero()), velocity(Vec3::Zero()),
 		rotY(0), rotY_velocity(0), scale(1) {}
-
-	void Render(IDirect3DDevice9* dev) {
-		mesh->Render(dev);
-	};
 };
 
 class Player: public MeshEntity

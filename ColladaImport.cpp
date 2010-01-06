@@ -22,6 +22,16 @@ domCOLLADA* loadCollada(string filename)
 	}
 }
 
+void releaseLoadedMeshes()
+{
+	map<string, Mesh*>::iterator it = loadedMeshes.begin();
+	while(it != loadedMeshes.end()) {
+		delete it->second;
+		it++;
+	}
+	loadedMeshes.clear();
+}
+
 u_int getColor(domListOfFloats* src, int offset = 0)
 {
 	int r = (int)(src->get(4 * offset + 0) * 255);
