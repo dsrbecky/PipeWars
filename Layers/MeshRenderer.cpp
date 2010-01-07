@@ -1,15 +1,34 @@
 #include "StdAfx.h"
 #include "Layer.h"
 #include "../Database.h"
+#include <set>
 
 extern map<string, Mesh*> loadedMeshes; // ColladaImport.cpp
+extern Player* localPlayer;
+
+float hiQualityPipes = 0;
+float targetFPS = 30;
+
+int stat_objRendered;
+int stat_pipesRendered;
 
 class MeshRenderer: public InputLayer
 {
 public:
+	void FrameMove(double fTime, float fElapsedTime)
+	{
+		float extraFPS = DXUTGetFPS() - targetFPS;
+		if (extraFPS < 0) {
+			hiQualityPipes += fElapsedTime * extraFPS * 0.5;
+		} else {
+			hiQualityPipes += fElapsedTime * extraFPS * 0.05;
+		}
+		hiQualityPipes = max(0, hiQualityPipes);
+	}
 
 	void Render(IDirect3DDevice9* dev)
 	{
+		// Get the camera settings
 		D3DVIEWPORT9 viewport;
 		D3DXMATRIX matProj;
 		D3DXMATRIX matView;
@@ -17,10 +36,34 @@ public:
 		dev->GetTransform(D3DTS_PROJECTION, &matProj);
 		dev->GetTransform(D3DTS_VIEW, &matView);
 
+		// Find and mark pipes to be rendered in hi-quality
+		// (the closeset ones to the player)
+		multiset<pair<float, MeshEntity*>> pipes;
+		for(int i = 0; i < (int)db.entities.size(); i++) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+			if (entity != NULL && entity->mesh->filename == PipeFilename) {
+				D3DXVECTOR3 delta = entity->position - localPlayer->position;
+				float distance = D3DXVec3LengthSq(&delta);
+				pipes.insert(pair<float, MeshEntity*>(distance, entity));
+				entity->hiQuality = false; // Defualt
+			}
+		}
+		multiset<pair<float, MeshEntity*>>::iterator it = pipes.begin();
+		for(int i = 0; i < (int)hiQualityPipes && it != pipes.end(); i++) {
+			it->second->hiQuality = true;
+			it++;
+		}
+
+		stat_objRendered = 0;
+		stat_pipesRendered = 0;
+
+		// Render meshes
 		for(int i = 0; i < (int)db.entities.size(); i++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
 			if (entity == NULL)
 				continue; // Other type
+
+			// Set the WORLD for the this entity
 
 			D3DXMATRIXA16 matWorld;
 			D3DXMatrixIdentity(&matWorld);
@@ -39,32 +82,91 @@ public:
 
 			dev->SetTransform(D3DTS_WORLD, &matWorld);
 
-			if (!keyToggled_Alt['O']) {
-				D3DXVECTOR3 screen[8];
-				D3DXVec3ProjectArray(
+
+			// Clip using frustum
+			if (!keyToggled_Alt['F']) {
+
+				// Corners of the screen
+				float w = (float)viewport.Width;
+				float h = (float)viewport.Height;
+				D3DXVECTOR3 screen[8] = {
+					D3DXVECTOR3(0, 0, 0), D3DXVECTOR3(w, 0, 0), D3DXVECTOR3(w, h, 0), D3DXVECTOR3(0, h, 0),
+					D3DXVECTOR3(0, 0, 1), D3DXVECTOR3(w, 0, 1), D3DXVECTOR3(w, h, 1), D3DXVECTOR3(0, h, 1)
+				};
+
+				// Vertecies of the frustum
+				D3DXVECTOR3 model[8];
+				D3DXVec3UnprojectArray(
+					model, sizeof(D3DXVECTOR3),
 					screen, sizeof(D3DXVECTOR3),
-					entity->mesh->boundingBox.corners, sizeof(D3DXVECTOR3),
 					&viewport, &matProj, &matView, &matWorld, 8
 				);
-				D3DXVECTOR3 minVec, maxVec;
-				minVec = maxVec = screen[0];
-				for(int i = 1; i < 8; i++) {
-					minVec = min3(minVec, screen[i]);
-					maxVec = max3(maxVec, screen[i]);
+
+				// Normals to the frustrum sides (pointing inside)
+				D3DXVECTOR3 nTop    = GetFrustumNormal(model[0], model[1], model[4]);
+				D3DXVECTOR3 nRight  = GetFrustumNormal(model[1], model[2], model[5]);
+				D3DXVECTOR3 nBottom = GetFrustumNormal(model[2], model[3], model[6]);
+				D3DXVECTOR3 nLeft   = GetFrustumNormal(model[3], model[0], model[7]);
+				D3DXVECTOR3 nNear   = GetFrustumNormal(model[0], model[3], model[1]);
+				D3DXVECTOR3 ns[] = {nTop, nRight, nBottom, nLeft, nNear};
+				D3DXVECTOR3 nPs[] = {model[0], model[1], model[2], model[3], model[0]};
+
+				// Test against the sides
+				bool outsideFrustum;
+				for(int i = 0; i < (sizeof(ns) / sizeof(D3DXVECTOR3)); i++) {
+					D3DXVECTOR3 n = ns[i];  // Normal
+					D3DXVECTOR3 nP = nPs[i];  // Point on the side
+					
+					outsideFrustum = true;
+					for(int j = 0; j < 8; j++) {
+						D3DXVECTOR3 bbCorner = entity->mesh->boundingBox.corners[j];
+						D3DXVECTOR3 bbCornerRelativeToP = bbCorner - nP;
+						bool isIn = D3DXVec3Dot(&n, &bbCornerRelativeToP) > 0;
+						if (isIn) {
+							outsideFrustum = false;
+							break; // Fail, try next side
+						}
+					}
+					if (outsideFrustum) break; // Done
 				}
-				int margin = keyToggled_Alt['M'] ? 100 : 0;
-				if (minVec.x > viewport.Width - margin) continue;
-				if (minVec.y > viewport.Height - margin) continue;
-				if (maxVec.x < margin) continue;
-				if (maxVec.y < margin) continue;
+
+				if (outsideFrustum) continue; // Skip entity
 			}
 
-			entity->mesh->Render(dev, "OuterWall", "Path", "-Hi");
+			// Debug frustrum
+			D3DXMATRIXA16 oldView;
+			dev->GetTransform(D3DTS_VIEW, &oldView);
+			if (keyToggled_Alt['D']) {
+				D3DXMATRIXA16 newMove;
+				D3DXMatrixTranslation(&newMove, 0, 0, 25);
+				D3DXMATRIXA16 newView;
+				D3DXMatrixMultiply(&newView, &oldView, &newMove);
+				dev->SetTransform(D3DTS_VIEW, &newView);
+			}
+
+			entity->mesh->Render(dev, "OuterWall", "Path", entity->hiQuality ? "-Low" : "-Hi");
+			stat_objRendered++;
+			if (entity->mesh->filename == PipeFilename)
+				stat_pipesRendered++;
+
 
 			if (keyToggled_Alt['B']) {
 				RenderBoundingBox(dev, entity->mesh->boundingBox);
 			}
+
+			dev->SetTransform(D3DTS_VIEW, &oldView);
 		}
+
+		hiQualityPipes = min(hiQualityPipes, stat_pipesRendered + 4); // Do not outgrow by more then 4
+	}
+
+	D3DXVECTOR3 GetFrustumNormal(D3DXVECTOR3 o, D3DXVECTOR3 a, D3DXVECTOR3 b)
+	{
+		D3DXVECTOR3 p = a - o;
+		D3DXVECTOR3 q = b - o;
+		D3DXVECTOR3 n;
+		D3DXVec3Cross(&n, &p, &q);
+		return n;
 	}
 
 	void Render2DBoundingBox(IDirect3DDevice9* dev, D3DXVECTOR3 minVec, D3DXVECTOR3 maxVec)

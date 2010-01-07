@@ -35,7 +35,9 @@ public:
 	virtual bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
 		if (nChar < maxKey) {
-			keyDown[nChar] = bKeyDown;
+			if (!bAltDown) {
+				keyDown[nChar] = bKeyDown;
+			}
 			if (bKeyDown) {
 				if (bAltDown) {
 					keyToggled_Alt[nChar] = !keyToggled_Alt[nChar];

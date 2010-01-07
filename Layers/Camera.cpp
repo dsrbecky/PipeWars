@@ -64,7 +64,7 @@ public:
 
 		// Prespective
 		D3DXMATRIXA16 matProj;
-		D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, (float)DXUTGetWindowWidth() / DXUTGetWindowHeight(), 1.0f, 4000.0f);
+		D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, (float)DXUTGetWindowWidth() / DXUTGetWindowHeight(), NearClip, FarClip);
 		dev->SetTransform(D3DTS_PROJECTION, &matProj);
 	}
 };

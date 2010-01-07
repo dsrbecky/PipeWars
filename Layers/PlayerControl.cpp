@@ -86,6 +86,8 @@ public:
 
 	void MoveLocalPlayer(float fElapsedTime)
 	{
+		fElapsedTime = min(0.1f, fElapsedTime);
+
 		// Try to move at an angle if you can not go forward
 		static float dirOffsets[] = {0, -10, 10, -25, 25, -40, 40, -55, 55, -70, 70, -85, 85};
 

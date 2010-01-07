@@ -3,8 +3,12 @@
 
 #include "StdAfx.h"
 
-class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
 const int WeaponCount = 5;
+const float NearClip = 2.0f;
+const float FarClip = 1000.0f;
+static const string PipeFilename = "pipe.dae";
+
+class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
 
 bool IsPointOnPath(D3DXVECTOR3 pos, float* outY = NULL);
 
@@ -132,10 +136,12 @@ public:
 	float rotY_velocity;
 	float scale;
 
+	bool hiQuality;
+
 	MeshEntity(string filename, string geometryName):
 		mesh(loadMesh(filename, geometryName)),
 		position(D3DXVECTOR3(0,0,0)), velocity(D3DXVECTOR3(0,0,0)),
-		rotY(0), rotY_velocity(0), scale(1) {}
+		rotY(0), rotY_velocity(0), scale(1), hiQuality(true) {}
 };
 
 static const float PlayerMoveSpeed = 5.0f;
