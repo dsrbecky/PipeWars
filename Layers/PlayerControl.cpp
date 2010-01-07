@@ -15,6 +15,20 @@ class PlayerControl: InputLayer
 public:
 	PlayerControl(): mouseX(0), mouseY(0) {}
 
+	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
+	{
+		InputLayer::KeyboardProc(nChar, bKeyDown, bAltDown);
+
+		switch(nChar) {
+			case '1': localPlayer->selectWeapon(Weapon_Revolver); break;
+			case '2': localPlayer->selectWeapon(Weapon_Shotgun); break;
+			case '3': localPlayer->selectWeapon(Weapon_AK47); break;
+			case '4': localPlayer->selectWeapon(Weapon_Jackhammer); break;
+			case '5': localPlayer->selectWeapon(Weapon_Nailgun); break;
+		}
+		return false;
+	}
+
 	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
 		mouseX = xPos;

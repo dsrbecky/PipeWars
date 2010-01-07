@@ -143,19 +143,18 @@ D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
 bool IsPointOnPath(D3DXVECTOR3 pos, float* outY)
 {
 	for(int i = 0; i < (int)db.entities.size(); i++) {
-		// Pipe or tank
-		if (dynamic_cast<Pipe*>(db.entities[i]) != NULL || dynamic_cast<Tank*>(db.entities[i]) != NULL) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
-			// Position relative to the mesh
-			D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
-			// Quick test - is in BoundingBox?
-			if (entity->mesh->boundingBox.Contains(meshPos)) {
-				if (entity->mesh->IsOnPath(meshPos.x, meshPos.z, outY)) {
-					if (outY != NULL) {
-						*outY = *outY * entity->scale + entity->position.y;
-					}
-					return true;
+		MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+		if (entity == NULL)
+			continue;
+		// Position relative to the mesh
+		D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
+		// Quick test - is in BoundingBox?
+		if (entity->mesh->boundingBox.Contains(meshPos)) {
+			if (entity->mesh->IsOnPath(meshPos.x, meshPos.z, outY)) {
+				if (outY != NULL) {
+					*outY = *outY * entity->scale + entity->position.y;
 				}
+				return true;
 			}
 		}
 	}
@@ -168,92 +167,92 @@ void Database::loadTestMap()
 
 	localPlayer = new Player("David");
 
-	add(5, 4.3, 14, 0, localPlayer);
-	add(12, 0.45, 28, 0, new Player("Ali"));
-	add(25.4, -1.45, 32, 0, new Player("Shephan"));
-	add(5.5, -3.5, 16, 0, new Player("Ed"));
+	add(5, 4.3, 14, 0,     localPlayer);
+	add(12, 0.45, 28, 0,   new Player("Ali"));
+	add(25, -1.4, 32, 0,   new Player("Shephan"));
+	add(5.5, -3.5, 16, 0,  new Player("Ed"));
 	
-	add(-10, 0.5, 8, 0, new Pipe("LeftTurn"));
-	add(-10, 0.5, 0, 0, new Pipe("LongStraight"));
-	add(-6, 0.5, -2, 180, new Pipe("UTurn"));
-	add(-6, 0.5, 0, 0, new Pipe("LevelUp"));
-	add(-10, 2.5, 8, 0, new Pipe("UTurn"));
-	add(-10, 2.5, 6, 180, new Pipe("LevelUp"));
-	add(-6, 4.5, -6, 270, new Pipe("LeftTurn"));
-	add(-4, 4.5, -6, 90, new Pipe("LongStraight"));
-	add(10, 2.5, -6, 270, new Pipe("LevelUp"));
-	add(12, 2.5, -6, 90, new Pipe("LeftTurn"));
-	add(16, 2.5, -12, 180, new Pipe("LeftTurn"));
-	add(6, 2.5, -12, 90, new Pipe("STurn2"));
-	add(4, 2.5, -12, 270, new Pipe("LeftTurn"));
-	add(0, 0.5, 0, 180, new Pipe("LevelUp"));
-	add(0, 0.5, 2, 0, new Pipe("LongStraight"));
-	add(-2, 0.5, 12, 90, new Tank("Tank3x5"));
+	add(-10, 0.5, 8, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+	add(-10, 0.5, 0, 0,    new MeshEntity("pipe.dae", "LongStraight"));
+	add(-6, 0.5, -2, 180,  new MeshEntity("pipe.dae", "UTurn"));
+	add(-6, 0.5, 0, 0,     new MeshEntity("pipe.dae", "LevelUp"));
+	add(-10, 2.5, 8, 0,    new MeshEntity("pipe.dae", "UTurn"));
+	add(-10, 2.5, 6, 180,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(-6, 4.5, -6, 90,   new MeshEntity("pipe.dae", "LeftTurn"));
+	add(-4, 4.5, -6, 270,  new MeshEntity("pipe.dae", "LongStraight"));
+	add(10, 2.5, -6, 90,   new MeshEntity("pipe.dae", "LevelUp"));
+	add(12, 2.5, -6, 270,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(16, 2.5, -12, 180, new MeshEntity("pipe.dae", "LeftTurn"));
+	add(6, 2.5, -12, 270,  new MeshEntity("pipe.dae", "STurn2"));
+	add(4, 2.5, -12, 90,   new MeshEntity("pipe.dae", "LeftTurn"));
+	add(0, 0.5, 0, 180,    new MeshEntity("pipe.dae", "LevelUp"));
+	add(0, 0.5, 2, 0,      new MeshEntity("pipe.dae", "LongStraight"));
+	add(-2, 0.5, 12, 270,  new MeshEntity("tank.dae", "Tank3x5"));
 	
-	add(6, 0.5, 12, 90, new Pipe("LongStraight"));
-	add(16, 0.5, 8, 0, new Tank("Tank5x7"));
-	add(18, -1.5, -2, 0, new Pipe("LevelUp"));
-	add(22, -1.5, -8, 270, new Pipe("LeftTurn"));
-	add(30, -3.5, -8, 270, new Pipe("LevelUp"));
-	add(32, -3.5, -4, 90, new Pipe("UTurn"));
-	add(30, -3.5, -4, 270, new Pipe("LeftTurn"));
-	add(22, -3.5, 8, 90, new Tank("Tank5x7"));
-	add(34, -3.5, 6, 90, new Pipe("STurn2"));
+	add(6, 0.5, 12, 270,   new MeshEntity("pipe.dae", "LongStraight"));
+	add(16, 0.5, 8, 0,     new MeshEntity("tank.dae", "Tank5x7"));
+	add(18, -1.5, -2, 0,   new MeshEntity("pipe.dae", "LevelUp"));
+	add(22, -1.5, -8, 90,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(30, -3.5, -8, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(32, -3.5, -4, 270, new MeshEntity("pipe.dae", "UTurn"));
+	add(30, -3.5, -4, 90,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(22, -3.5, 8, 270,  new MeshEntity("tank.dae", "Tank5x7"));
+	add(34, -3.5, 6, 270,  new MeshEntity("pipe.dae", "STurn2"));
 
-	add(30, -1.5, 12, 270, new Pipe("LevelUp"));
-	add(38, -3.5, 12, 270, new Pipe("LevelUp"));
-	add(40, -3.5, 12, 90, new Pipe("LeftTurn"));
-	add(44, -3.5, 6, 180, new Pipe("LeftTurn"));
+	add(30, -1.5, 12, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(38, -3.5, 12, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(40, -3.5, 12, 270, new MeshEntity("pipe.dae", "LeftTurn"));
+	add(44, -3.5, 6, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	add(10, 4.5, 30, 0, new Tank("Tank3x5"));
-	add(2, 4.5, 28, 0, new Pipe("LeftTurn"));
-	add(10, 4.5, 20, 0, new Pipe("LongStraight"));
-	add(0, 4.5, 20, 0, new Pipe("STurn1"));
-	add(10, 4.5, 18, 180, new Pipe("LeftTurn"));
-	add(4, 4.5, 14, 270, new Pipe("LeftTurn"));
+	add(10, 4.5, 30, 0,    new MeshEntity("tank.dae", "Tank3x5"));
+	add(2, 4.5, 28, 0,     new MeshEntity("pipe.dae", "LeftTurn"));
+	add(10, 4.5, 20, 0,    new MeshEntity("pipe.dae", "LongStraight"));
+	add(0, 4.5, 20, 0,     new MeshEntity("pipe.dae", "STurn1"));
+	add(10, 4.5, 18, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(4, 4.5, 14, 90,    new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	add(20, 2.5, 32, 270, new Pipe("LevelUp"));
-	add(22, 2.5, 32, 90, new Pipe("UTurn"));
-	add(14, 0.5, 28, 90, new Pipe("LevelUp"));
-	add(12, 0.5, 28, 270, new Pipe("UTurn"));
-	add(20, -1.5, 32, 270, new Pipe("LevelUp"));
-	add(22, -1.5, 32, 90, new Pipe("LongStraight"));
-	add(30, -1.5, 32, 90, new Pipe("UTurn"));
-	add(22, -3.5, 28, 90, new Pipe("LevelUp"));
-	add(20, -3.5, 24, 270, new Pipe("UTurn"));
+	add(20, 2.5, 32, 90,   new MeshEntity("pipe.dae", "LevelUp"));
+	add(22, 2.5, 32, 270,  new MeshEntity("pipe.dae", "UTurn"));
+	add(14, 0.5, 28, 270,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(12, 0.5, 28, 90,   new MeshEntity("pipe.dae", "UTurn"));
+	add(20, -1.5, 32, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(22, -1.5, 32, 270, new MeshEntity("pipe.dae", "LongStraight"));
+	add(30, -1.5, 32, 270, new MeshEntity("pipe.dae", "UTurn"));
+	add(22, -3.5, 28, 270, new MeshEntity("pipe.dae", "LevelUp"));
+	add(20, -3.5, 24, 90,  new MeshEntity("pipe.dae", "UTurn"));
 	
-	add(26, -3.5, 12, 0, new Pipe("LongStraight"));
-	add(22, -3.5, 24, 90, new Pipe("LeftTurn"));
+	add(26, -3.5, 12, 0,   new MeshEntity("pipe.dae", "LongStraight"));
+	add(22, -3.5, 24, 270, new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	add(18, 0.5, 20, 0, new Pipe("LeftTurn"));
-	add(28, 0.5, 28, 180, new Pipe("LeftTurn"));
-	add(28, 0.5, 30, 0, new Pipe("LevelUp"));
-	add(24, 2.5, 42, 90, new Pipe("LeftTurn"));
-	add(22, 2.5, 42, 270, new Pipe("LevelUp"));
-	add(10, 4.5, 38, 0, new Pipe("LeftTurn"));
+	add(18, 0.5, 20, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+	add(28, 0.5, 28, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(28, 0.5, 30, 0,    new MeshEntity("pipe.dae", "LevelUp"));
+	add(24, 2.5, 42, 270,  new MeshEntity("pipe.dae", "LeftTurn"));
+	add(22, 2.5, 42, 90,   new MeshEntity("pipe.dae", "LevelUp"));
+	add(10, 4.5, 38, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	add(0, 0.5, 16, 0, new Pipe("LeftTurn"));
-	add(12, -1.5, 20, 270, new Pipe("LevelUp"));
-	add(14, -1.5, 20, 90, new Pipe("UTurn"));
-	add(6, -3.5, 16, 90, new Pipe("LevelUp"));
-	add(0, -3.5, 12, 0, new Pipe("LeftTurn"));
-	add(4, -3.5, 6, 270, new Pipe("LeftTurn"));
-	add(6, -3.5, 6, 90, new Pipe("LongStraight"));
-	add(12, -3.5, 6, 90, new Pipe("LongStraight"));
+	add(0, 0.5, 16, 0,     new MeshEntity("pipe.dae", "LeftTurn"));
+	add(12, -1.5, 20, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(14, -1.5, 20, 270, new MeshEntity("pipe.dae", "UTurn"));
+	add(6, -3.5, 16, 270,  new MeshEntity("pipe.dae", "LevelUp"));
+	add(0, -3.5, 12, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+	add(4, -3.5, 6, 90,    new MeshEntity("pipe.dae", "LeftTurn"));
+	add(6, -3.5, 6, 270,   new MeshEntity("pipe.dae", "LongStraight"));
+	add(12, -3.5, 6, 270,  new MeshEntity("pipe.dae", "LongStraight"));
 	
-	add(0, 0, 8, 0, new PowerUp(Weapon_Revolver));
-	add(44, -3.4, 8, 0, new PowerUp(Weapon_Revolver));
-	add(21.6, 0.1, 9.4, 0, new PowerUp(Weapon_Revolver));
-	add(31.5, -1.1, 12, 0, new PowerUp(Weapon_Revolver));
-	add(21, -3.2, 24, 0, new PowerUp(Weapon_Revolver));
-	add(0, 0, 12, 0, new PowerUp(Weapon_AK47));
-	add(20, -1.6, -6.8, 0, new PowerUp(Weapon_AK47));
-	add(24, -3.4, 7, 0, new PowerUp(Weapon_Nailgun));
-	add(14, 2.3, -7.2, 0, new PowerUp(Weapon_Nailgun));
-	add(15, -1.75, 17.5, 0, new PowerUp(Weapon_Nailgun));
-	add(25.5, -2.2, 28, 0, new PowerUp(Weapon_Shotgun));
-	add(-8, 2.5, 9, 0, new PowerUp(Weapon_Shotgun));
-	add(14.5, 0.6, 17.5, 0, new PowerUp(Weapon_Shotgun));
+	add(0, 0, 8, 0,         new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	add(44, -3.4, 8, 0,     new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	add(21.6, 0.1, 9.4, 0,  new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	add(31.5, -1.1, 12, 0,  new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
+	add(21, -3.2, 24, 0,    new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
+	add(0, 0, 12, 0,        new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
+	add(20, -1.6, -6.8, 0,  new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
+	add(24, -3.4, 7, 0,     new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
+	add(14, 2.3, -7.2, 0,   new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
+	add(15, -1.75, 17.5, 0, new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
+	add(25.5, -2.2, 28, 0,  new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
+	add(-8, 2.5, 9, 0,      new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
+	add(14.5, 0.6, 17.5, 0, new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
 	
 	add(new RespawnPoint(5, 4.3, 14));
 	add(new RespawnPoint(12, 0.45, 28));
@@ -263,24 +262,27 @@ void Database::loadTestMap()
 	add(new RespawnPoint(-8, 0.4, -3));
 	add(new RespawnPoint(0, -3, 12));
 	
-	add(10.0, 4.0, 22, 0, new PowerUp(HealthPack));
-	add(6.0, 0.0, 20, 0, new PowerUp(HealthPack));
-	add(16.0, 0.0, 12, 0, new PowerUp(HealthPack));
-	add(44.0, -4.0, 6, 0, new PowerUp(ArmourPack));
-	add(4.0, 4.0, 14.0, 0, new PowerUp(ArmourPack));
-	add(0.0, 4.3, -6, 0, new PowerUp(Shiny));
-	add(28.0, 1.0, 31, 0, new PowerUp(Shiny));
-	add(0.0, 0.6, 7, 0, new PowerUp(Shiny));
-	add(26.0, -4.0, 14, 0, new PowerUp(Shiny));
-	add(28.0, -3.0, -8, 0, new PowerUp(Ammo_Revolver));
-	add(18.0, 0.0, 15, 0, new PowerUp(Ammo_Revolver));
-	add(26.0, -2.0, 32, 0, new PowerUp(Ammo_Nailgun));
-	add(10.0, -4.0, 6, 0, new PowerUp(Ammo_Nailgun));
-	add(23.0, 2.0, 29.0, 0, new PowerUp(Ammo_Shotgun));
-	add(22.0, 2.0, 42.0, 0, new PowerUp(Ammo_Shotgun));
-	add(-7.0, 0.0, -3.0, 0, new PowerUp(Ammo_Jackhammer));
-	add(14.0, -4.0, 6.0, 0, new PowerUp(Ammo_Jackhammer));
-	add(0.0, -4.0, 10, 0, new PowerUp(Ammo_AK47));
-	add(28.0, -4.0, 2, 0, new PowerUp(Ammo_AK47));
-	add(11.0, 4.0, 32, 0, new PowerUp(Monkey));
+	add(10.0, 4.0, 22, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	add(6.0, 0.0, 20, 0,    new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	add(16.0, 0.0, 12, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	add(44.0, -4.0, 6, 0,   new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
+	add(4.0, 4.0, 14.0, 0,  new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
+	add(0.0, 4.3, -6, 0,    new PowerUp(Shiny, "Shiny.dae", "Green"));
+	add(28.0, 1.0, 31, 0,   new PowerUp(Shiny, "Shiny.dae", "Red"));
+	add(0.0, 0.6, 7, 0,     new PowerUp(Shiny, "Shiny.dae", "Blue"));
+	add(26.0, -4.0, 14, 0,  new PowerUp(Skull, "skull.dae", "Skull"));
+	add(11.0, 4.0, 32, 0,   new PowerUp(Monkey, "Monkey.dae", "LeChuck"));
+
+	add(28.0, -3.0, -8, 0,  new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
+	add(18.0, 0.0, 15, 0,   new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
+	add(26.0, -2.0, 32, 0,  new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
+	add(10.0, -4.0, 6, 0,   new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
+	add(23.0, 2.0, 29.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
+	add(22.0, 2.0, 42.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
+	add(-7.0, 0.0, -3.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
+	add(14.0, -4.0, 6.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
+	add(0.0, -4.0, 10, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
+	add(28.0, -4.0, 2, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
+
+	// Bullets.dae Nail ShotgunPellet AKBullet RevolverBullet
 }

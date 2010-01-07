@@ -117,6 +117,8 @@ Mesh* loadMesh(string filename, string geometryName)
 
 	Mesh* mesh = new Mesh();
 	loadedMeshes[filenameAndGeometryName] = mesh;  // Cache
+	mesh->filename = filename;
+	mesh->geometryName = geometryName;
 	
 	// Load the <tristrips/> elements
 	// (other types are ignored for now)

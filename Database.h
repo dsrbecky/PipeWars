@@ -73,6 +73,8 @@ static string pathMaterialName = "Path";
 class Mesh
 {
 public:
+	string filename;
+	string geometryName;
 	BoundingBox boundingBox;
 	std::vector<Tristrip> tristrips;
 
@@ -104,7 +106,8 @@ enum ItemType {
 	ArmourPack,
 
 	Shiny,
-	Monkey
+	Monkey,
+	Skull
 };
 
 // Entry in the game database
@@ -160,18 +163,32 @@ public:
 		ZeroMemory(&inventory, sizeof(inventory));
 		inventory[Weapon_Revolver] = 1;
 	}
-};
 
-class Pipe: public MeshEntity
-{
-public:
-	Pipe(string geometryName): MeshEntity("pipe.dae", geometryName) {}
-};
-
-class Tank: public MeshEntity
-{
-public:
-	Tank(string geometryName): MeshEntity("tank.dae", geometryName) {}
+	void selectWeapon(ItemType weapon)
+	{
+		selectedWeapon = weapon;
+		switch(weapon) {
+			case Weapon_Revolver:
+				if (inventory[Weapon_Revolver] == 1) {
+					mesh = loadMesh("Merman.dae", "Revolver");
+				} else {
+					mesh = loadMesh("Merman.dae", "DualRevolver");
+				}
+				break;
+			case Weapon_Shotgun:
+				mesh = loadMesh("Merman.dae", "Boomstick");
+				break;
+			case Weapon_AK47:
+				mesh = loadMesh("Merman.dae", "Machinegun");
+				break;
+			case Weapon_Jackhammer:
+				mesh = loadMesh("Merman.dae", "Jackhammer");
+				break;
+			case Weapon_Nailgun:
+				mesh = loadMesh("Merman.dae", "Nailgun");
+				break;
+		}
+	}
 };
 
 class Bullet: public MeshEntity
@@ -192,7 +209,7 @@ public:
 	bool present;
 	float rechargeAfter;
 
-	PowerUp(ItemType _itemType): MeshEntity("Shiny.dae", "Green"), itemType(_itemType), present(true), rechargeAfter(0) {}
+	PowerUp(ItemType _itemType, string filename, string geometryName): MeshEntity(filename, geometryName), itemType(_itemType), present(true), rechargeAfter(0) {}
 };
 
 class RespawnPoint: public Entity
@@ -227,7 +244,7 @@ public:
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
 	{
 		entity->position = D3DXVECTOR3((float)x, (float)y, (float)z);
-		entity->rotY = -angle;
+		entity->rotY = angle;
 		entities.push_back(entity);
 	}
 
