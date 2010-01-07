@@ -15,7 +15,6 @@ Player* localPlayer = NULL;
 
 LayerChain layers;
 
-class RenderState; extern RenderState renderState;
 class Camera; extern Camera camera;
 class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
@@ -24,7 +23,6 @@ class MeshRenderer; extern MeshRenderer meshRenderer;
 
 void InitLayers()
 {
-	layers.add(&renderState);
 	layers.add(&camera);
 	layers.add(&debugStats);
 	// layers.add(&debugGrid);
@@ -49,7 +47,7 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 
 void CALLBACK OnFrameRender(IDirect3DDevice9* dev, double fTime, float fElapsedTime, void* pUserContext)
 {
-    dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 45, 50, 170 ), 1.0f, 0);
+    dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 25, 25, 35 ), 1.0f, 0);
 
 	layers.PreRender(dev);
 

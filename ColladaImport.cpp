@@ -71,10 +71,10 @@ void loadMaterial(domCOLLADA* doc, string materialName, /* out */ D3DMATERIAL9* 
 	D3DCOLORVALUE white = {1, 1, 1, 1};
 	D3DCOLORVALUE black = {0, 0, 0, 1};
 
-	material->Ambient = getD3DColor(effect->getDescendant("ambient"), white);
+	material->Ambient = getD3DColor(effect->getDescendant("ambient"), black);
 	material->Diffuse = getD3DColor(effect->getDescendant("diffuse"), white);
 	material->Emissive = getD3DColor(effect->getDescendant("emission"), black);
-	material->Specular = getD3DColor(effect->getDescendant("specular"), white);
+	material->Specular = getD3DColor(effect->getDescendant("specular"), black);
 	material->Power = 12.5;
 
 	// Get texture

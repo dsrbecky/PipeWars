@@ -472,10 +472,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Layers\RenderState.cpp"
-			>
-		</File>
-		<File
 			RelativePath=".\resource.h"
 			>
 		</File>

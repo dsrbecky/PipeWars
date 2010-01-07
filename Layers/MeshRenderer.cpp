@@ -27,6 +27,47 @@ public:
 		hiQualityPipes = max(0, hiQualityPipes);
 	}
 
+	void SetupLight(IDirect3DDevice9* dev)
+	{
+		dev->SetRenderState(D3DRS_LIGHTING, true);
+		dev->SetRenderState(D3DRS_AMBIENT, 0);
+		dev->SetRenderState(D3DRS_SPECULARENABLE, !keyToggled_Alt['S'] );
+		dev->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL);
+		dev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+
+		D3DLIGHT9 light;
+		ZeroMemory(&light, sizeof(light));
+
+		light.Type = D3DLIGHT_DIRECTIONAL;
+
+		light.Direction.x = -100.0f;
+		light.Direction.y = -500.0f;
+		light.Direction.z =   0.0f;
+		
+		D3DCOLORVALUE ambi = {0.3, 0.3, 0.3, 1};
+		D3DCOLORVALUE diff = {1.0, 1.0, 1.0, 1};
+		D3DCOLORVALUE spec = {0.3, 0.3, 0.1, 1};
+
+		if (!keyToggled_Alt['A']) light.Ambient  = ambi;
+		if (!keyToggled_Alt['D']) light.Diffuse  = diff;
+		if (!keyToggled_Alt['S']) light.Specular = spec;
+		    
+		// Don't attenuate.
+		light.Attenuation0 = 1.0f; 
+		light.Range        = 10000.0f;
+		
+		dev->SetLight(0, &light);
+		dev->LightEnable(0, true);
+	}
+
+	void PreRender(IDirect3DDevice9* dev)
+	{
+		dev->SetRenderState(D3DRS_FILLMODE, keyToggled_Alt['W'] ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	    dev->SetRenderState(D3DRS_ZENABLE, !keyToggled_Alt['Z']);
+		
+		SetupLight(dev);
+	}
+
 	void Render(IDirect3DDevice9* dev)
 	{
 		// Get the camera settings
@@ -137,7 +178,7 @@ public:
 			// Debug frustrum
 			D3DXMATRIXA16 oldView;
 			dev->GetTransform(D3DTS_VIEW, &oldView);
-			if (keyToggled_Alt['D']) {
+			if (keyToggled_Alt['G']) {
 				D3DXMATRIXA16 newMove;
 				D3DXMatrixTranslation(&newMove, 0, 0, 25);
 				D3DXMATRIXA16 newView;

@@ -28,7 +28,7 @@
                             <texture texture="tank_png-image" texcoord=""/>
                         </diffuse>
                         <specular>
-                            <color>0.5 0.5 0.5 1</color>
+                            <color>0.2 0.2 0.2 1</color>
                         </specular>
                         <shininess>
                             <float>12.5</float>
