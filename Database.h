@@ -6,6 +6,8 @@
 class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
 const int WeaponCount = 5;
 
+bool IsPointOnPath(D3DXVECTOR3 pos, float* outY = NULL);
+
 // Defines one or more tristrips that share same material
 class Tristrip
 {
@@ -56,7 +58,17 @@ public:
 		corners[6] = D3DXVECTOR3(maxCorner.x, maxCorner.y, minCorner.z);
 		corners[7] = D3DXVECTOR3(maxCorner.x, maxCorner.y, maxCorner.z);
 	}
+
+	bool Contains(D3DXVECTOR3 vec)
+	{
+		return
+			minCorner.x <= vec.x && vec.x <= maxCorner.x &&
+			minCorner.y <= vec.y && vec.y <= maxCorner.y &&
+			minCorner.z <= vec.z && vec.z <= maxCorner.z;
+	}
 };
+
+static string pathMaterialName = "Path";
 
 class Mesh
 {
@@ -65,12 +77,14 @@ public:
 	std::vector<Tristrip> tristrips;
 
 	Mesh(): boundingBox(BoundingBox(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,0,0))) {}
-	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "");
+	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "", string hide3 = "");
 	void ReleaseDeviceResources() {
 		for(int i = 0; i < (int)tristrips.size(); i++) {
 			tristrips[i].ReleaseDeviceResources();
 		}
 	}
+
+	bool IsOnPath(float x, float z, float* outY = NULL);
 };
 
 enum ItemType {
@@ -123,6 +137,7 @@ public:
 
 static const float PlayerMoveSpeed = 5.0f;
 static const float PlayerStrafeSpeed = 3.0f;
+static const float PlayerRaiseAbovePath = 0.65f;
 
 class Player: public MeshEntity
 {

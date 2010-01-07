@@ -32,7 +32,7 @@ public:
 
 			dev->SetTransform(D3DTS_WORLD, &matWorld);
 
-			entity->mesh->Render(dev, "OuterWall", "-Hi");
+			entity->mesh->Render(dev, "OuterWall", "Path", "-Hi");
 			if (keyToggled_Alt['B']) {
 				RenderBoundingBox(dev, entity->mesh->boundingBox);
 			}

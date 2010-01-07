@@ -25,9 +25,7 @@ public:
 	void FrameMove(double fTime, float fElapsedTime)
 	{
 		// Move the player
-		if (keyDown['W'] || keyDown['S'] || keyDown['D'] || keyDown['A']) {
-			MoveLocalPlayer(fElapsedTime);
-		}
+		MoveLocalPlayer(fElapsedTime);
 	}
 
 	void PreRender(IDirect3DDevice9* dev)
@@ -74,50 +72,39 @@ public:
 
 	void MoveLocalPlayer(float fElapsedTime)
 	{
-		D3DXVECTOR3 pos = localPlayer->position;
-		float direction = localPlayer->rotY / 360 * 2 * D3DX_PI;
+		// Try to move at an angle if you can not go forward
+		static float dirOffsets[] = {0, -10, 10, -25, 25, -40, 40, -55, 55, -70, 70, -85, 85};
 
-		float speed = 0.0;
-		if (keyDown['W']) speed = +PlayerMoveSpeed;
-		if (keyDown['S']) speed = -PlayerMoveSpeed;
-		pos.z += speed * fElapsedTime * cos(direction);
-		pos.x -= speed * fElapsedTime * sin(direction);
+		for (int i = 0; i < (sizeof(dirOffsets) / sizeof(float)); i++) {
+			float dirOffset = dirOffsets[i] / 360 * 2 * D3DX_PI;
 
-		float strafeSpeed = 0.0;
-		if (keyDown['D']) strafeSpeed = +PlayerStrafeSpeed;
-		if (keyDown['A']) strafeSpeed = -PlayerStrafeSpeed;
-		pos.x += strafeSpeed * fElapsedTime * cos(direction);
-		pos.z += strafeSpeed * fElapsedTime * sin(direction);
+			D3DXVECTOR3 pos = localPlayer->position;
+			float direction = localPlayer->rotY / 360 * 2 * D3DX_PI + dirOffset;
 
-		for(int i = 0; i < (int)db.entities.size(); i++) {
-			// Pipe or tank
-			if (dynamic_cast<Pipe*>(db.entities[i]) != NULL || dynamic_cast<Tank*>(db.entities[i]) != NULL) {
-				MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
-				// Position relative to the mesh
-				D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
-				
+			// Move forward / back
+			float speed = 0.0;
+			if (keyDown['W']) speed += +PlayerMoveSpeed;
+			if (keyDown['S']) speed += -PlayerMoveSpeed;
+			speed *= cos(dirOffset);
+			pos.z += speed * fElapsedTime * cos(direction);
+			pos.x -= speed * fElapsedTime * sin(direction);
+
+			// Move left / right
+			float strafeSpeed = 0.0;
+			if (keyDown['D']) strafeSpeed += +PlayerStrafeSpeed;
+			if (keyDown['A']) strafeSpeed += -PlayerStrafeSpeed;
+			strafeSpeed *= cos(dirOffset);
+			pos.x += strafeSpeed * fElapsedTime * cos(direction);
+			pos.z += strafeSpeed * fElapsedTime * sin(direction);
+
+			float outY;
+			if (IsPointOnPath(pos, &outY)) {
+				pos.y = outY + PlayerRaiseAbovePath;
+				localPlayer->position = pos;
+				return; // Done, moved
 			}
 		}
-
-		localPlayer->position = pos;
-	}
-
-	// Rotates point cc-wise around Y
-	D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
-	{
-		while(angleDeg < 0) angleDeg += 360;
-		while(angleDeg >= 360) angleDeg -= 360;
-		if (angleDeg ==   0) return vec;
-		if (angleDeg ==  90) return D3DXVECTOR3(-vec.z, vec.y, vec.x);
-		if (angleDeg == 180) return D3DXVECTOR3(-vec.x, vec.y, -vec.z);
-		if (angleDeg == 270) return D3DXVECTOR3(vec.z, vec.y, -vec.x);
-		
-		float angleRad = angleDeg / 360 * 2 * D3DX_PI;
-		float cosAlfa = cos(angleRad);
-		float sinAlfa = sin(angleRad);
-		float x = vec.x * cosAlfa + vec.z * -sinAlfa;   // cos -sin   vec.x
-		float z = vec.x * sinAlfa + vec.z *  cosAlfa;   // sin  cos   vec.z
-		return D3DXVECTOR3(x, vec.y, z);
+		// Can not move 
 	}
 };
 

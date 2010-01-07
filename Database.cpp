@@ -33,7 +33,7 @@ void Tristrip::Render(IDirect3DDevice9* dev)
 	}
 }
 
-void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2)
+void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2, string hide3)
 {
 	for(int i = 0; i < (int)tristrips.size(); i++) {
 		Tristrip& ts = tristrips[i];
@@ -41,6 +41,9 @@ void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2)
 			continue;
 		if (hide2.size() > 0 && ts.getMaterialName().find(hide2) != -1)
 			continue;
+		if (hide3.size() > 0 && ts.getMaterialName().find(hide3) != -1)
+			continue;
+
 		ts.Render(dev);
 	}
 }
@@ -63,40 +66,98 @@ inline bool TriangleIntersectsYRay(float x, float z, float ax, float az, float b
 	return (i >= 0 && j >= 0 && k >= 0) || (i <= 0 && j <= 0 && k <= 0);
 }
 
-void IntersectYRayWithPlane(float x, float z, float* outY, D3DXVECTOR3 tri[3])
+void IntersectYRayWithPlane(float x, float z, float* outY, D3DXVECTOR3* a, D3DXVECTOR3* b, D3DXVECTOR3* c)
 {
-	D3DXVECTOR3 a = tri[0];
-	D3DXVECTOR3 p = tri[1] - a;
-	D3DXVECTOR3 q = tri[2] - a;
+	D3DXVECTOR3 p = *b - *a;
+	D3DXVECTOR3 q = *c - *a;
 	D3DXVECTOR3 norm;
 	D3DXVec3Cross(&norm, &p, &q);
-	float dist_tri_orig = D3DXVec3Dot(&a, &norm);
-	float dist_up_orig = norm.y; // = (0, 1, 0) * norm
-	*outY = dist_tri_orig / dist_up_orig;
+
+	D3DXVECTOR3 origin = D3DXVECTOR3(x, 0, z);
+	D3DXVECTOR3 originToPlane = *a - origin;
+	float distOriginToPlane = D3DXVec3Dot(&originToPlane, &norm);
+	float distOneUp = norm.y; // = (0, 1, 0) * norm
+	*outY = distOriginToPlane / distOneUp;
 }
 
 bool Tristrip::IntersectsYRay(float x, float z, float* outY)
 {
-	int offset = 0;
+	int index = 0;
 	for(int i = 0; i < (int)vertexCounts.size(); i++) {
 		int vertexCount = vertexCounts[i];
 		// Test all triangles in set
 		for(int j = 0; j < vertexCount - 2; j++) {
 			// Test tringle at current offset 
 			bool isIn = TriangleIntersectsYRay(x, z, 
-				vb[offset + 0], vb[offset + 2], // A
-				vb[offset + 3], vb[offset + 5], // B
-				vb[offset + 6], vb[offset + 8]  // C
+				vb[(index + 0) * vbStride_floats + 0], vb[(index + 0) * vbStride_floats + 2], // A
+				vb[(index + 1) * vbStride_floats + 0], vb[(index + 1) * vbStride_floats + 2], // B
+				vb[(index + 2) * vbStride_floats + 0], vb[(index + 2) * vbStride_floats + 2]  // C
 			);
 			if (isIn) {
 				if (outY != NULL) {
-					IntersectYRayWithPlane(x, z, outY, (D3DXVECTOR3*)&vb[offset]);
+					IntersectYRayWithPlane(x, z, outY,
+						(D3DXVECTOR3*)&vb[(index + 0) * vbStride_floats],
+						(D3DXVECTOR3*)&vb[(index + 1) * vbStride_floats],
+						(D3DXVECTOR3*)&vb[(index + 2) * vbStride_floats]
+					);
 				}
 				return true;
 			}
-			offset += vbStride_floats; // Next
+			index++; // Next
 		}
-		offset += 2 * vbStride_floats; // Next set
+		index += 2; // Next set
+	}
+	return false;
+}
+
+bool Mesh::IsOnPath(float x, float z, float* outY)
+{
+	for(int i = 0; i < (int)tristrips.size(); i++) {
+		Tristrip& ts = tristrips[i];
+		if (ts.getMaterialName() == pathMaterialName) {
+			if (ts.IntersectsYRay(x, z, outY))
+				return true;
+		}
+	}
+	return false;
+}
+
+// Rotates point cc-wise around Y
+D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
+{
+	while(angleDeg < 0) angleDeg += 360;
+	while(angleDeg >= 360) angleDeg -= 360;
+	if (angleDeg ==   0) return vec;
+	if (angleDeg ==  90) return D3DXVECTOR3(-vec.z, vec.y, vec.x);
+	if (angleDeg == 180) return D3DXVECTOR3(-vec.x, vec.y, -vec.z);
+	if (angleDeg == 270) return D3DXVECTOR3(vec.z, vec.y, -vec.x);
+	
+	float angleRad = angleDeg / 360 * 2 * D3DX_PI;
+	float cosAlfa = cos(angleRad);
+	float sinAlfa = sin(angleRad);
+	float x = vec.x * cosAlfa + vec.z * -sinAlfa;   // cos -sin   vec.x
+	float z = vec.x * sinAlfa + vec.z *  cosAlfa;   // sin  cos   vec.z
+	return D3DXVECTOR3(x, vec.y, z);
+}
+
+bool IsPointOnPath(D3DXVECTOR3 pos, float* outY)
+{
+	for(int i = 0; i < (int)db.entities.size(); i++) {
+		// Pipe or tank
+		if (dynamic_cast<Pipe*>(db.entities[i]) != NULL || dynamic_cast<Tank*>(db.entities[i]) != NULL) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+			// Position relative to the mesh
+			D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
+			// Quick test - is in BoundingBox?
+			if (entity->mesh->boundingBox.Contains(meshPos)) {
+				if (entity->mesh->IsOnPath(meshPos.x, meshPos.z, outY)) {
+					if (outY != NULL) {
+						*outY = *outY * entity->scale + entity->position.y;
+					}
+					return true;
+				}
+			}
+		}
 	}
 	return false;
 }
