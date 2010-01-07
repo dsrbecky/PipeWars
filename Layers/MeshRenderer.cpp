@@ -10,6 +10,13 @@ public:
 
 	void Render(IDirect3DDevice9* dev)
 	{
+		D3DVIEWPORT9 viewport;
+		D3DXMATRIX matProj;
+		D3DXMATRIX matView;
+		dev->GetViewport(&viewport);
+		dev->GetTransform(D3DTS_PROJECTION, &matProj);
+		dev->GetTransform(D3DTS_VIEW, &matView);
+
 		for(int i = 0; i < (int)db.entities.size(); i++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
 			if (entity == NULL)
@@ -32,11 +39,48 @@ public:
 
 			dev->SetTransform(D3DTS_WORLD, &matWorld);
 
+			if (!keyToggled_Alt['O']) {
+				D3DXVECTOR3 screen[8];
+				D3DXVec3ProjectArray(
+					screen, sizeof(D3DXVECTOR3),
+					entity->mesh->boundingBox.corners, sizeof(D3DXVECTOR3),
+					&viewport, &matProj, &matView, &matWorld, 8
+				);
+				D3DXVECTOR3 minVec, maxVec;
+				minVec = maxVec = screen[0];
+				for(int i = 1; i < 8; i++) {
+					minVec = min3(minVec, screen[i]);
+					maxVec = max3(maxVec, screen[i]);
+				}
+				int margin = keyToggled_Alt['M'] ? 100 : 0;
+				if (minVec.x > viewport.Width - margin) continue;
+				if (minVec.y > viewport.Height - margin) continue;
+				if (maxVec.x < margin) continue;
+				if (maxVec.y < margin) continue;
+			}
+
 			entity->mesh->Render(dev, "OuterWall", "Path", "-Hi");
+
 			if (keyToggled_Alt['B']) {
 				RenderBoundingBox(dev, entity->mesh->boundingBox);
 			}
 		}
+	}
+
+	void Render2DBoundingBox(IDirect3DDevice9* dev, D3DXVECTOR3 minVec, D3DXVECTOR3 maxVec)
+	{
+		float z = 0.001f;
+		D3DXVECTOR3 leftBottom(minVec.x, maxVec.y, z);
+		D3DXVECTOR3 rightTop(maxVec.x, minVec.y, z);
+		minVec.z = maxVec.z = z;
+
+		vector<D3DXVECTOR3> ver;
+		ver.push_back(minVec); ver.push_back(rightTop);
+		ver.push_back(rightTop); ver.push_back(maxVec);
+		ver.push_back(maxVec); ver.push_back(leftBottom);
+		ver.push_back(leftBottom); ver.push_back(minVec);
+		
+		dev->DrawPrimitiveUP(D3DPT_LINELIST, ver.size() / 2, &(ver[0]), sizeof(D3DXVECTOR3));
 	}
 
 	void RenderBoundingBox(IDirect3DDevice9* dev, BoundingBox& bb)

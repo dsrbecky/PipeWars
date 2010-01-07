@@ -260,6 +260,16 @@ public:
 	~Database() { clear(); }
 };
 
+static inline D3DXVECTOR3 min3(D3DXVECTOR3 a, D3DXVECTOR3 b)
+{
+	return D3DXVECTOR3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
+}
+
+static inline D3DXVECTOR3 max3(D3DXVECTOR3 a, D3DXVECTOR3 b)
+{
+	return D3DXVECTOR3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
+}
+
 extern Database db;
 
 #endif __DATABASE__

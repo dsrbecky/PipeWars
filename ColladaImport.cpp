@@ -123,8 +123,7 @@ Mesh* loadMesh(string filename, string geometryName)
 	// Load the <tristrips/> elements
 	// (other types are ignored for now)
 
-	float minX, minY, minZ, maxX, maxY, maxZ;
-	minX = minY = minZ = maxX = maxY = maxZ = 0;
+	D3DXVECTOR3 minCorner(0,0,0), maxCorner(0,0,0);
 	bool minMaxSet = false;
 
 	for(u_int i = 0; i < meshRef->getTristrips_array().getCount(); i++) {
@@ -192,14 +191,11 @@ Mesh* loadMesh(string filename, string geometryName)
 					float y = (float)posSrc->get(3 * index + 1);
 					float z = (float)posSrc->get(3 * index + 2);
 					if (!minMaxSet) {
-						minX = maxX = x;
-						minY = maxY = y;
-						minZ = maxZ = z;
+						minCorner = maxCorner = D3DXVECTOR3(x, y, z);
 						minMaxSet = true;
 					} else {
-						minX = min(minX, x); maxX = max(maxX, x);
-						minY = min(minY, y); maxY = max(maxY, y);
-						minZ = min(minZ, z); maxZ = max(maxZ, z);
+						minCorner = min3(minCorner, D3DXVECTOR3(x, y, z));
+						maxCorner = max3(maxCorner, D3DXVECTOR3(x, y, z));
 					}
 					vb.push_back(x);
 					vb.push_back(y);
@@ -243,7 +239,7 @@ Mesh* loadMesh(string filename, string geometryName)
 		mesh->tristrips.push_back(ts);
 	}
 
-	mesh->boundingBox = BoundingBox(D3DXVECTOR3(minX, minY, minZ), D3DXVECTOR3(maxX, maxY, maxZ));
+	mesh->boundingBox = BoundingBox(minCorner, maxCorner);
 
 	return mesh;
 }
