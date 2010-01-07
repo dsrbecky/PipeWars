@@ -3,6 +3,7 @@
 
 #include "StdAfx.h"
 #include <set>
+#include <list>
 
 const int WeaponCount = 5;
 const float NearClip = 2.0f;
@@ -12,6 +13,12 @@ static const string PipeFilename = "pipe.dae";
 class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
 
 bool IsPointOnPath(D3DXVECTOR3 pos, float* outY = NULL);
+
+inline D3DXVECTOR3 RotYToDirecion(float rotY_Deg)
+{
+	float rotY_Rad = rotY_Deg / 360 * 2 * D3DX_PI;
+	return D3DXVECTOR3(-sin(rotY_Rad), 0, cos(rotY_Rad));
+}
 
 // Defines one or more tristrips that share same material
 class Tristrip
@@ -211,7 +218,11 @@ public:
 	bool present;
 	float rechargeAfter;
 
-	PowerUp(ItemType _itemType, string filename, string geometryName): MeshEntity(filename, geometryName), itemType(_itemType), present(true), rechargeAfter(0) {}
+	PowerUp(ItemType _itemType, string filename, string geometryName):
+		MeshEntity(filename, geometryName),
+		itemType(_itemType), present(true), rechargeAfter(0) {
+		rotY_velocity = 90;
+	}
 };
 
 class RespawnPoint: public Entity
@@ -236,7 +247,7 @@ public:
 class Database
 {
 public:
-	vector<Entity*> entities;
+	list<Entity*> entities;
 
 	void add(Entity* entity)
 	{
@@ -253,8 +264,8 @@ public:
 	void loadTestMap();
 
 	void clear() {
-		for(int i = 0; i < (int)entities.size(); i++) {
-			delete entities[i];
+		for(list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++) {
+			delete *it;
 		}
 		entities.clear();
 	}

@@ -154,8 +154,8 @@ D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
 
 bool IsPointOnPath(D3DXVECTOR3 pos, float* outY)
 {
-	for(int i = 0; i < (int)db.entities.size(); i++) {
-		MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+	for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
+		MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
 		if (entity == NULL)
 			continue;
 		// Position relative to the mesh

@@ -444,6 +444,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\GameLogic.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\Layers\Layer.h"
 			>
 		</File>

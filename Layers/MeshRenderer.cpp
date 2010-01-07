@@ -20,9 +20,9 @@ public:
 	{
 		float extraFPS = DXUTGetFPS() - targetFPS;
 		if (extraFPS < 0) {
-			hiQualityPipes += fElapsedTime * extraFPS * 0.5;
+			hiQualityPipes += fElapsedTime * extraFPS * 0.5f;
 		} else {
-			hiQualityPipes += fElapsedTime * extraFPS * 0.05;
+			hiQualityPipes += fElapsedTime * extraFPS * 0.05f;
 		}
 		hiQualityPipes = max(0, hiQualityPipes);
 	}
@@ -44,9 +44,9 @@ public:
 		light.Direction.y = -500.0f;
 		light.Direction.z =   0.0f;
 		
-		D3DCOLORVALUE ambi = {0.3, 0.3, 0.3, 1};
-		D3DCOLORVALUE diff = {1.0, 1.0, 1.0, 1};
-		D3DCOLORVALUE spec = {0.3, 0.3, 0.1, 1};
+		D3DCOLORVALUE ambi = {0.3f, 0.3f, 0.3f, 1.0f};
+		D3DCOLORVALUE diff = {1.0f, 1.0f, 1.0f, 1.0f};
+		D3DCOLORVALUE spec = {0.3f, 0.3f, 0.1f, 1.0f};
 
 		if (!keyToggled_Alt['A']) light.Ambient  = ambi;
 		if (!keyToggled_Alt['D']) light.Diffuse  = diff;
@@ -81,8 +81,8 @@ public:
 		// Find and mark pipes to be rendered in hi-quality
 		// (the closeset ones to the player)
 		multiset<pair<float, MeshEntity*>> pipes;
-		for(int i = 0; i < (int)db.entities.size(); i++) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
 			if (entity != NULL && entity->mesh->filename == PipeFilename) {
 				D3DXVECTOR3 delta = entity->position - localPlayer->position;
 				float distance = D3DXVec3LengthSq(&delta);
@@ -100,8 +100,8 @@ public:
 		stat_pipesRendered = 0;
 
 		// Render meshes
-		for(int i = 0; i < (int)db.entities.size(); i++) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
 			if (entity == NULL)
 				continue; // Other type
 

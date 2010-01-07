@@ -20,6 +20,7 @@ class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
 class PlayerControl; extern PlayerControl playerControl;
 class MeshRenderer; extern MeshRenderer meshRenderer;
+class GameLogic; extern GameLogic gameLogic;
 
 void InitLayers()
 {
@@ -28,6 +29,7 @@ void InitLayers()
 	// layers.add(&debugGrid);
 	layers.add(&playerControl);
 	layers.add(&meshRenderer);
+	layers.add(&gameLogic);
 }
 
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )

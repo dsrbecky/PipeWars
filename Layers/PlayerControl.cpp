@@ -9,11 +9,13 @@ extern Player* localPlayer;
 
 class PlayerControl: InputLayer
 {
+	bool mouseDown;
 	int mouseX;
 	int mouseY;
 
+	double nextLoadedTime;
 public:
-	PlayerControl(): mouseX(0), mouseY(0) {}
+	PlayerControl(): mouseX(0), mouseY(0), nextLoadedTime(0) {}
 
 	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
@@ -31,15 +33,31 @@ public:
 
 	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
+		mouseDown = bLeftButtonDown;
 		mouseX = xPos;
 		mouseY = yPos;
 		return true;
 	}
 
+
 	void FrameMove(double fTime, float fElapsedTime)
 	{
 		// Move the player
 		MoveLocalPlayer(fElapsedTime);
+
+		// Shoot
+		if (mouseDown && fTime >= nextLoadedTime) {
+			float speed = 15.0;
+			float reloadTime = 0.5;
+			float range = 10;
+			Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
+			bullet->position = localPlayer->position;
+			bullet->rotY = localPlayer->rotY - 90;
+			bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
+			bullet->rangeLeft = range;
+			db.add(bullet);
+			nextLoadedTime = fTime + reloadTime;
+		}
 	}
 
 	void PreRender(IDirect3DDevice9* dev)
@@ -92,26 +110,22 @@ public:
 		static float dirOffsets[] = {0, -10, 10, -25, 25, -40, 40, -55, 55, -70, 70, -85, 85};
 
 		for (int i = 0; i < (sizeof(dirOffsets) / sizeof(float)); i++) {
-			float dirOffset = dirOffsets[i] / 360 * 2 * D3DX_PI;
+			float dirOffset = dirOffsets[i];
 
 			D3DXVECTOR3 pos = localPlayer->position;
-			float direction = localPlayer->rotY / 360 * 2 * D3DX_PI + dirOffset;
+			float direction = localPlayer->rotY + dirOffset;
 
 			// Move forward / back
 			float speed = 0.0;
 			if (keyDown['W']) speed += +PlayerMoveSpeed;
 			if (keyDown['S']) speed += -PlayerMoveSpeed;
-			speed *= cos(dirOffset);
-			pos.z += speed * fElapsedTime * cos(direction);
-			pos.x -= speed * fElapsedTime * sin(direction);
+			pos = pos + RotYToDirecion(direction) * speed * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI);
 
 			// Move left / right
 			float strafeSpeed = 0.0;
 			if (keyDown['D']) strafeSpeed += +PlayerStrafeSpeed;
 			if (keyDown['A']) strafeSpeed += -PlayerStrafeSpeed;
-			strafeSpeed *= cos(dirOffset);
-			pos.x += strafeSpeed * fElapsedTime * cos(direction);
-			pos.z += strafeSpeed * fElapsedTime * sin(direction);
+			pos = pos + RotYToDirecion(direction - 90) * strafeSpeed * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI); 
 
 			float outY;
 			if (IsPointOnPath(pos, &outY)) {
