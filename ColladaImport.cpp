@@ -121,6 +121,10 @@ Mesh* loadMesh(string filename, string geometryName)
 	// Load the <tristrips/> elements
 	// (other types are ignored for now)
 
+	float minX, minY, minZ, maxX, maxY, maxZ;
+	minX = minY = minZ = maxX = maxY = maxZ = 0;
+	bool minMaxSet = false;
+
 	for(u_int i = 0; i < meshRef->getTristrips_array().getCount(); i++) {
 		domTristripsRef tristripsRef = meshRef->getTristrips_array().get(i);
 
@@ -182,9 +186,22 @@ Mesh* loadMesh(string filename, string geometryName)
 			for(u_int k = 0; k < p.getCount(); k += pStride) {
 				if (posOffset != -1) {
 					int index = (int)p.get(k + posOffset);
-					vb.push_back((float)posSrc->get(3 * index + 0));
-					vb.push_back((float)posSrc->get(3 * index + 1));
-					vb.push_back((float)posSrc->get(3 * index + 2));
+					float x = (float)posSrc->get(3 * index + 0);
+					float y = (float)posSrc->get(3 * index + 1);
+					float z = (float)posSrc->get(3 * index + 2);
+					if (!minMaxSet) {
+						minX = maxX = x;
+						minY = maxY = y;
+						minZ = maxZ = z;
+						minMaxSet = true;
+					} else {
+						minX = min(minX, x); maxX = max(maxX, x);
+						minY = min(minY, y); maxY = max(maxY, y);
+						minZ = min(minZ, z); maxZ = max(maxZ, z);
+					}
+					vb.push_back(x);
+					vb.push_back(y);
+					vb.push_back(z);
 				}
 
 				if (norOffset != -1) {
@@ -208,7 +225,8 @@ Mesh* loadMesh(string filename, string geometryName)
 
 				// Note vertex buffer stride (bytes)
 				if (j == 0 && k == 0) {
-					ts.vbStride = vb.size() * sizeof(float);
+					ts.vbStride_floats = vb.size();
+					ts.vbStride_bytes = vb.size() * sizeof(float);
 				}
 			}
 		}
@@ -222,6 +240,8 @@ Mesh* loadMesh(string filename, string geometryName)
 
 		mesh->tristrips.push_back(ts);
 	}
+
+	mesh->boundingBox = BoundingBox(D3DXVECTOR3(minX, minY, minZ), D3DXVECTOR3(maxX, maxY, maxZ));
 
 	return mesh;
 }

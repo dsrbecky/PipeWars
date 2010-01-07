@@ -21,7 +21,7 @@ void Tristrip::Render(IDirect3DDevice9* dev)
 		}
 	}
 
-	dev->SetStreamSource(0, buffer, 0, vbStride);
+	dev->SetStreamSource(0, buffer, 0, vbStride_bytes);
 	dev->SetFVF(fvf);
 	dev->SetTexture(0, texture);
 	dev->SetMaterial(&material);
@@ -43,6 +43,62 @@ void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2)
 			continue;
 		ts.Render(dev);
 	}
+}
+
+// Returns number defining on which side of line the point P lies
+inline float whichSideOfLine(float px, float py, float x1, float y1, float x2, float y2)
+{
+	// Cross product with origin (x1, y1)
+	return ((px - x1) * (y2 - y1)) - ((py - y1) * (x2 - x1));
+}
+
+// Returns true if Y-ray intersects triangle a-b-c
+inline bool TriangleIntersectsYRay(float x, float z, float ax, float az, float bx, float bz, float cx, float cz)
+{
+	float i = whichSideOfLine(x, z, ax, az, bx, bz);
+	float j = whichSideOfLine(x, z, bx, bz, cx, cz);
+	float k = whichSideOfLine(x, z, cx, cz, ax, az);
+	
+	// If the point is on the same side of each of the lines then it is in the triangle.
+	return (i >= 0 && j >= 0 && k >= 0) || (i <= 0 && j <= 0 && k <= 0);
+}
+
+void IntersectYRayWithPlane(float x, float z, float* outY, D3DXVECTOR3 tri[3])
+{
+	D3DXVECTOR3 a = tri[0];
+	D3DXVECTOR3 p = tri[1] - a;
+	D3DXVECTOR3 q = tri[2] - a;
+	D3DXVECTOR3 norm;
+	D3DXVec3Cross(&norm, &p, &q);
+	float dist_tri_orig = D3DXVec3Dot(&a, &norm);
+	float dist_up_orig = norm.y; // = (0, 1, 0) * norm
+	*outY = dist_tri_orig / dist_up_orig;
+}
+
+bool Tristrip::IntersectsYRay(float x, float z, float* outY)
+{
+	int offset = 0;
+	for(int i = 0; i < (int)vertexCounts.size(); i++) {
+		int vertexCount = vertexCounts[i];
+		// Test all triangles in set
+		for(int j = 0; j < vertexCount - 2; j++) {
+			// Test tringle at current offset 
+			bool isIn = TriangleIntersectsYRay(x, z, 
+				vb[offset + 0], vb[offset + 2], // A
+				vb[offset + 3], vb[offset + 5], // B
+				vb[offset + 6], vb[offset + 8]  // C
+			);
+			if (isIn) {
+				if (outY != NULL) {
+					IntersectYRayWithPlane(x, z, outY, (D3DXVECTOR3*)&vb[offset]);
+				}
+				return true;
+			}
+			offset += vbStride_floats; // Next
+		}
+		offset += 2 * vbStride_floats; // Next set
+	}
+	return false;
 }
 
 void Database::loadTestMap()

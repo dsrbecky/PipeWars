@@ -10,7 +10,8 @@ const int WeaponCount = 5;
 class Tristrip
 {
 	DWORD fvf;
-	int vbStride; // in bytes
+	int vbStride_bytes;
+	int vbStride_floats;
 	vector<float> vb; // Vertex buffer data
 	IDirect3DVertexBuffer9* buffer; // The buffer is created on demand
 	std::vector<int> vertexCounts; // framgmentation of tristrips into groups
@@ -34,13 +35,36 @@ public:
 			texture = NULL;
 		}
 	}
+
+	bool IntersectsYRay(float x, float z, float* outY = NULL);
+};
+
+class BoundingBox
+{
+public:
+	D3DXVECTOR3 minCorner;
+	D3DXVECTOR3 maxCorner;
+	D3DXVECTOR3 corners[8];
+
+	BoundingBox(D3DXVECTOR3 _min, D3DXVECTOR3 _max): minCorner(_min), maxCorner(_max) {
+		corners[0] = D3DXVECTOR3(minCorner.x, minCorner.y, minCorner.z);
+		corners[1] = D3DXVECTOR3(minCorner.x, minCorner.y, maxCorner.z);
+		corners[2] = D3DXVECTOR3(minCorner.x, maxCorner.y, minCorner.z);
+		corners[3] = D3DXVECTOR3(minCorner.x, maxCorner.y, maxCorner.z);
+		corners[4] = D3DXVECTOR3(maxCorner.x, minCorner.y, minCorner.z);
+		corners[5] = D3DXVECTOR3(maxCorner.x, minCorner.y, maxCorner.z);
+		corners[6] = D3DXVECTOR3(maxCorner.x, maxCorner.y, minCorner.z);
+		corners[7] = D3DXVECTOR3(maxCorner.x, maxCorner.y, maxCorner.z);
+	}
 };
 
 class Mesh
 {
 public:
+	BoundingBox boundingBox;
 	std::vector<Tristrip> tristrips;
 
+	Mesh(): boundingBox(BoundingBox(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,0,0))) {}
 	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "");
 	void ReleaseDeviceResources() {
 		for(int i = 0; i < (int)tristrips.size(); i++) {
@@ -188,7 +212,7 @@ public:
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
 	{
 		entity->position = D3DXVECTOR3((float)x, (float)y, (float)z);
-		entity->rotY = angle;
+		entity->rotY = -angle;
 		entities.push_back(entity);
 	}
 

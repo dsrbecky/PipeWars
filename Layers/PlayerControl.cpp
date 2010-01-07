@@ -4,6 +4,7 @@
 
 const double Epsilon = 0.001f;
 
+extern Database db;
 extern Player* localPlayer;
 
 class PlayerControl: InputLayer
@@ -66,7 +67,7 @@ public:
 		
 		D3DXVECTOR3 posOnYplane = (1 - t) * pos3D_Near + t * pos3D_Far;
 		D3DXVECTOR3 dir = posOnYplane - localPlayer->position;
-		float angle = 90 - atan2(dir.z, dir.x) / 2 / D3DX_PI * 360.0f;
+		float angle = atan2(dir.z, dir.x) / 2 / D3DX_PI * 360.0f - 90;
 
 		return angle;
 	}
@@ -80,15 +81,43 @@ public:
 		if (keyDown['W']) speed = +PlayerMoveSpeed;
 		if (keyDown['S']) speed = -PlayerMoveSpeed;
 		pos.z += speed * fElapsedTime * cos(direction);
-		pos.x += speed * fElapsedTime * sin(direction);
+		pos.x -= speed * fElapsedTime * sin(direction);
 
 		float strafeSpeed = 0.0;
 		if (keyDown['D']) strafeSpeed = +PlayerStrafeSpeed;
 		if (keyDown['A']) strafeSpeed = -PlayerStrafeSpeed;
-		pos.x += strafeSpeed * fElapsedTime  * cos(direction);
-		pos.z -= strafeSpeed * fElapsedTime  * sin(direction);
+		pos.x += strafeSpeed * fElapsedTime * cos(direction);
+		pos.z += strafeSpeed * fElapsedTime * sin(direction);
+
+		for(int i = 0; i < (int)db.entities.size(); i++) {
+			// Pipe or tank
+			if (dynamic_cast<Pipe*>(db.entities[i]) != NULL || dynamic_cast<Tank*>(db.entities[i]) != NULL) {
+				MeshEntity* entity = dynamic_cast<MeshEntity*>(db.entities[i]);
+				// Position relative to the mesh
+				D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
+				
+			}
+		}
 
 		localPlayer->position = pos;
+	}
+
+	// Rotates point cc-wise around Y
+	D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
+	{
+		while(angleDeg < 0) angleDeg += 360;
+		while(angleDeg >= 360) angleDeg -= 360;
+		if (angleDeg ==   0) return vec;
+		if (angleDeg ==  90) return D3DXVECTOR3(-vec.z, vec.y, vec.x);
+		if (angleDeg == 180) return D3DXVECTOR3(-vec.x, vec.y, -vec.z);
+		if (angleDeg == 270) return D3DXVECTOR3(vec.z, vec.y, -vec.x);
+		
+		float angleRad = angleDeg / 360 * 2 * D3DX_PI;
+		float cosAlfa = cos(angleRad);
+		float sinAlfa = sin(angleRad);
+		float x = vec.x * cosAlfa + vec.z * -sinAlfa;   // cos -sin   vec.x
+		float z = vec.x * sinAlfa + vec.z *  cosAlfa;   // sin  cos   vec.z
+		return D3DXVECTOR3(x, vec.y, z);
 	}
 };
 
