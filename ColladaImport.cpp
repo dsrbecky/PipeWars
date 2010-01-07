@@ -132,7 +132,6 @@ Mesh* loadMesh(string filename, string geometryName)
 		Tristrip ts;
 		ts.fvf = 0;
 		ts.buffer = NULL;
-		ts.texture = NULL;
 
 		// Resolve all data sources
 

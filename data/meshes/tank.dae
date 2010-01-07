@@ -25,7 +25,7 @@
                             <color>0.00566 0.18665 0.09949 1</color>
                         </ambient>
                         <diffuse>
-                            <color>0.01133 0.3733 0.19898 1</color>
+                            <texture texture="tank_png-image" texcoord=""/>
                         </diffuse>
                         <specular>
                             <color>0.5 0.5 0.5 1</color>
@@ -95,7 +95,7 @@
                             <color>0.26811 0.31932 0.30892 1</color>
                         </ambient>
                         <diffuse>
-                            <color>0.53623 0.63864 0.61785 1</color>
+                            <texture texture="tank_png-image" texcoord=""/>
                         </diffuse>
                         <specular>
                             <color>0.5 0.5 0.5 1</color>
@@ -120,6 +120,11 @@
             </profile_COMMON>
         </effect>
     </library_effects>
+    <library_images>
+        <image id="tank_png-image" name="tank_png-image" depth="1">
+            <init_from>tank.png</init_from>
+        </image>
+    </library_images>
     <library_geometries>
         <geometry id="Tank5x7-Geometry" name="Tank5x7-Geometry">
             <mesh>

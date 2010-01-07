@@ -2,6 +2,7 @@
 #define __DATABASE__
 
 #include "StdAfx.h"
+#include <set>
 
 const int WeaponCount = 5;
 const float NearClip = 2.0f;
@@ -24,7 +25,6 @@ class Tristrip
 	string materialName;
 	D3DMATERIAL9 material;
 	string textureFilename;
-	IDirect3DTexture9* texture;
 
 	friend Mesh* loadMesh(string filename, string geometryName);
 public:
@@ -35,10 +35,6 @@ public:
 		if (buffer != NULL) {
 			buffer->Release();
 			buffer = NULL;
-		}
-		if (texture != NULL) {
-			texture->Release();
-			texture = NULL;
 		}
 	}
 

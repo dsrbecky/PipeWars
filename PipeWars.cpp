@@ -27,7 +27,7 @@ void InitLayers()
 	layers.add(&renderState);
 	layers.add(&camera);
 	layers.add(&debugStats);
-	layers.add(&debugGrid);
+	// layers.add(&debugGrid);
 	layers.add(&playerControl);
 	layers.add(&meshRenderer);
 }

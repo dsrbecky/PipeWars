@@ -4,6 +4,7 @@
 #include <set>
 
 extern map<string, Mesh*> loadedMeshes; // ColladaImport.cpp
+extern map<string, IDirect3DTexture9*> loadedTextures;
 extern Player* localPlayer;
 
 float hiQualityPipes = 0;
@@ -215,6 +216,13 @@ public:
 			it->second->ReleaseDeviceResources();
 			it++;
 		}
+
+		map<string, IDirect3DTexture9*>::iterator it2 = loadedTextures.begin();
+		while(it2 != loadedTextures.end()) {
+			it2->second->Release();
+			it2++;
+		}
+		loadedTextures.clear();
 	}
 };
 

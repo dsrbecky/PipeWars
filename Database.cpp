@@ -3,6 +3,21 @@
 
 extern Player* localPlayer;
 
+map<string, IDirect3DTexture9*> loadedTextures;
+
+IDirect3DTexture9* loadTexture(IDirect3DDevice9* dev, string textureFilename)
+{
+	if (loadedTextures.count(textureFilename) == 0) {
+		IDirect3DTexture9* texture;
+		if (FAILED(D3DXCreateTextureFromFileA(dev, (textureFilename).c_str(), &texture))) {
+			MessageBoxA(NULL, ("Could not find texture " + textureFilename).c_str() , "COLLADA", MB_OK);
+			exit(1);
+		}
+		loadedTextures[textureFilename] = texture;
+	}
+	return loadedTextures[textureFilename];
+}
+
 void Tristrip::Render(IDirect3DDevice9* dev)
 {
 	// Create buffer on demand
@@ -14,16 +29,13 @@ void Tristrip::Render(IDirect3DDevice9* dev)
 		buffer->Unlock();
 	}
 
-	if (texture == NULL && textureFilename.size() > 0) {
-		if (FAILED(D3DXCreateTextureFromFileA(dev, (textureFilename).c_str(), &texture))) {
-			MessageBoxA(NULL, ("Could not find texture " + textureFilename).c_str() , "COLLADA", MB_OK);
-			exit(1);
-		}
-	}
-
 	dev->SetStreamSource(0, buffer, 0, vbStride_bytes);
 	dev->SetFVF(fvf);
-	dev->SetTexture(0, texture);
+	if (textureFilename.size() > 0) {
+		dev->SetTexture(0, loadTexture(dev, textureFilename));
+	} else {
+		dev->SetTexture(0, NULL);
+	}
 	dev->SetMaterial(&material);
 	int start = 0;
 	for(int j = 0; j < (int)vertexCounts.size(); j++) {
