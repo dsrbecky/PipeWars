@@ -448,6 +448,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\HUD.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\Layers\Layer.h"
 			>
 		</File>

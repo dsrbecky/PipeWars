@@ -47,16 +47,20 @@ public:
 
 		// Shoot
 		if (mouseDown && fTime >= nextLoadedTime) {
-			float speed = 15.0;
-			float reloadTime = 0.5;
-			float range = 10;
-			Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
-			bullet->position = localPlayer->position;
-			bullet->rotY = localPlayer->rotY - 90;
-			bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
-			bullet->rangeLeft = range;
-			db.add(bullet);
-			nextLoadedTime = fTime + reloadTime;
+			int* ammo = &localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon];
+			if (*ammo > 0) {
+				float speed = 15.0;
+				float reloadTime = 0.5;
+				float range = 10;
+				Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
+				bullet->position = localPlayer->position;
+				bullet->rotY = localPlayer->rotY - 90;
+				bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
+				bullet->rangeLeft = range;
+				db.add(bullet);
+				(*ammo)--;
+				nextLoadedTime = fTime + reloadTime;
+			}
 		}
 	}
 

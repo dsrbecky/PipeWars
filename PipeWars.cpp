@@ -15,6 +15,7 @@ Player* localPlayer = NULL;
 
 LayerChain layers;
 
+class HUD; extern HUD hud;
 class Camera; extern Camera camera;
 class DebugStats; extern DebugStats debugStats;
 class DebugGrid; extern DebugGrid debugGrid;
@@ -24,6 +25,7 @@ class GameLogic; extern GameLogic gameLogic;
 
 void InitLayers()
 {
+	layers.add(&hud);
 	layers.add(&camera);
 	layers.add(&debugStats);
 	// layers.add(&debugGrid);

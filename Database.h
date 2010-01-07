@@ -5,7 +5,7 @@
 #include <set>
 #include <list>
 
-const int WeaponCount = 5;
+const int WeaponCount = 6;
 const float NearClip = 2.0f;
 const float FarClip = 1000.0f;
 static const string PipeFilename = "pipe.dae";
@@ -98,12 +98,14 @@ public:
 
 enum ItemType {
 	Weapon_Revolver,
+	Weapon_DualRevolver,
 	Weapon_Shotgun,
 	Weapon_AK47,
 	Weapon_Jackhammer,
 	Weapon_Nailgun,
 
 	Ammo_Revolver,
+	Ammo_DualRevolver,
 	Ammo_Shotgun,
 	Ammo_AK47,
 	Ammo_Jackhammer,
@@ -114,7 +116,9 @@ enum ItemType {
 
 	Shiny,
 	Monkey,
-	Skull
+	Skull,
+
+	ItemType_End
 };
 
 // Entry in the game database
@@ -162,8 +166,8 @@ public:
 	int kills;
 	int deaths;
 
-	int selectedWeapon;
-	int inventory[sizeof(ItemType)];
+	ItemType selectedWeapon;
+	int inventory[ItemType_End];
 
 	Player(string _name):
 		MeshEntity("Merman.dae", "Revolver"),
@@ -171,18 +175,22 @@ public:
 	{
 		ZeroMemory(&inventory, sizeof(inventory));
 		inventory[Weapon_Revolver] = 1;
+		inventory[Ammo_Revolver] = 999;
+		inventory[Ammo_DualRevolver] = 999;
 	}
 
-	void selectWeapon(ItemType weapon)
+	bool selectWeapon(ItemType weapon)
 	{
+		if (inventory[weapon] == 0)
+			return false;  // Do not have that weapon
+
 		selectedWeapon = weapon;
 		switch(weapon) {
 			case Weapon_Revolver:
-				if (inventory[Weapon_Revolver] == 1) {
-					mesh = loadMesh("Merman.dae", "Revolver");
-				} else {
-					mesh = loadMesh("Merman.dae", "DualRevolver");
-				}
+				mesh = loadMesh("Merman.dae", "Revolver");
+				break;
+			case Weapon_DualRevolver:
+				mesh = loadMesh("Merman.dae", "DualRevolver");
 				break;
 			case Weapon_Shotgun:
 				mesh = loadMesh("Merman.dae", "Boomstick");
