@@ -25,7 +25,7 @@ class HelpScreen: Layer
 		float width = 700;
 		float height = 450;
 		float rhw = 1.0f;
-		DWORD color = 0xB0000000;
+		DWORD color = 0xC0000000;
 		CUSTOMVERTEX corners[] = {
 			{left, top, 0, rhw, color},
 			{left + width, top, 0, rhw, color},
@@ -51,6 +51,7 @@ class HelpScreen: Layer
 		RenderKey("1,2,3,4,5", "Select weapon");
 		RenderKey("Middle mouse", "Rotate camera");
 		RenderKey("Scroll wheel", "Zoom");
+		RenderKey("Tab", "Scoreboard");
 		RenderKey("H", "Help");
 		RenderKey("ESC", "Exit");
 		RenderKey("Alt+Enter", "Toggle full screen");
@@ -73,6 +74,8 @@ class HelpScreen: Layer
 		RenderKey("Alt+V", "View frustum");
 		RenderKey("Alt+F", "Frame stats");
 		RenderKey("", "");
+
+		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 	}
 
 	void RenderHeader(string text)

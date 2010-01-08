@@ -205,6 +205,7 @@ public:
 
 		return true;
 	}
+
 };
 
 class Bullet: public MeshEntity
@@ -238,17 +239,6 @@ public:
 	D3DXVECTOR3 position;
 
 	RespawnPoint(double x, double y, double z): position(D3DXVECTOR3((float)x, (float)y, (float)z)) {}
-};
-
-class ChatMessage: public Entity
-{
-public:
-	float time;
-	Player* sender;
-	string message;
-
-	ChatMessage(float _time, Player* _sender, string _message):
-		time(_time), sender(_sender), message(_message) {}
 };
 
 class Database

@@ -15,6 +15,7 @@ Player* localPlayer = NULL;
 
 LayerChain layers;
 
+class ScoreBoard; extern ScoreBoard scoreBoard;
 class HelpScreen; extern HelpScreen helpScreen;
 class HUD; extern HUD hud;
 class GameLogic; extern GameLogic gameLogic;
@@ -22,6 +23,7 @@ class Renderer; extern Renderer renderer;
 
 void InitLayers()
 {
+	layers.add(&scoreBoard);
 	layers.add(&helpScreen);
 	layers.add(&hud);
 	layers.add(&gameLogic);

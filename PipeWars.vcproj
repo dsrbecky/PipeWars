@@ -476,6 +476,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\ScoreBoard.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\StdAfx.h"
 			>
 		</File>

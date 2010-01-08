@@ -6,7 +6,7 @@
 extern Player* localPlayer;
 extern IDirect3DTexture9* loadTexture(IDirect3DDevice9* dev, string textureFilename);
 
-string imagePath = "..\\data\\images\\";
+static string imagePath = "..\\data\\images\\";
 
 class HUD: Layer
 {
@@ -33,8 +33,7 @@ class HUD: Layer
 		weapons[Weapon_Nailgun]      = loadTexture(dev, imagePath + "Nail GunMini2.png");
 		IDirect3DTexture9* weaponDualRevolver = loadTexture(dev, imagePath + "Dual RevolversMini2.png");
 
-		ID3DXSprite* sprite;
-		D3DXCreateSprite(dev, &sprite);
+		ID3DXSprite* sprite; D3DXCreateSprite(dev, &sprite);
 		sprite->Begin(0);
 
 		float top = (float)DXUTGetWindowHeight() - 64; 
@@ -53,7 +52,6 @@ class HUD: Layer
 		
 		sprite->End();
 		sprite->Release();
-		dev->EndScene();
 	}
 
 	void RenderNumber(ID3DXSprite* sprite, IDirect3DTexture9* digits[], float x, float y, int num)
