@@ -42,13 +42,6 @@ public:
 		}
 	}
 
-	void PreRender(IDirect3DDevice9* dev)
-	{
-		for(int i = 0; i < (int)layers.size(); i++) {
-			layers[i]->PreRender(dev);
-		}
-	}
-
 	void Render(IDirect3DDevice9* dev)
 	{
 		for(int i = layers.size() - 1; i >= 0; i--) {

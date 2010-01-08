@@ -5,7 +5,6 @@
 #include <set>
 #include <list>
 
-const int WeaponCount = 6;
 const float NearClip = 2.0f;
 const float FarClip = 1000.0f;
 static const string PipeFilename = "pipe.dae";
@@ -98,14 +97,12 @@ public:
 
 enum ItemType {
 	Weapon_Revolver,
-	Weapon_DualRevolver,
 	Weapon_Shotgun,
 	Weapon_AK47,
 	Weapon_Jackhammer,
 	Weapon_Nailgun,
 
 	Ammo_Revolver,
-	Ammo_DualRevolver,
 	Ammo_Shotgun,
 	Ammo_AK47,
 	Ammo_Jackhammer,
@@ -176,7 +173,6 @@ public:
 		ZeroMemory(&inventory, sizeof(inventory));
 		inventory[Weapon_Revolver] = 1;
 		inventory[Ammo_Revolver] = 999;
-		inventory[Ammo_DualRevolver] = 999;
 	}
 
 	bool selectWeapon(ItemType weapon)
@@ -187,10 +183,11 @@ public:
 		selectedWeapon = weapon;
 		switch(weapon) {
 			case Weapon_Revolver:
-				mesh = loadMesh("Merman.dae", "Revolver");
-				break;
-			case Weapon_DualRevolver:
-				mesh = loadMesh("Merman.dae", "DualRevolver");
+				if (inventory[Weapon_Revolver] == 1) {
+					mesh = loadMesh("Merman.dae", "Revolver");
+				} else {
+					mesh = loadMesh("Merman.dae", "DualRevolver");
+				}
 				break;
 			case Weapon_Shotgun:
 				mesh = loadMesh("Merman.dae", "Boomstick");

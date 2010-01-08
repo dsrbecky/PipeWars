@@ -9,6 +9,8 @@ extern map<string, Mesh*> loadedMeshes;
 extern map<string, IDirect3DTexture9*> loadedTextures;
 extern Player* localPlayer;
 
+void (*onCameraSet)(IDirect3DDevice9* dev) = NULL; // Event for others
+
 class Renderer: Layer
 {
 	IDirect3DVertexBuffer9* gridBuffer;
@@ -90,6 +92,10 @@ public:
 		D3DXMATRIXA16 matProj;
 		D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, (float)DXUTGetWindowWidth() / DXUTGetWindowHeight(), NearClip, FarClip);
 		dev->SetTransform(D3DTS_PROJECTION, &matProj);
+
+		if (onCameraSet != NULL) {
+			onCameraSet(dev);
+		}
 	}
 
 	void SetupLight(IDirect3DDevice9* dev)
@@ -126,17 +132,14 @@ public:
 		dev->LightEnable(0, true);
 	}
 
-	void PreRender(IDirect3DDevice9* dev)
+	void Render(IDirect3DDevice9* dev)
 	{
 		dev->SetRenderState(D3DRS_FILLMODE, keyToggled_Alt['W'] ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
 	    dev->SetRenderState(D3DRS_ZENABLE, !keyToggled_Alt['Z']);
 		
 		SetupCamera(dev);
 		SetupLight(dev);
-	}
 
-	void Render(IDirect3DDevice9* dev)
-	{
 		// Get the camera settings
 		D3DVIEWPORT9 viewport;
 		D3DXMATRIX matProj;

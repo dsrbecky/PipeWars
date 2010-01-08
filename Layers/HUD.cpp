@@ -27,11 +27,11 @@ class HUD: Layer
 		};
 		map<ItemType, IDirect3DTexture9*> weapons;
 		weapons[Weapon_Revolver]     = loadTexture(dev, imagePath + "RevolverMini2.png");
-		weapons[Weapon_DualRevolver] = loadTexture(dev, imagePath + "Dual RevolversMini2.png");
 		weapons[Weapon_Shotgun]      = loadTexture(dev, imagePath + "BoomstickMini2.png");
 		weapons[Weapon_AK47]         = loadTexture(dev, imagePath + "AK47Mini2.png");
 		weapons[Weapon_Jackhammer]   = loadTexture(dev, imagePath + "JackhammerMini2.png");
 		weapons[Weapon_Nailgun]      = loadTexture(dev, imagePath + "Nail GunMini2.png");
+		IDirect3DTexture9* weaponDualRevolver = loadTexture(dev, imagePath + "Dual RevolversMini2.png");
 
 		ID3DXSprite* sprite;
 		D3DXCreateSprite(dev, &sprite);
@@ -45,7 +45,11 @@ class HUD: Layer
 		RenderNumber(sprite, digits, 272, top, localPlayer->armour);
 		RenderNumber(sprite, digits, 457, top, localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon]);
 
-		pos.x = 580; sprite->Draw(weapons[localPlayer->selectedWeapon], NULL, NULL, &pos, 0xFFFFFFFF);
+		IDirect3DTexture9* weaponImage = weapons[localPlayer->selectedWeapon];
+		if (localPlayer->selectedWeapon == Weapon_Revolver && localPlayer->inventory[Weapon_Revolver > 1]) {
+			weaponImage = weaponDualRevolver;
+		}
+		pos.x = 580; sprite->Draw(weaponImage, NULL, NULL, &pos, 0xFFFFFFFF);
 		
 		sprite->End();
 		sprite->Release();

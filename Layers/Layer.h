@@ -49,10 +49,6 @@ public:
 	{
 	}
 
-	virtual void PreRender(IDirect3DDevice9* dev)
-	{
-	}
-
 	virtual void Render(IDirect3DDevice9* dev)
 	{
 	}

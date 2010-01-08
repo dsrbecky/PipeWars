@@ -17,7 +17,6 @@ LayerChain layers;
 
 class HelpScreen; extern HelpScreen helpScreen;
 class HUD; extern HUD hud;
-class PlayerControl; extern PlayerControl playerControl;
 class GameLogic; extern GameLogic gameLogic;
 class Renderer; extern Renderer renderer;
 
@@ -25,7 +24,6 @@ void InitLayers()
 {
 	layers.add(&helpScreen);
 	layers.add(&hud);
-	layers.add(&playerControl);
 	layers.add(&gameLogic);
 	layers.add(&renderer);
 }
@@ -48,13 +46,8 @@ void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 void CALLBACK OnFrameRender(IDirect3DDevice9* dev, double fTime, float fElapsedTime, void* pUserContext)
 {
     dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 25, 25, 35 ), 1.0f, 0);
-
-	layers.PreRender(dev);
-
     if(SUCCEEDED(dev->BeginScene())) {
-
 		layers.Render(dev);
-
 		dev->EndScene();
     }
 }
