@@ -177,11 +177,7 @@ void Database::loadTestMap()
 {
 	add(3, 0, 0, 180, new MeshEntity("suzanne.dae", "Suzanne"));
 
-	localPlayer = new Player("David");
-	localPlayer->score++;
-
 	add(12, 0.45, 28, 0,   new Player("Ali"));
-	add(5, 4.3, 14, 0,     localPlayer);
 	add(25, -1.4, 32, 0,   new Player("Shephan"));
 	add(5.5, -3.5, 16, 0,  new Player("Ed"));
 	

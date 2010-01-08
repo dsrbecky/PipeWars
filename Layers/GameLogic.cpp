@@ -24,12 +24,14 @@ public:
 		Layer::KeyboardProc(nChar, bKeyDown, bAltDown);
 
 		// Select player weapon
-		switch(nChar) {
-			case '1': localPlayer->selectWeapon(Weapon_Revolver); return true;
-			case '2': localPlayer->selectWeapon(Weapon_Shotgun); return true;
-			case '3': localPlayer->selectWeapon(Weapon_AK47); return true;
-			case '4': localPlayer->selectWeapon(Weapon_Jackhammer); return true;
-			case '5': localPlayer->selectWeapon(Weapon_Nailgun); return true;
+		if (localPlayer != NULL) {
+			switch(nChar) {
+				case '1': localPlayer->selectWeapon(Weapon_Revolver); return true;
+				case '2': localPlayer->selectWeapon(Weapon_Shotgun); return true;
+				case '3': localPlayer->selectWeapon(Weapon_AK47); return true;
+				case '4': localPlayer->selectWeapon(Weapon_Jackhammer); return true;
+				case '5': localPlayer->selectWeapon(Weapon_Nailgun); return true;
+			}
 		}
 		return false;
 	}
@@ -44,28 +46,32 @@ public:
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
-		// Move the player
-		MoveLocalPlayer(fElapsedTime);
+		if (localPlayer != NULL) {
+			// Move the player
+			MoveLocalPlayer(fElapsedTime);
 
-		// Rotate the player towards the mouse
-		onCameraSet = &RotateLocalPlayer;
+			// Rotate the player towards the mouse
+			onCameraSet = &RotateLocalPlayer;
 
-		// Fire
-		if (firing && fTime >= nextLoadedTime) {
-			int* ammo = &localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon];
-			if (*ammo > 0) {
-				float speed = 15.0;
-				float reloadTime = 0.5;
-				float range = 10;
-				Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
-				bullet->position = localPlayer->position;
-				bullet->rotY = localPlayer->rotY + 90;
-				bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
-				bullet->rangeLeft = range;
-				db.add(bullet);
-				(*ammo)--;
-				nextLoadedTime = fTime + reloadTime;
+			// Fire
+			if (firing && fTime >= nextLoadedTime) {
+				int* ammo = &localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon];
+				if (*ammo > 0) {
+					float speed = 15.0;
+					float reloadTime = 0.5;
+					float range = 10;
+					Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
+					bullet->position = localPlayer->position;
+					bullet->rotY = localPlayer->rotY + 90;
+					bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
+					bullet->rangeLeft = range;
+					db.add(bullet);
+					(*ammo)--;
+					nextLoadedTime = fTime + reloadTime;
+				}
 			}
+		} else {
+			onCameraSet = NULL;
 		}
 
 		// Move entities

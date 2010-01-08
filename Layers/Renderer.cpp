@@ -154,7 +154,9 @@ public:
 		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
 			if (entity != NULL && entity->mesh->filename == PipeFilename) {
-				D3DXVECTOR3 delta = entity->position - localPlayer->position;
+				D3DXVECTOR3 playerPos(0, 0, 0);
+				if (localPlayer != NULL) playerPos = localPlayer->position;
+				D3DXVECTOR3 delta = entity->position - playerPos;
 				float distance = D3DXVec3LengthSq(&delta);
 				pipes.insert(pair<float, MeshEntity*>(distance, entity));
 				entity->hiQuality = false; // Defualt
@@ -354,7 +356,8 @@ public:
 		msg << fixed << std::setprecision(1);
 		msg << "FPS = " << DXUTGetFPS() << " (target = " << targetFPS << ")" << "    ";
 		msg << "Objects = " << stat_objRendered << " (hq = " << (int)hiQualityPipes << ")" << "    ";
-		msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << ","<< localPlayer->position.z << "    ";
+		if (localPlayer != NULL)
+			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << ","<< localPlayer->position.z << "    ";
 		msg << "Press H for help or ESC to exit.";
 		
 		textX = 8; textY = 8;

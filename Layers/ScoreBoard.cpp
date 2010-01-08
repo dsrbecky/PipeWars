@@ -59,7 +59,7 @@ class ScoreBoard: Layer
 			stringstream kills;  kills  << (*it)->kills;
 			stringstream deaths; deaths << (*it)->deaths;
 			D3DCOLOR color = D3DCOLOR_XRGB(200, 200, 200);
-			if ((*it) == localPlayer)
+			if ((*it) == localPlayer && localPlayer != NULL)
 				color = D3DCOLOR_XRGB(255, 255, 255);
 			RenderScore(dev, (*it)->name, score.str(), kills.str(), deaths.str(), color);
 		}

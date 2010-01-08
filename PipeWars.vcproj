@@ -452,6 +452,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Layers\MainMenu.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\Math.h"
 			>
 		</File>
@@ -481,6 +485,10 @@
 		</File>
 		<File
 			RelativePath=".\StdAfx.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Utils.cpp"
 			>
 		</File>
 	</Files>

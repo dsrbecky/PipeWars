@@ -10,8 +10,10 @@ static string imagePath = "..\\data\\images\\";
 
 class HUD: Layer
 {
-	virtual void Render(IDirect3DDevice9* dev)
+	void Render(IDirect3DDevice9* dev)
 	{
+		if (localPlayer == NULL) return;
+
 		IDirect3DTexture9* hud = loadTexture(dev, imagePath + "HUD2.png");
 		IDirect3DTexture9* digits[] = {
 			loadTexture(dev, imagePath + "H0.png"),
