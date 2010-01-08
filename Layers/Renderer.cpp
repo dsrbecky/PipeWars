@@ -9,10 +9,15 @@ extern map<string, Mesh*> loadedMeshes;
 extern map<string, IDirect3DTexture9*> loadedTextures;
 extern Player* localPlayer;
 
-class Renderer: public InputLayer
+class Renderer: Layer
 {
 	IDirect3DVertexBuffer9* gridBuffer;
-	ID3DXFont* font;
+
+	float cameraYaw;
+	float cameraPitch;
+	float cameraDistance;
+	int lastMouseX;
+	int lastMouseY;
 
 	static const int targetFPS = 30;
 	float hiQualityPipes;
@@ -20,7 +25,33 @@ class Renderer: public InputLayer
 	int stat_pipesRendered;
 
 public:
-	Renderer(): gridBuffer(NULL), font(NULL), hiQualityPipes(0) {}
+
+	Renderer():
+	  gridBuffer(NULL), hiQualityPipes(0),
+	  cameraYaw(D3DX_PI / 4), cameraPitch(-D3DX_PI / 4), cameraDistance(10),
+	  lastMouseX(0), lastMouseY(0) {}
+
+	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
+	{
+		// Camera movement
+		if (bMiddleButtonDown) {
+			int deltaX = xPos - lastMouseX;
+			int deltaY = yPos - lastMouseY;
+			cameraPitch -= (float)deltaY / 200.0f;
+			cameraYaw -= (float)deltaX / 200.0f;
+			cameraPitch = max(-D3DX_PI/2, min(cameraPitch, D3DX_PI/2));
+		}
+
+		if (nMouseWheelDelta != 0) {
+			cameraDistance -= (float)nMouseWheelDelta / 120.0f * 3;
+			cameraDistance = max(cameraDistance, 4);
+		}
+
+		lastMouseX = xPos;
+		lastMouseY = yPos;
+
+		return false;
+	}
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
@@ -31,6 +62,34 @@ public:
 			hiQualityPipes += fElapsedTime * extraFPS * 0.05f;
 		}
 		hiQualityPipes = max(0, hiQualityPipes);
+	}
+
+	void SetupCamera(IDirect3DDevice9* dev)
+	{
+		D3DXMATRIXA16 matPitch;
+		D3DXMatrixRotationX(&matPitch, cameraPitch);
+		D3DXMATRIXA16 matYaw;
+		D3DXMatrixRotationY(&matYaw, cameraYaw);
+		D3DXMATRIXA16 matYawPitch;
+		D3DXMatrixMultiply(&matYawPitch, &matYaw, &matPitch);
+		D3DXMATRIXA16 matZoom;
+		D3DXMatrixTranslation(&matZoom, 0, 0, cameraDistance);
+		D3DXMATRIXA16 matView;
+		D3DXMatrixMultiply(&matView, &matYawPitch, &matZoom);
+		D3DXMATRIXA16 matMove;
+		if (localPlayer == NULL) {
+			D3DXMatrixIdentity(&matMove);
+		} else {
+			D3DXMatrixTranslation(&matMove, -localPlayer->position.x, -localPlayer->position.y, -localPlayer->position.z);
+		}
+		D3DXMATRIXA16 matMoveView;
+		D3DXMatrixMultiply(&matMoveView, &matMove, &matView);
+		dev->SetTransform(D3DTS_VIEW, &matMoveView);
+
+		// Prespective
+		D3DXMATRIXA16 matProj;
+		D3DXMatrixPerspectiveFovLH(&matProj, D3DX_PI / 4, (float)DXUTGetWindowWidth() / DXUTGetWindowHeight(), NearClip, FarClip);
+		dev->SetTransform(D3DTS_PROJECTION, &matProj);
 	}
 
 	void SetupLight(IDirect3DDevice9* dev)
@@ -72,6 +131,7 @@ public:
 		dev->SetRenderState(D3DRS_FILLMODE, keyToggled_Alt['W'] ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
 	    dev->SetRenderState(D3DRS_ZENABLE, !keyToggled_Alt['Z']);
 		
+		SetupCamera(dev);
 		SetupLight(dev);
 	}
 
@@ -287,12 +347,6 @@ public:
 
 	void RenderFrameStats(IDirect3DDevice9* dev)
 	{
-		if (font == NULL) {
-			D3DXCreateFont( dev, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-							OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-							L"Arial", &font );
-		}
-		RECT rect = {8, 8, 20, 20};
 		ostringstream msg;
 		msg << fixed << std::setprecision(1);
 		msg << "FPS = " << DXUTGetFPS() << " (target = " << targetFPS << ")" << "    ";
@@ -300,11 +354,14 @@ public:
 		msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << ","<< localPlayer->position.z << "    ";
 		msg << "Press H for help or ESC to exit.";
 		
-		font->DrawTextA(NULL, msg.str().c_str(), -1, &rect, DT_NOCLIP, D3DCOLOR_XRGB(0xff, 0xff, 0xff));
+		textX = 8; textY = 8;
+		RenderText(dev, msg.str());
 	}
 
 	void ReleaseDeviceResources()
 	{
+		Layer::ReleaseDeviceResources();
+
 		map<string, Mesh*>::iterator it = loadedMeshes.begin();
 		while(it != loadedMeshes.end()) {
 			it->second->ReleaseDeviceResources();
@@ -321,11 +378,6 @@ public:
 		if (gridBuffer != NULL) {
 			gridBuffer->Release();
 			gridBuffer = NULL;
-		}
-
-		if (font != NULL) {
-			font->Release();
-			font = NULL;
 		}
 	}
 };

@@ -1,34 +1,24 @@
 #include "StdAfx.h"
 #include "Layer.h"
 
-class HelpScreen: InputLayer
+class HelpScreen: Layer
 {
-	ID3DXFont* font;
-
-	int x;
-	int y;
 	static const int lineHeight = 16;
 	static const int tabWidth = 100;
 
-public:
-	HelpScreen(): font(NULL) {}
-
 	struct CUSTOMVERTEX {
 		static const int FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
-
 		FLOAT x, y, z, rhw;
 		DWORD color;
 	};
+
+	IDirect3DDevice9* dev;
 	
-	void Render(IDirect3DDevice9* dev)
+	void Render(IDirect3DDevice9* device)
 	{
 		if (true ^ keyToggled['H'] ^ keyToggled_Alt['H']) return;
 
-		if (font == NULL) {
-			D3DXCreateFont( dev, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-							OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-							L"Arial", &font );
-		}
+		dev = device;
 
 		float left = 50;
 		float top = 50;
@@ -53,7 +43,7 @@ public:
 		dev->SetTexture(0, NULL);
 		dev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, corners, sizeof(CUSTOMVERTEX));
 
-		x = 82; y = 66;
+		textX = 82; textY = 66;
 
 		RenderHeader("Game control:");
 		RenderKey("A,S,D,W", "Movement");
@@ -72,7 +62,7 @@ public:
 		RenderKey("Alt+D", "Diffuse");
 		RenderKey("", "");
 
-		x = 400; y = 66;
+		textX = 400; textY = 66;
 
 		RenderHeader("Rendering:");
 		RenderKey("Alt+W", "Wireframe");
@@ -87,31 +77,15 @@ public:
 
 	void RenderHeader(string text)
 	{
-		RenderText(text, -16, D3DCOLOR_XRGB(200, 200, 0));
-		y += 3 * lineHeight / 2;
+		RenderText(dev, text, -16, D3DCOLOR_XRGB(200, 200, 0));
+		textY += 3 * lineHeight / 2;
 	}
 
 	void RenderKey(string key, string function)
 	{
-		RenderText(key);
-		RenderText(function, tabWidth);
-		y += lineHeight;
-	}
-
-	void RenderText(string text, int offset = 0, D3DCOLOR color = D3DCOLOR_XRGB(0xff, 0xff, 0xff))
-	{
-		if (text.size() > 0) {
-			RECT rect = {x + offset, y, x + offset, y};
-			font->DrawTextA(NULL, text.c_str(), -1, &rect, DT_NOCLIP, color);
-		}
-	}
-
-	void ReleaseDeviceResources()
-	{
-		if (font != NULL) {
-			font->Release();
-			font = NULL;
-		}
+		RenderText(dev, key);
+		RenderText(dev, function, tabWidth);
+		textY += lineHeight;
 	}
 };
 

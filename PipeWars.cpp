@@ -17,7 +17,6 @@ LayerChain layers;
 
 class HelpScreen; extern HelpScreen helpScreen;
 class HUD; extern HUD hud;
-class Camera; extern Camera camera;
 class PlayerControl; extern PlayerControl playerControl;
 class GameLogic; extern GameLogic gameLogic;
 class Renderer; extern Renderer renderer;
@@ -26,7 +25,6 @@ void InitLayers()
 {
 	layers.add(&helpScreen);
 	layers.add(&hud);
-	layers.add(&camera);
 	layers.add(&playerControl);
 	layers.add(&gameLogic);
 	layers.add(&renderer);

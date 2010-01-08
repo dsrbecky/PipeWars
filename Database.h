@@ -205,6 +205,8 @@ public:
 				mesh = loadMesh("Merman.dae", "Nailgun");
 				break;
 		}
+
+		return true;
 	}
 };
 

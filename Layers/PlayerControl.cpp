@@ -7,7 +7,7 @@ const double Epsilon = 0.001f;
 extern Database db;
 extern Player* localPlayer;
 
-class PlayerControl: InputLayer
+class PlayerControl: Layer
 {
 	bool mouseDown;
 	int mouseX;
@@ -19,7 +19,7 @@ public:
 
 	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
-		InputLayer::KeyboardProc(nChar, bKeyDown, bAltDown);
+		Layer::KeyboardProc(nChar, bKeyDown, bAltDown);
 
 		switch(nChar) {
 			case '1': localPlayer->selectWeapon(Weapon_Revolver); break;
@@ -38,7 +38,6 @@ public:
 		mouseY = yPos;
 		return true;
 	}
-
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
