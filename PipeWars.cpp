@@ -15,25 +15,21 @@ Player* localPlayer = NULL;
 
 LayerChain layers;
 
-class HUD; extern HUD hud;
 class HelpScreen; extern HelpScreen helpScreen;
+class HUD; extern HUD hud;
 class Camera; extern Camera camera;
-class DebugStats; extern DebugStats debugStats;
-class DebugGrid; extern DebugGrid debugGrid;
 class PlayerControl; extern PlayerControl playerControl;
-class MeshRenderer; extern MeshRenderer meshRenderer;
 class GameLogic; extern GameLogic gameLogic;
+class Renderer; extern Renderer renderer;
 
 void InitLayers()
 {
-	layers.add(&hud);
 	layers.add(&helpScreen);
+	layers.add(&hud);
 	layers.add(&camera);
-	layers.add(&debugStats);
-	layers.add(&debugGrid);
 	layers.add(&playerControl);
-	layers.add(&meshRenderer);
 	layers.add(&gameLogic);
+	layers.add(&renderer);
 }
 
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )

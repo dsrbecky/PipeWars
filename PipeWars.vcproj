@@ -381,14 +381,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Layers\DebugGrid.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Layers\DebugStats.cpp"
-			>
-		</File>
-		<File
 			RelativePath="DXUT\Optional\directx.ico"
 			>
 		</File>
@@ -464,7 +456,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Layers\MeshRenderer.cpp"
+			RelativePath=".\Math.h"
 			>
 		</File>
 		<File
@@ -481,6 +473,10 @@
 		</File>
 		<File
 			RelativePath=".\Layers\PlayerControl.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Layers\Renderer.cpp"
 			>
 		</File>
 		<File

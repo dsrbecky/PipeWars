@@ -4,7 +4,6 @@
 
 extern Player* localPlayer;
 
-// Sets the camera angle
 class Camera: public Layer
 {
 	float yaw;

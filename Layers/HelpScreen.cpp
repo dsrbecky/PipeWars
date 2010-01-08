@@ -4,11 +4,14 @@
 class HelpScreen: InputLayer
 {
 	ID3DXFont* font;
-public:
+
 	int x;
 	int y;
 	static const int lineHeight = 16;
 	static const int tabWidth = 100;
+
+public:
+	HelpScreen(): font(NULL) {}
 
 	struct CUSTOMVERTEX {
 		static const int FVF = D3DFVF_XYZRHW | D3DFVF_DIFFUSE;
@@ -76,9 +79,9 @@ public:
 		RenderKey("Alt+Z", "Z-Buffer");
 		RenderKey("Alt+B", "Bounding boxes");
 		RenderKey("Alt+G", "Grid");
-		RenderKey("Alt+F", "Frustum culling");
-		RenderKey("Alt+R", "Debug frustum culling");
-		RenderKey("Alt+X", "Show frame stats");
+		RenderKey("Alt+C", "Frustum culling");
+		RenderKey("Alt+V", "View frustum");
+		RenderKey("Alt+F", "Frame stats");
 		RenderKey("", "");
 	}
 

@@ -7,7 +7,6 @@ extern Player* localPlayer;
 
 class GameLogic: Layer
 {
-public:
 	void FrameMove(double fTime, float fElapsedTime)
 	{
 		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end();) {

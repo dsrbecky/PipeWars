@@ -2,20 +2,26 @@
 #include "Layer.h"
 #include "../Database.h"
 #include <set>
+#include <iomanip>
+#include "../Math.h"
 
-extern map<string, Mesh*> loadedMeshes; // ColladaImport.cpp
+extern map<string, Mesh*> loadedMeshes;
 extern map<string, IDirect3DTexture9*> loadedTextures;
 extern Player* localPlayer;
 
-float hiQualityPipes = 0;
-float targetFPS = 30;
-
-int stat_objRendered;
-int stat_pipesRendered;
-
-class MeshRenderer: public InputLayer
+class Renderer: public InputLayer
 {
+	IDirect3DVertexBuffer9* gridBuffer;
+	ID3DXFont* font;
+
+	static const int targetFPS = 30;
+	float hiQualityPipes;
+	int stat_objRendered;
+	int stat_pipesRendered;
+
 public:
+	Renderer(): gridBuffer(NULL), font(NULL), hiQualityPipes(0) {}
+
 	void FrameMove(double fTime, float fElapsedTime)
 	{
 		float extraFPS = DXUTGetFPS() - targetFPS;
@@ -127,7 +133,7 @@ public:
 
 
 			// Clip using frustum
-			if (!keyToggled_Alt['F']) {
+			if (!keyToggled_Alt['C']) {
 
 				// Corners of the screen
 				float w = (float)viewport.Width;
@@ -179,7 +185,7 @@ public:
 			// Debug frustrum
 			D3DXMATRIXA16 oldView;
 			dev->GetTransform(D3DTS_VIEW, &oldView);
-			if (keyToggled_Alt['R']) {
+			if (keyToggled_Alt['V']) {
 				D3DXMATRIXA16 newMove;
 				D3DXMatrixTranslation(&newMove, 0, 0, 25);
 				D3DXMATRIXA16 newView;
@@ -201,31 +207,14 @@ public:
 		}
 
 		hiQualityPipes = min(hiQualityPipes, stat_pipesRendered + 4); // Do not outgrow by more then 4
-	}
 
-	D3DXVECTOR3 GetFrustumNormal(D3DXVECTOR3 o, D3DXVECTOR3 a, D3DXVECTOR3 b)
-	{
-		D3DXVECTOR3 p = a - o;
-		D3DXVECTOR3 q = b - o;
-		D3DXVECTOR3 n;
-		D3DXVec3Cross(&n, &p, &q);
-		return n;
-	}
+		if (keyToggled_Alt['G']) {
+			RenderGrid(dev);
+		}
 
-	void Render2DBoundingBox(IDirect3DDevice9* dev, D3DXVECTOR3 minVec, D3DXVECTOR3 maxVec)
-	{
-		float z = 0.001f;
-		D3DXVECTOR3 leftBottom(minVec.x, maxVec.y, z);
-		D3DXVECTOR3 rightTop(maxVec.x, minVec.y, z);
-		minVec.z = maxVec.z = z;
-
-		vector<D3DXVECTOR3> ver;
-		ver.push_back(minVec); ver.push_back(rightTop);
-		ver.push_back(rightTop); ver.push_back(maxVec);
-		ver.push_back(maxVec); ver.push_back(leftBottom);
-		ver.push_back(leftBottom); ver.push_back(minVec);
-		
-		dev->DrawPrimitiveUP(D3DPT_LINELIST, ver.size() / 2, &(ver[0]), sizeof(D3DXVECTOR3));
+		if (!keyToggled_Alt['F']) {
+			RenderFrameStats(dev);
+		}
 	}
 
 	void RenderBoundingBox(IDirect3DDevice9* dev, BoundingBox& bb)
@@ -251,6 +240,69 @@ public:
 		dev->DrawPrimitiveUP(D3DPT_LINELIST, ver.size() / 2, &(ver[0]), sizeof(D3DXVECTOR3));
 	}
 
+	static const int gridSize = 100;
+
+	void RenderGrid(IDirect3DDevice9* dev)
+	{
+		int fvf = D3DFVF_XYZ;
+		static int lineCount;
+
+		// Create buffer on demand
+		if (gridBuffer == NULL) {
+			vector<float> vb;
+			for(int i = -gridSize; i <= gridSize; i++) {
+				// Along X
+				vb.push_back((float)-gridSize); vb.push_back(0); vb.push_back((float)i);
+				vb.push_back((float)+gridSize); vb.push_back(0); vb.push_back((float)i);
+				/// Along Z
+				vb.push_back((float)i); vb.push_back(0); vb.push_back((float)-gridSize);
+				vb.push_back((float)i); vb.push_back(0); vb.push_back((float)+gridSize);
+				lineCount++;
+			}
+
+			// Copy the buffer to graphic card memory
+
+			dev->CreateVertexBuffer(vb.size() * sizeof(float), 0, fvf, D3DPOOL_DEFAULT, &gridBuffer, NULL);
+			void* bufferData;
+			gridBuffer->Lock(0, vb.size() * sizeof(float), &bufferData, 0);
+			copy(vb.begin(), vb.end(), (float*)bufferData);
+			gridBuffer->Unlock();
+		}
+
+		D3DMATERIAL9 material;
+		ZeroMemory(&material, sizeof(material));
+		material.Emissive.a = 1;
+		material.Emissive.r = 0.5;
+
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity(&matWorld);
+		dev->SetTransform(D3DTS_WORLD, &matWorld);
+
+		dev->SetStreamSource(0, gridBuffer, 0, 3 * sizeof(float));
+		dev->SetFVF(fvf);
+		dev->SetTexture(0, NULL);
+		dev->SetMaterial(&material);
+		dev->DrawPrimitive(D3DPT_LINELIST, 0, lineCount);
+	}
+
+	void RenderFrameStats(IDirect3DDevice9* dev)
+	{
+		if (font == NULL) {
+			D3DXCreateFont( dev, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+							OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+							L"Arial", &font );
+		}
+		RECT rect = {8, 8, 20, 20};
+		ostringstream msg;
+		msg << fixed << std::setprecision(1);
+		msg << "FPS = " << DXUTGetFPS() << " (target = " << targetFPS << ")" << "    ";
+		msg << "Objects = " << stat_objRendered << " (hq = " << (int)hiQualityPipes << ")" << "    ";
+		msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << ","<< localPlayer->position.z << "    ";
+		msg << "Press H for help or ESC to exit.";
+		
+		font->DrawTextA(NULL, msg.str().c_str(), -1, &rect, DT_NOCLIP, D3DCOLOR_XRGB(0xff, 0xff, 0xff));
+	}
+
 	void ReleaseDeviceResources()
 	{
 		map<string, Mesh*>::iterator it = loadedMeshes.begin();
@@ -265,7 +317,17 @@ public:
 			it2++;
 		}
 		loadedTextures.clear();
+
+		if (gridBuffer != NULL) {
+			gridBuffer->Release();
+			gridBuffer = NULL;
+		}
+
+		if (font != NULL) {
+			font->Release();
+			font = NULL;
+		}
 	}
 };
 
-MeshRenderer meshRenderer;
+Renderer renderer;
