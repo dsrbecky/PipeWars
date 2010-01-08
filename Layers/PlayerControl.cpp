@@ -54,7 +54,7 @@ public:
 				float range = 10;
 				Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
 				bullet->position = localPlayer->position;
-				bullet->rotY = localPlayer->rotY - 90;
+				bullet->rotY = localPlayer->rotY + 90;
 				bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
 				bullet->rangeLeft = range;
 				db.add(bullet);

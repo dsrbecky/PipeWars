@@ -34,6 +34,7 @@ public:
 		dev->SetRenderState(D3DRS_SPECULARENABLE, !keyToggled_Alt['S'] );
 		dev->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL);
 		dev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
+		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 
 		D3DLIGHT9 light;
 		ZeroMemory(&light, sizeof(light));
@@ -178,7 +179,7 @@ public:
 			// Debug frustrum
 			D3DXMATRIXA16 oldView;
 			dev->GetTransform(D3DTS_VIEW, &oldView);
-			if (keyToggled_Alt['G']) {
+			if (keyToggled_Alt['R']) {
 				D3DXMATRIXA16 newMove;
 				D3DXMatrixTranslation(&newMove, 0, 0, 25);
 				D3DXMATRIXA16 newView;

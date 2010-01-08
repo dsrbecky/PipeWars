@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Layer.h"
 
-class DebugGrid: public Layer
+class DebugGrid: InputLayer
 {
 	static const int size = 10;
 
@@ -18,6 +18,9 @@ public:
 	void Render(IDirect3DDevice9* dev)
 	{
 		static int fvf = D3DFVF_XYZ;
+
+		if (!keyToggled_Alt['G'])
+			return;
 
 		// Create buffer on demand
 		if (buffer == NULL) {
