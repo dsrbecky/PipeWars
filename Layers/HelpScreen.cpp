@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Layer.h"
 
-extern void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa = 0.75);
+extern void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa);
 
 class HelpScreen: Layer
 {
@@ -16,7 +16,7 @@ class HelpScreen: Layer
 
 		dev = device;
 
-		RenderBlackRectangle(dev, 50, 50, 700, 450);
+		RenderBlackRectangle(dev, 50, 50, 700, 450, keyToggled_Alt['X'] ? 1.0f : 0.75f);
 
 		textX = 82; textY = 66;
 
@@ -43,6 +43,7 @@ class HelpScreen: Layer
 		RenderHeader("Rendering:");
 		RenderKey("Alt+W", "Wireframe");
 		RenderKey("Alt+Z", "Z-Buffer");
+		RenderKey("Alt+X", "Alpha blending");
 		RenderKey("Alt+B", "Bounding boxes");
 		RenderKey("Alt+G", "Grid");
 		RenderKey("Alt+C", "Frustum culling");

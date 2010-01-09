@@ -6,7 +6,7 @@ struct CUSTOMVERTEX {
 	DWORD color;
 };
 
-void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa = 0.75)
+void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa)
 {
 	DWORD color = (int)(alfa * 255) << 24;
 	CUSTOMVERTEX corners[] = {
@@ -17,7 +17,7 @@ void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, i
 	};
 
     dev->SetRenderState(D3DRS_ZENABLE, false);
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, alfa != 1.0f);
 	dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	dev->SetFVF(CUSTOMVERTEX::FVF);

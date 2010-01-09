@@ -68,10 +68,16 @@ public:
 
 	void SetupCamera(IDirect3DDevice9* dev)
 	{
+		float flux1 = 0;
+		float flux2 = 0;
+		if (localPlayer == NULL) {
+			flux1 = cos(DXUTGetTime() / 4) * D3DX_PI * 0.01f;
+			flux2 = sin(DXUTGetTime() / 3) * D3DX_PI * 0.01f;
+		}
 		D3DXMATRIXA16 matPitch;
-		D3DXMatrixRotationX(&matPitch, cameraPitch);
+		D3DXMatrixRotationX(&matPitch, cameraPitch + flux1);
 		D3DXMATRIXA16 matYaw;
-		D3DXMatrixRotationY(&matYaw, cameraYaw);
+		D3DXMatrixRotationY(&matYaw, cameraYaw + flux2);
 		D3DXMATRIXA16 matYawPitch;
 		D3DXMatrixMultiply(&matYawPitch, &matYaw, &matPitch);
 		D3DXMATRIXA16 matZoom;
@@ -102,7 +108,7 @@ public:
 	{
 		dev->SetRenderState(D3DRS_LIGHTING, true);
 		dev->SetRenderState(D3DRS_AMBIENT, 0);
-		dev->SetRenderState(D3DRS_SPECULARENABLE, !keyToggled_Alt['S'] );
+		dev->SetRenderState(D3DRS_SPECULARENABLE, !keyToggled_Alt['S']);
 		dev->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL);
 		dev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
 		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
@@ -305,7 +311,7 @@ public:
 		dev->DrawPrimitiveUP(D3DPT_LINELIST, ver.size() / 2, &(ver[0]), sizeof(D3DXVECTOR3));
 	}
 
-	static const int gridSize = 100;
+	static const int gridSize = 25;
 
 	void RenderGrid(IDirect3DDevice9* dev)
 	{
@@ -319,6 +325,7 @@ public:
 				// Along X
 				vb.push_back((float)-gridSize); vb.push_back(0); vb.push_back((float)i);
 				vb.push_back((float)+gridSize); vb.push_back(0); vb.push_back((float)i);
+				lineCount++;
 				/// Along Z
 				vb.push_back((float)i); vb.push_back(0); vb.push_back((float)-gridSize);
 				vb.push_back((float)i); vb.push_back(0); vb.push_back((float)+gridSize);

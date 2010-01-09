@@ -14,6 +14,11 @@ class HUD: Layer
 	{
 		if (localPlayer == NULL) return;
 
+		dev->SetRenderState(D3DRS_ZENABLE, false);
+		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, !keyToggled_Alt['X']);
+		dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
 		IDirect3DTexture9* hud = loadTexture(dev, imagePath + "HUD2.png");
 		IDirect3DTexture9* digits[] = {
 			loadTexture(dev, imagePath + "H0.png"),

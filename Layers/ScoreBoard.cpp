@@ -23,7 +23,7 @@ class ScoreBoard: Layer
 
 	    dev->SetRenderState(D3DRS_ZENABLE, false);
 		dev->SetRenderState(D3DRS_LIGHTING, false);
-		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+		dev->SetRenderState(D3DRS_ALPHABLENDENABLE, !keyToggled_Alt['X']);
 		dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
 		dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 		dev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
