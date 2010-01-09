@@ -71,8 +71,8 @@ public:
 		float flux1 = 0;
 		float flux2 = 0;
 		if (localPlayer == NULL) {
-			flux1 = cos(DXUTGetTime() / 4) * D3DX_PI * 0.01f;
-			flux2 = sin(DXUTGetTime() / 3) * D3DX_PI * 0.01f;
+			flux1 = cos((float)DXUTGetTime() / 4) * D3DX_PI * 0.01f;
+			flux2 = sin((float)DXUTGetTime() / 3) * D3DX_PI * 0.01f;
 		}
 		D3DXMATRIXA16 matPitch;
 		D3DXMatrixRotationX(&matPitch, cameraPitch + flux1);
@@ -178,7 +178,7 @@ public:
 		stat_pipesRendered = 0;
 
 		// Render meshes
-		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
+		DbLoop(it) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
 			if (entity == NULL)
 				continue; // Other type
@@ -265,6 +265,7 @@ public:
 			}
 
 			entity->mesh->Render(dev, "OuterWall", "Path", entity->hiQuality ? "-Low" : "-Hi");
+			entity->hiQuality = false; // Reset
 			stat_objRendered++;
 			if (entity->mesh->filename == PipeFilename)
 				stat_pipesRendered++;

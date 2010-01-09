@@ -127,6 +127,8 @@ public:
 	Entity(): id(0) {}
 
 	virtual ~Entity() {}
+	virtual UCHAR GetType() = 0;
+	virtual int GetSize() = 0;
 };
 
 // Graphical entity based on mesh
@@ -136,6 +138,8 @@ public:
 	Mesh* mesh;
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 velocity;
+	float velocityForward;
+	float velocityRight;
 	float rotY;
 	float rotY_velocity;
 	float scale;
@@ -146,6 +150,10 @@ public:
 		mesh(loadMesh(filename, geometryName)),
 		position(D3DXVECTOR3(0,0,0)), velocity(D3DXVECTOR3(0,0,0)),
 		rotY(0), rotY_velocity(0), scale(1), hiQuality(true) {}
+
+	static const UCHAR Type = 'M';
+	UCHAR GetType() { return Type; };
+	int GetSize() { return sizeof(MeshEntity); };
 };
 
 static const float PlayerMoveSpeed = 5.0f;
@@ -164,6 +172,7 @@ public:
 	int deaths;
 
 	ItemType selectedWeapon;
+	bool firing;
 	int inventory[ItemType_End];
 
 	Player(string _name):
@@ -174,6 +183,10 @@ public:
 		inventory[Weapon_Revolver] = 1;
 		inventory[Ammo_Revolver] = 999;
 	}
+
+	static const UCHAR Type = 'P';
+	UCHAR GetType() { return Type; };
+	int GetSize() { return sizeof(Player); };
 
 	bool selectWeapon(ItemType weapon)
 	{
@@ -217,6 +230,10 @@ public:
 	
 	Bullet(Player* _shooter, int _weapon):
 		MeshEntity("Bullets.dae", "RevolverBullet"), shooter(_shooter), weapon(_weapon), rangeLeft(10) {}
+
+	static const UCHAR Type = 'B';
+	UCHAR GetType() { return Type; };
+	int GetSize() { return sizeof(Bullet); };
 };
 
 class PowerUp: public MeshEntity
@@ -231,6 +248,10 @@ public:
 		itemType(_itemType), present(true), rechargeAfter(0) {
 		rotY_velocity = 90;
 	}
+
+	static const UCHAR Type = 'U';
+	UCHAR GetType() { return Type; };
+	int GetSize() { return sizeof(PowerUp); };
 };
 
 class RespawnPoint: public Entity
@@ -239,7 +260,13 @@ public:
 	D3DXVECTOR3 position;
 
 	RespawnPoint(double x, double y, double z): position(D3DXVECTOR3((float)x, (float)y, (float)z)) {}
+
+	static const UCHAR Type = 'R';
+	UCHAR GetType() { return Type; };
+	int GetSize() { return sizeof(RespawnPoint); };
 };
+
+#define DbLoop(it) for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++)
 
 class Database
 {

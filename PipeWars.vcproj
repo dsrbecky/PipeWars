@@ -460,6 +460,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Network.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\PipeWars.cpp"
 			>
 		</File>
