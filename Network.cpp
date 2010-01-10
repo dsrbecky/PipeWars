@@ -1,8 +1,5 @@
 #include "StdAfx.h"
-#include "Database.h"
-#include <map>
-#include <hash_map>
-#include <hash_set>
+#include "Entities.h"
 
 using namespace stdext;
 

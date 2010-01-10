@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 #include "Layer.h"
-
-extern void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa);
+#include "../Util.h"
 
 class HelpScreen: Layer
 {

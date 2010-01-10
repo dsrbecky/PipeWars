@@ -365,18 +365,6 @@
 	</References>
 	<Files>
 		<File
-			RelativePath=".\ColladaImport.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Database.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Database.h"
-			>
-		</File>
-		<File
 			RelativePath="DXUT\Optional\directx.ico"
 			>
 		</File>
@@ -432,6 +420,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Entities.h"
+			>
+		</File>
+		<File
 			RelativePath=".\Layers\GameLogic.cpp"
 			>
 		</File>
@@ -484,6 +476,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Resources.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Resources.h"
+			>
+		</File>
+		<File
 			RelativePath=".\Layers\ScoreBoard.cpp"
 			>
 		</File>
@@ -492,7 +492,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Utils.cpp"
+			RelativePath=".\Util.h"
 			>
 		</File>
 	</Files>

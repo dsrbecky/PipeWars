@@ -1,12 +1,12 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
+#include "../Entities.h"
+#include "../Resources.h"
+#include "../Util.h"
 
+extern Database db;
 extern Player* localPlayer;
-extern IDirect3DTexture9* loadTexture(IDirect3DDevice9* dev, string textureFilename);
-extern void RenderBlackRectangle(IDirect3DDevice9* dev, int left, int top, int width, int height, float alfa);
-
-static string imagePath = "..\\data\\images\\";
+extern Resources resources;
 
 const float fadeOutSpeed = 1.0;
 
@@ -161,7 +161,7 @@ public:
 		dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 		dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		IDirect3DTexture9* header = loadTexture(dev, imagePath + "Header.jpg"); // 800x200
+		IDirect3DTexture9* header = resources.LoadTexture(dev, "Header.jpg"); // 800x200
 
 		ID3DXSprite* sprite;
 		D3DXCreateSprite(dev, &sprite);
@@ -184,8 +184,8 @@ public:
 				pos = D3DXVECTOR3((float)(left + b.left), (float)(top + b.top), 0);
 				pos.x /= scale._11;
 				pos.y /= scale._22;
-				IDirect3DTexture9* image = loadTexture(dev, imagePath + b.image);
-				IDirect3DTexture9* imagePressed = loadTexture(dev, imagePath + b.imagePressed);
+				IDirect3DTexture9* image = resources.LoadTexture(dev, b.image);
+				IDirect3DTexture9* imagePressed = resources.LoadTexture(dev, b.imagePressed);
 				sprite->Draw(b.pressed ? imagePressed : image, NULL, NULL, &pos, buttonsColor);
 			}
 		}

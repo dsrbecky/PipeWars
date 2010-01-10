@@ -1,102 +1,12 @@
-#ifndef __DATABASE__
-#define __DATABASE__
+#ifndef __ENTITIES__
+#define __ENTITIES__
 
 #include "StdAfx.h"
-#include <set>
-#include <hash_map>
-#include <list>
-#include <limits>
-using namespace stdext;
 
-const float NearClip = 2.0f;
-const float FarClip = 1000.0f;
-static const string PipeFilename = "pipe.dae";
+class Mesh;
 
-class Mesh; extern Mesh* loadMesh(string filename, string geometryName); // ColladaImport
-
-bool IsPointOnPath(D3DXVECTOR3 pos, float* outY = NULL);
-
-inline D3DXVECTOR3 RotYToDirecion(float rotY_Deg)
-{
-	float rotY_Rad = rotY_Deg / 360 * 2 * D3DX_PI;
-	return D3DXVECTOR3(-sin(rotY_Rad), 0, cos(rotY_Rad));
-}
-
-// Defines one or more tristrips that share same material
-class Tristrip
-{
-	DWORD fvf;
-	int vbStride_bytes;
-	int vbStride_floats;
-	vector<float> vb; // Vertex buffer data
-	IDirect3DVertexBuffer9* buffer; // The buffer is created on demand
-	std::vector<int> vertexCounts; // framgmentation of tristrips into groups
-	string materialName;
-	D3DMATERIAL9 material;
-	string textureFilename;
-
-	friend Mesh* loadMesh(string filename, string geometryName);
-public:
-	string getMaterialName() { return materialName; }
-
-	void Render(IDirect3DDevice9* dev);
-	void ReleaseDeviceResources() {
-		if (buffer != NULL) {
-			buffer->Release();
-			buffer = NULL;
-		}
-	}
-
-	bool IntersectsYRay(float x, float z, float* outY = NULL);
-};
-
-class BoundingBox
-{
-public:
-	D3DXVECTOR3 minCorner;
-	D3DXVECTOR3 maxCorner;
-	D3DXVECTOR3 corners[8];
-
-	BoundingBox(D3DXVECTOR3 _min, D3DXVECTOR3 _max): minCorner(_min), maxCorner(_max) {
-		corners[0] = D3DXVECTOR3(minCorner.x, minCorner.y, minCorner.z);
-		corners[1] = D3DXVECTOR3(minCorner.x, minCorner.y, maxCorner.z);
-		corners[2] = D3DXVECTOR3(minCorner.x, maxCorner.y, minCorner.z);
-		corners[3] = D3DXVECTOR3(minCorner.x, maxCorner.y, maxCorner.z);
-		corners[4] = D3DXVECTOR3(maxCorner.x, minCorner.y, minCorner.z);
-		corners[5] = D3DXVECTOR3(maxCorner.x, minCorner.y, maxCorner.z);
-		corners[6] = D3DXVECTOR3(maxCorner.x, maxCorner.y, minCorner.z);
-		corners[7] = D3DXVECTOR3(maxCorner.x, maxCorner.y, maxCorner.z);
-	}
-
-	bool Contains(D3DXVECTOR3 vec)
-	{
-		return
-			minCorner.x <= vec.x && vec.x <= maxCorner.x &&
-			minCorner.y <= vec.y && vec.y <= maxCorner.y &&
-			minCorner.z <= vec.z && vec.z <= maxCorner.z;
-	}
-};
-
-static string pathMaterialName = "Path";
-
-class Mesh
-{
-public:
-	string filename;
-	string geometryName;
-	BoundingBox boundingBox;
-	std::vector<Tristrip> tristrips;
-
-	Mesh(): boundingBox(BoundingBox(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,0,0))) {}
-	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "", string hide3 = "");
-	void ReleaseDeviceResources() {
-		for(int i = 0; i < (int)tristrips.size(); i++) {
-			tristrips[i].ReleaseDeviceResources();
-		}
-	}
-
-	bool IsOnPath(float x, float z, float* outY = NULL);
-};
+const int MAX_STR_LEN = 32;
+typedef UINT32 ID;
 
 enum ItemType {
 	Weapon_Revolver,
@@ -120,9 +30,6 @@ enum ItemType {
 
 	ItemType_End
 };
-
-const int MAX_STR_LEN = 32;
-typedef UINT32 ID;
 
 // Entry in the game database
 struct Entity
@@ -173,12 +80,7 @@ struct MeshEntity: public Entity
 	UCHAR GetType() { return Type; };
 	int GetSize() { return sizeof(MeshEntity); };
 
-	Mesh* getMesh()
-	{
-		if (meshPtrCache == NULL)
-			meshPtrCache = loadMesh(meshFilename, meshGeometryName);
-		return meshPtrCache;
-	}
+	Mesh* getMesh();
 
 	void OnSerializing()
 	{
@@ -393,16 +295,4 @@ public:
 	void loadTestMap();
 };
 
-static inline D3DXVECTOR3 min3(D3DXVECTOR3 a, D3DXVECTOR3 b)
-{
-	return D3DXVECTOR3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
-}
-
-static inline D3DXVECTOR3 max3(D3DXVECTOR3 a, D3DXVECTOR3 b)
-{
-	return D3DXVECTOR3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
-}
-
-extern Database db;
-
-#endif __DATABASE__
+#endif

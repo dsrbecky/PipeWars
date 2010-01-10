@@ -1,15 +1,16 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
-#include <set>
-#include <iomanip>
+#include "../Entities.h"
 #include "../Math.h"
+#include "../Resources.h"
+#include "../Util.h"
 
-extern map<string, Mesh*> loadedMeshes;
-extern map<string, IDirect3DTexture9*> loadedTextures;
+extern Database db;
 extern Player* localPlayer;
 
 void (*onCameraSet)(IDirect3DDevice9* dev) = NULL; // Event for others
+
+const string PipeFilename = "pipe.dae";
 
 class Renderer: Layer
 {
@@ -374,21 +375,6 @@ public:
 
 	void ReleaseDeviceResources()
 	{
-		Layer::ReleaseDeviceResources();
-
-		map<string, Mesh*>::iterator it = loadedMeshes.begin();
-		while(it != loadedMeshes.end()) {
-			it->second->ReleaseDeviceResources();
-			it++;
-		}
-
-		map<string, IDirect3DTexture9*>::iterator it2 = loadedTextures.begin();
-		while(it2 != loadedTextures.end()) {
-			it2->second->Release();
-			it2++;
-		}
-		loadedTextures.clear();
-
 		if (gridBuffer != NULL) {
 			gridBuffer->Release();
 			gridBuffer = NULL;

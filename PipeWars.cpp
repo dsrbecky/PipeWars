@@ -1,10 +1,12 @@
 #include "StdAfx.h"
-#include "Database.h"
+#include "Entities.h"
+#include "Resources.h"
 #include "Layers/LayerChain.h"
+#include "Util.h"
 
 Database db;
-
 Player* localPlayer = NULL;
+Resources resources;
 
 // Layers have interface that allows them to both handle user input and participate in
 // the rendering.  Usually, the layer will set some internal state based on the input
@@ -59,38 +61,8 @@ void CALLBACK OnFrameRender(IDirect3DDevice9* dev, double fTime, float fElapsedT
 void CALLBACK OnLostDevice(void* pUserContext)
 {
 	layers.ReleaseDeviceResources();
+	resources.ReleaseDeviceResources();
 }
-
-void RenderSplashScreen(IDirect3DDevice9* dev)
-{
-	string textureFilename = "..\\data\\images\\Splash.jpg";
-	IDirect3DTexture9* texture;
-	if (FAILED(D3DXCreateTextureFromFileA(dev, textureFilename.c_str(), &texture))) {
-		MessageBoxA(NULL, ("Could not find texture " + textureFilename).c_str() , "COLLADA", MB_OK);
-		exit(1);
-	}
-
-    dev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 0, 0, 0 ), 1.0f, 0);
-
-    if(SUCCEEDED(dev->BeginScene())) {
-		ID3DXSprite* sprite;
-		D3DXCreateSprite(dev, &sprite);
-		sprite->Begin(0);
-		D3DXMATRIX scale;
-		D3DXMatrixScaling(&scale, 800.0f / 1024, 600.0f / 1024, 1.0f);
-		sprite->SetTransform(&scale);
-		sprite->Draw(texture, NULL, NULL, NULL, 0xFFFFFFFF);
-		sprite->End();
-		sprite->Release();
-		dev->EndScene();
-    }
-
-	dev->Present(NULL, NULL, NULL, NULL);
-
-	texture->Release();
-}
-
-extern void releaseLoadedMeshes();
 
 INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
@@ -116,13 +88,12 @@ INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 	RenderSplashScreen(DXUTGetD3D9Device());
 
-	db.loadTestMap();
+	resources.LoadTestMap(&db);
 
     DXUTMainLoop();
 
 	layers.ReleaseDeviceResources();
-	db.clear();
-	releaseLoadedMeshes();
+	resources.Release();
 
     return DXUTGetExitCode();
 }

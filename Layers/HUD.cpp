@@ -1,12 +1,10 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
-#include <map>
+#include "../Entities.h"
+#include "../Resources.h"
 
 extern Player* localPlayer;
-extern IDirect3DTexture9* loadTexture(IDirect3DDevice9* dev, string textureFilename);
-
-static string imagePath = "..\\data\\images\\";
+extern Resources resources;
 
 class HUD: Layer
 {
@@ -19,26 +17,26 @@ class HUD: Layer
 		dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 		dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		IDirect3DTexture9* hud = loadTexture(dev, imagePath + "HUD2.png");
+		IDirect3DTexture9* hud = resources.LoadTexture(dev, "HUD2.png");
 		IDirect3DTexture9* digits[] = {
-			loadTexture(dev, imagePath + "H0.png"),
-			loadTexture(dev, imagePath + "H1.png"),
-			loadTexture(dev, imagePath + "H2.png"),
-			loadTexture(dev, imagePath + "H3.png"),
-			loadTexture(dev, imagePath + "H4.png"),
-			loadTexture(dev, imagePath + "H5.png"),
-			loadTexture(dev, imagePath + "H6.png"),
-			loadTexture(dev, imagePath + "H7.png"),
-			loadTexture(dev, imagePath + "H8.png"),
-			loadTexture(dev, imagePath + "H9.png")
+			resources.LoadTexture(dev, "H0.png"),
+			resources.LoadTexture(dev, "H1.png"),
+			resources.LoadTexture(dev, "H2.png"),
+			resources.LoadTexture(dev, "H3.png"),
+			resources.LoadTexture(dev, "H4.png"),
+			resources.LoadTexture(dev, "H5.png"),
+			resources.LoadTexture(dev, "H6.png"),
+			resources.LoadTexture(dev, "H7.png"),
+			resources.LoadTexture(dev, "H8.png"),
+			resources.LoadTexture(dev, "H9.png")
 		};
 		map<ItemType, IDirect3DTexture9*> weapons;
-		weapons[Weapon_Revolver]     = loadTexture(dev, imagePath + "RevolverMini2.png");
-		weapons[Weapon_Shotgun]      = loadTexture(dev, imagePath + "BoomstickMini2.png");
-		weapons[Weapon_AK47]         = loadTexture(dev, imagePath + "AK47Mini2.png");
-		weapons[Weapon_Jackhammer]   = loadTexture(dev, imagePath + "JackhammerMini2.png");
-		weapons[Weapon_Nailgun]      = loadTexture(dev, imagePath + "Nail GunMini2.png");
-		IDirect3DTexture9* weaponDualRevolver = loadTexture(dev, imagePath + "Dual RevolversMini2.png");
+		weapons[Weapon_Revolver]     = resources.LoadTexture(dev, "RevolverMini2.png");
+		weapons[Weapon_Shotgun]      = resources.LoadTexture(dev, "BoomstickMini2.png");
+		weapons[Weapon_AK47]         = resources.LoadTexture(dev, "AK47Mini2.png");
+		weapons[Weapon_Jackhammer]   = resources.LoadTexture(dev, "JackhammerMini2.png");
+		weapons[Weapon_Nailgun]      = resources.LoadTexture(dev, "Nail GunMini2.png");
+		IDirect3DTexture9* weaponDualRevolver = resources.LoadTexture(dev, "Dual RevolversMini2.png");
 
 		ID3DXSprite* sprite; D3DXCreateSprite(dev, &sprite);
 		sprite->Begin(0);

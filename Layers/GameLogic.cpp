@@ -1,11 +1,13 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
+#include "../Entities.h"
+#include "../Resources.h"
 #include "../Math.h"
 
 extern Database db;
 extern Player* localPlayer;
-extern void (*onCameraSet)(IDirect3DDevice9* dev); // Event for others
+
+extern void (*onCameraSet)(IDirect3DDevice9* dev); // Renderer
 
 class GameLogic: Layer
 {
@@ -81,9 +83,9 @@ public:
 				continue;
 
 			if (entity->velocityForward != 0.0f)
-				entity->position += RotYToDirecion(entity->rotY) * (entity->velocityForward * fElapsedTime);
+				entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
 			if (entity->velocityRight != 0.0f)
-				entity->position += RotYToDirecion(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
+				entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
 			entity->rotY += entity->rotY_velocity * fElapsedTime;
 
 			Bullet* bullet = dynamic_cast<Bullet*>(entity);
@@ -156,13 +158,13 @@ public:
 			localPlayer->velocityForward = 0.0f;
 			if (keyDown['W']) localPlayer->velocityForward += +PlayerMoveSpeed;
 			if (keyDown['S']) localPlayer->velocityForward += -PlayerMoveSpeed;
-			pos = pos + RotYToDirecion(direction) * (localPlayer->velocityForward * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI));
+			pos = pos + RotateY(direction) * (localPlayer->velocityForward * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI));
 
 			// Move left / right
 			localPlayer->velocityRight = 0.0f;
 			if (keyDown['D']) localPlayer->velocityRight += +PlayerStrafeSpeed;
 			if (keyDown['A']) localPlayer->velocityRight += -PlayerStrafeSpeed;
-			pos = pos + RotYToDirecion(direction - 90) * (localPlayer->velocityRight * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI)); 
+			pos = pos + RotateY(direction - 90) * (localPlayer->velocityRight * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI)); 
 
 			float outY;
 			if (IsPointOnPath(pos, &outY)) {
@@ -172,6 +174,27 @@ public:
 			}
 		}
 		// Can not move
+		return false;
+	}
+
+	bool IsPointOnPath(D3DXVECTOR3 pos, float* outY = NULL)
+	{
+		DbLoop(it) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
+			if (entity == NULL)
+				continue;
+			// Position relative to the mesh
+			D3DXVECTOR3 meshPos = RotateY(-entity->rotY, pos - entity->position) / entity->scale;
+			// Quick test - is in BoundingBox?
+			if (entity->getMesh()->boundingBox.Contains(meshPos)) {
+				if (entity->getMesh()->IsOnPath(meshPos.x, meshPos.z, outY)) {
+					if (outY != NULL) {
+						*outY = *outY * entity->scale + entity->position.y;
+					}
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 };

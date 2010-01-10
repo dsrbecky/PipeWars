@@ -1,12 +1,12 @@
 #include "StdAfx.h"
 #include "Layer.h"
-#include "../Database.h"
+#include "../Entities.h"
+#include "../Resources.h"
+#include "../Util.h"
 
 extern Database db;
 extern Player* localPlayer;
-extern IDirect3DTexture9* loadTexture(IDirect3DDevice9* dev, string textureFilename);
-
-static string imagePath = "..\\data\\images\\";
+extern Resources resources;
 
 class ScoreBoard: Layer
 {
@@ -19,7 +19,7 @@ class ScoreBoard: Layer
 	{
 		if (!keyDown[VK_TAB]) return;
 
-		IDirect3DTexture9* background = loadTexture(dev, imagePath + "Scoreboard2.png");
+		IDirect3DTexture9* background = resources.LoadTexture(dev, "Scoreboard2.png");
 
 	    dev->SetRenderState(D3DRS_ZENABLE, false);
 		dev->SetRenderState(D3DRS_LIGHTING, false);
