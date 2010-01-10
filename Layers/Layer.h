@@ -12,9 +12,9 @@ public:
 
 	Layer()
 	{
-		ZeroMemory(&keyDown, sizeof(keyDown));
-		ZeroMemory(&keyToggled, sizeof(keyToggled));
-		ZeroMemory(&keyToggled_Alt, sizeof(keyToggled_Alt));
+		ZeroMemory(keyDown, sizeof(keyDown));
+		ZeroMemory(keyToggled, sizeof(keyToggled));
+		ZeroMemory(keyToggled_Alt, sizeof(keyToggled_Alt));
 	}
 
 	// Return true to indicate that the event was handled and  should be no longer processed

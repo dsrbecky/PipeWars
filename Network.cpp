@@ -6,6 +6,8 @@ using namespace stdext;
 extern Database db;
 extern Player* localPlayer;
 
+const string pipeFilename = "pipe.dae";
+
 // Very primitive compression
 void WriteInt(vector<UCHAR>& out, UINT32 i)
 {
@@ -41,9 +43,9 @@ UINT32 ReadInt(vector<UCHAR>::iterator& in)
 void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upadeLastData = true)
 {
 	// Byte encoding:
-	//  0x00       End of entity
+	//  0x00       Reserved
 	//  0x01-0x7F  Unchanged data count
-	//  0x80       Optional checksum (followed by UINT)
+	//  0x80       Reserved
 	//  0x81-0xFF  Changed data count (followed by the data)
 
 	entity->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
@@ -51,7 +53,8 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 	int size = entity->GetSize();
 	UCHAR* myData = (UCHAR*)entity;
 	UCHAR* myEnd = myData + size;
-	myData += 4; // Skip V-Table pointer
+	myData += sizeof(void*); // Skip V-Table pointer
+	lastData += sizeof(void*);
 
 	while(true) {
 		// Count changed data
@@ -66,13 +69,8 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 
 		// Count unchanged data
 		int numSame = 0;
-		// Optimization - unrolled loop  - 8 at a time
-		while (myData + 7 < myEnd && numSame + 7 < 0x7F) {
-			if ((*(myData + 0) != *(lastData + 0)) || (*(myData + 1) != *(lastData + 1)) ||
-				(*(myData + 2) != *(lastData + 2)) || (*(myData + 3) != *(lastData + 3)) ||
-				(*(myData + 4) != *(lastData + 4)) || (*(myData + 5) != *(lastData + 5)) ||
-				(*(myData + 6) != *(lastData + 6)) || (*(myData + 7) != *(lastData + 7))
-			   ) break;
+		// Optimization - 8 at a time
+		while (myData + 7 < myEnd && memcmp(myData, lastData, 8) == 0 && numSame + 7 < 0x7F) {
 			numSame += 8;
 			myData += 8;
 			lastData += 8;
@@ -84,7 +82,7 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 		}
 
 		// Optimization - it is not worth reporting just one or two unchanged bytes so report them as changed.
-		if (numSame == 1 || numSame == 2 && (numDiff + numSame) <= 0x7F) {
+		if ((numSame == 1 || numSame == 2 || numSame == 3) && (numDiff + numSame) <= 0x7F) {
 			numDiff += numSame;
 			numSame = 0;
 			goto countChangedData; // Add more changed data
@@ -105,26 +103,27 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 
 		// End of entity
 		if (myData == myEnd) {
-			out.push_back(0x00);
 			break;
 		}
 	}
 }
 
 // Reads entity from stream, completly overwritting it
-// It reads up to the terminating zero in the stream so type of entity does not matter
 void ReadEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastData, bool upadeLastData = true)
 {
+	int size = entity->GetSize();
 	UCHAR* myData = (UCHAR*)entity;
-	myData += 4; // Skip V-Table pointer
+	UCHAR* myEnd = myData + size;
+	myData += sizeof(void*); // Skip V-Table pointer
+	lastData += sizeof(void*);
 
 	while(true) {
+		if (myData == myEnd) break; // End of data
+		if (myData > myEnd)
+			throw "Error - writen over end of entity";
 		UCHAR descr = *(in++);
 		if (descr == 0) {
-			// End of entity
-			if (entity->GetSize() != myData - (UCHAR*)entity)
-				throw "The data did not have correct length for the entity";
-			return;
+			throw "Error in network stream: 0x00 seen";
 		} else if (descr <= 0x7F) {
 			// Unmodified
 			int count = descr;
@@ -132,7 +131,6 @@ void ReadEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastData, bo
 			myData += count;
 			lastData += count;
 		} else if (descr == 0x80) {
-			// Reserved - error
 			throw "Error in network stream: 0x80 seen";
 		} else if (descr > 0x80) {
 			// Modified
@@ -162,12 +160,24 @@ void network_SendIncrementalUpdateToClients()
 	// Sort all existing entities into groups
 	hash_map<ID, UCHAR*> deleted(lastDatas);
 	vector<Entity*> added;
-	vector<Entity*> modified(db.size());
+	vector<Entity*> modified;
 	DbLoop(it) {
 		deleted.erase(it->first);
 		if (lastDatas.count(it->first) == 0) {
 			added.push_back(it->second);
 		} else {
+			MeshEntity* meshEntity = dynamic_cast<MeshEntity*>(it->second);
+			if (meshEntity != NULL && meshEntity->meshFilename == pipeFilename)
+				continue; // Optimization - Pipes do not change
+
+			// Was it modified?
+			Entity* e = it->second;
+			UCHAR* lastData = lastDatas[it->first];
+			e->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
+			int size = e->GetSize();
+			if (memcmp((UCHAR*)e + sizeof(void*), lastData + sizeof(void*), size - sizeof(void*)) == 0)
+				continue; // Not modified at all
+
 			modified.push_back(it->second);
 		}
 	}
@@ -189,7 +199,7 @@ void network_SendIncrementalUpdateToClients()
 		// Default is all zeros
 		int size = e->GetSize();
 		UCHAR* lastData = new UCHAR[size];
-		ZeroMemory(&lastData, size);
+		ZeroMemory(lastData, size);
 		lastDatas[e->id] = lastData;
 
 		// Send the entity data
@@ -203,7 +213,6 @@ void network_SendIncrementalUpdateToClients()
 	for(vector<Entity*>::iterator it = modified.begin(); it != modified.end(); it++) {
 		Entity* e = *it;
 		UCHAR* lastData = lastDatas[e->id];
-
 		WriteInt(out, e->id);
 		WriteEntity(out, e, lastData, true);
 	}
@@ -226,7 +235,7 @@ void network_SendFreshUpdateToNewClient()
 		// Default is all zeros
 		int size = e->GetSize();
 		UCHAR* lastData = new UCHAR[size];
-		ZeroMemory(&lastData, size);
+		ZeroMemory(lastData, size);
 
 		// Send the entity data
 		WriteInt(out, e->GetType());
@@ -270,7 +279,7 @@ void netwoek_ReceiveUpdatesFromServer()
 			default: throw "Received unknown entity type";
 		}
 		UCHAR* lastData = new UCHAR[newEntity->GetSize()];
-		ZeroMemory(&lastData, newEntity->GetSize());
+		ZeroMemory(lastData, newEntity->GetSize());
 		lastDatas[id] = lastData;
 		ReadEntity(in, newEntity, lastData, true); 
 	}
@@ -286,7 +295,7 @@ void netwoek_ReceiveUpdatesFromServer()
 
 	UINT32 sentinel = ReadInt(in);
 	if (sentinel != 0xD5)
-		throw "Sentinel not found";
+		throw "Sentinel corrupted";
 }
 
 // TODO: Actual socket communication

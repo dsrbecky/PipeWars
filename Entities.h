@@ -69,8 +69,8 @@ struct MeshEntity: public Entity
 		rotY(0), rotY_multiplyByTime(0), rotY_velocity(0),
 		scale(1.0), hiQuality(false)
 	{
-		ZeroMemory(&meshFilename, sizeof(meshFilename));
-		ZeroMemory(&meshGeometryName, sizeof(meshGeometryName));
+		ZeroMemory(meshFilename, sizeof(meshFilename));
+		ZeroMemory(meshGeometryName, sizeof(meshGeometryName));
 
 		filename.copy(meshFilename, MAX_STR_LEN);
 		geometryName.copy(meshGeometryName, MAX_STR_LEN);

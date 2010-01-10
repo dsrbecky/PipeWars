@@ -7,6 +7,8 @@
 extern Database db;
 extern Player* localPlayer;
 
+extern void network_SendIncrementalUpdateToClients();
+
 extern void (*onCameraSet)(IDirect3DDevice9* dev); // Renderer
 
 class GameLogic: Layer
@@ -110,6 +112,8 @@ public:
 		for (vector<Entity*>::iterator it = toDelete.begin(); it != toDelete.end(); it++) {
 			db.remove(*it);
 		}
+
+		network_SendIncrementalUpdateToClients();
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)
