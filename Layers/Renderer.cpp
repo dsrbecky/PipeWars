@@ -157,9 +157,9 @@ public:
 		// Find and mark pipes to be rendered in hi-quality
 		// (the closeset ones to the player)
 		multiset<pair<float, MeshEntity*>> pipes;
-		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
-			if (entity != NULL && entity->mesh->filename == PipeFilename) {
+		DbLoop(it) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
+			if (entity != NULL && entity->getMesh()->filename == PipeFilename) {
 				D3DXVECTOR3 playerPos(0, 0, 0);
 				if (localPlayer != NULL) playerPos = localPlayer->position;
 				D3DXVECTOR3 delta = entity->position - playerPos;
@@ -179,7 +179,7 @@ public:
 
 		// Render meshes
 		DbLoop(it) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
 			if (entity == NULL)
 				continue; // Other type
 
@@ -239,7 +239,7 @@ public:
 					
 					outsideFrustum = true;
 					for(int j = 0; j < 8; j++) {
-						D3DXVECTOR3 bbCorner = entity->mesh->boundingBox.corners[j];
+						D3DXVECTOR3 bbCorner = entity->getMesh()->boundingBox.corners[j];
 						D3DXVECTOR3 bbCornerRelativeToP = bbCorner - nP;
 						bool isIn = D3DXVec3Dot(&n, &bbCornerRelativeToP) > 0;
 						if (isIn) {
@@ -264,15 +264,15 @@ public:
 				dev->SetTransform(D3DTS_VIEW, &newView);
 			}
 
-			entity->mesh->Render(dev, "OuterWall", "Path", entity->hiQuality ? "-Low" : "-Hi");
+			entity->getMesh()->Render(dev, "OuterWall", "Path", entity->hiQuality ? "-Low" : "-Hi");
 			entity->hiQuality = false; // Reset
 			stat_objRendered++;
-			if (entity->mesh->filename == PipeFilename)
+			if (entity->getMesh()->filename == PipeFilename)
 				stat_pipesRendered++;
 
 
 			if (keyToggled_Alt['B']) {
-				RenderBoundingBox(dev, entity->mesh->boundingBox);
+				RenderBoundingBox(dev, entity->getMesh()->boundingBox);
 			}
 
 			dev->SetTransform(D3DTS_VIEW, &oldView);

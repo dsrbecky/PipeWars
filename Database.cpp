@@ -154,15 +154,15 @@ D3DXVECTOR3 RotateY(D3DXVECTOR3 vec, float angleDeg)
 
 bool IsPointOnPath(D3DXVECTOR3 pos, float* outY)
 {
-	for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
-		MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
+	DbLoop(it) {
+		MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
 		if (entity == NULL)
 			continue;
 		// Position relative to the mesh
 		D3DXVECTOR3 meshPos = RotateY(pos - entity->position, -entity->rotY) / entity->scale;
 		// Quick test - is in BoundingBox?
-		if (entity->mesh->boundingBox.Contains(meshPos)) {
-			if (entity->mesh->IsOnPath(meshPos.x, meshPos.z, outY)) {
+		if (entity->getMesh()->boundingBox.Contains(meshPos)) {
+			if (entity->getMesh()->IsOnPath(meshPos.x, meshPos.z, outY)) {
 				if (outY != NULL) {
 					*outY = *outY * entity->scale + entity->position.y;
 				}

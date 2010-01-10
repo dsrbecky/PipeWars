@@ -3,7 +3,10 @@
 
 #include "StdAfx.h"
 #include <set>
+#include <hash_map>
 #include <list>
+#include <limits>
+using namespace stdext;
 
 const float NearClip = 2.0f;
 const float FarClip = 1000.0f;
@@ -118,53 +121,79 @@ enum ItemType {
 	ItemType_End
 };
 
+const int MAX_STR_LEN = 32;
+typedef UINT32 ID;
+
 // Entry in the game database
-class Entity
+struct Entity
 {
-public:
-	int id;
+	ID id;
 
 	Entity(): id(0) {}
 
 	virtual ~Entity() {}
 	virtual UCHAR GetType() = 0;
 	virtual int GetSize() = 0;
+	virtual void OnSerializing() {};
 };
 
 // Graphical entity based on mesh
-class MeshEntity: public Entity
+struct MeshEntity: public Entity
 {
-public:
-	Mesh* mesh;
+	char meshFilename[MAX_STR_LEN];
+	char meshGeometryName[MAX_STR_LEN];
+	Mesh* meshPtrCache;
 	D3DXVECTOR3 position;
-	D3DXVECTOR3 velocity;
 	float velocityForward;
 	float velocityRight;
 	float rotY;
+	float rotY_multiplyByTime;
 	float rotY_velocity;
 	float scale;
-
+	// Rendering options
 	bool hiQuality;
 
+	MeshEntity() {}
+
 	MeshEntity(string filename, string geometryName):
-		mesh(loadMesh(filename, geometryName)),
-		position(D3DXVECTOR3(0,0,0)), velocity(D3DXVECTOR3(0,0,0)),
-		rotY(0), rotY_velocity(0), scale(1), hiQuality(true) {}
+		meshPtrCache(NULL),
+		position(D3DXVECTOR3(0, 0, 0)),
+		velocityForward(0), velocityRight(0),
+		rotY(0), rotY_multiplyByTime(0), rotY_velocity(0),
+		scale(1.0), hiQuality(false)
+	{
+		ZeroMemory(&meshFilename, sizeof(meshFilename));
+		ZeroMemory(&meshGeometryName, sizeof(meshGeometryName));
+
+		filename.copy(meshFilename, MAX_STR_LEN);
+		geometryName.copy(meshGeometryName, MAX_STR_LEN);
+	}
 
 	static const UCHAR Type = 'M';
 	UCHAR GetType() { return Type; };
 	int GetSize() { return sizeof(MeshEntity); };
+
+	Mesh* getMesh()
+	{
+		if (meshPtrCache == NULL)
+			meshPtrCache = loadMesh(meshFilename, meshGeometryName);
+		return meshPtrCache;
+	}
+
+	void OnSerializing()
+	{
+		// Do not send memory address to remote computer
+		meshPtrCache = NULL;
+	};
 };
 
 static const float PlayerMoveSpeed = 5.0f;
 static const float PlayerStrafeSpeed = 3.0f;
 static const float PlayerRaiseAbovePath = 0.65f;
 
-class Player: public MeshEntity
+struct Player: public MeshEntity
 {
-public:
-
-	string name;
+	char name[MAX_STR_LEN];
 	int health;
 	int armour;
 	int score;
@@ -175,13 +204,20 @@ public:
 	bool firing;
 	int inventory[ItemType_End];
 
+	Player() {}
+
 	Player(string _name):
 		MeshEntity("Merman.dae", "Revolver"),
-		name(_name), health(100), armour(0), score(0), kills(0), deaths(0), selectedWeapon(Weapon_Revolver)
+		health(100), armour(0),
+		score(0), kills(0), deaths(0),
+		selectedWeapon(Weapon_Revolver), firing(false)
 	{
-		ZeroMemory(&inventory, sizeof(inventory));
+		ZeroMemory(name, sizeof(name));
+		ZeroMemory(inventory, sizeof(inventory));
+
+		_name.copy(name, MAX_STR_LEN);
 		inventory[Weapon_Revolver] = 1;
-		inventory[Ammo_Revolver] = 999;
+		inventory[Ammo_Revolver] = 48;
 	}
 
 	static const UCHAR Type = 'P';
@@ -194,59 +230,56 @@ public:
 			return false;  // Do not have that weapon
 
 		selectedWeapon = weapon;
+		string geomName;
 		switch(weapon) {
-			case Weapon_Revolver:
-				if (inventory[Weapon_Revolver] == 1) {
-					mesh = loadMesh("Merman.dae", "Revolver");
-				} else {
-					mesh = loadMesh("Merman.dae", "DualRevolver");
-				}
-				break;
-			case Weapon_Shotgun:
-				mesh = loadMesh("Merman.dae", "Boomstick");
-				break;
-			case Weapon_AK47:
-				mesh = loadMesh("Merman.dae", "Machinegun");
-				break;
-			case Weapon_Jackhammer:
-				mesh = loadMesh("Merman.dae", "Jackhammer");
-				break;
-			case Weapon_Nailgun:
-				mesh = loadMesh("Merman.dae", "Nailgun");
-				break;
+			case Weapon_Revolver:   geomName = inventory[Weapon_Revolver] == 2 ? "DualRevolver" : "Revolver"; break;
+			case Weapon_Shotgun:    geomName = "Boomstick"; break;
+			case Weapon_AK47:       geomName = "Machinegun"; break;
+			case Weapon_Jackhammer: geomName = "Jackhammer"; break;
+			case Weapon_Nailgun:    geomName = "Nailgun"; break;
 		}
+		ZeroMemory(meshGeometryName, sizeof(meshGeometryName));
+		geomName.copy(meshGeometryName, MAX_STR_LEN);
 
 		return true;
 	}
-
 };
 
-class Bullet: public MeshEntity
+struct Bullet: public MeshEntity
 {
-public:
-	Player* shooter;
+	ID shooter;
 	int weapon;
-	float rangeLeft;
+	D3DXVECTOR3 origin;
+	float range;
+
+	Bullet() {}
 	
-	Bullet(Player* _shooter, int _weapon):
-		MeshEntity("Bullets.dae", "RevolverBullet"), shooter(_shooter), weapon(_weapon), rangeLeft(10) {}
+	Bullet(Player* _shooter, int _weapon, D3DXVECTOR3 _position, float range):
+		MeshEntity("Bullets.dae", "RevolverBullet"),
+		shooter(_shooter->id), weapon(_weapon),
+		origin(_position), range(range)
+	{
+		position = _position;
+	}
 
 	static const UCHAR Type = 'B';
 	UCHAR GetType() { return Type; };
 	int GetSize() { return sizeof(Bullet); };
 };
 
-class PowerUp: public MeshEntity
+struct PowerUp: public MeshEntity
 {
-public:
 	ItemType itemType;
 	bool present;
 	float rechargeAfter;
 
+	PowerUp() {}
+
 	PowerUp(ItemType _itemType, string filename, string geometryName):
 		MeshEntity(filename, geometryName),
-		itemType(_itemType), present(true), rechargeAfter(0) {
-		rotY_velocity = 90;
+		itemType(_itemType), present(true), rechargeAfter(0)
+	{
+		rotY_multiplyByTime = 90;
 	}
 
 	static const UCHAR Type = 'U';
@@ -254,47 +287,110 @@ public:
 	int GetSize() { return sizeof(PowerUp); };
 };
 
-class RespawnPoint: public Entity
+struct RespawnPoint: public Entity
 {
-public:
 	D3DXVECTOR3 position;
 
-	RespawnPoint(double x, double y, double z): position(D3DXVECTOR3((float)x, (float)y, (float)z)) {}
+	RespawnPoint() {}
+
+	RespawnPoint(double x, double y, double z):
+		position(D3DXVECTOR3((float)x, (float)y, (float)z))
+	{}
 
 	static const UCHAR Type = 'R';
 	UCHAR GetType() { return Type; };
 	int GetSize() { return sizeof(RespawnPoint); };
 };
 
-#define DbLoop(it) for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++)
+#define DbLoop(it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
 
 class Database
 {
+	set<ID> freeIDs;
+	ID nextFreeID;
+	hash_map<ID, Entity*> entities;
+
 public:
-	list<Entity*> entities;
+
+	Database(): nextFreeID(1) {}
+
+	hash_map<ID, Entity*>::iterator begin()
+	{
+		return entities.begin();
+	}
+
+	hash_map<ID, Entity*>::iterator end()
+	{
+		return entities.end();
+	}
+
+	int size()
+	{
+		return entities.size();
+	}
+
+	Entity* operator[] (const ID& id)
+	{
+		return entities[id];
+	}
 
 	void add(Entity* entity)
 	{
-		entities.push_back(entity);
+		if (entity->id != 0)
+			throw "Entity already in database?";
+
+		// Assign ID
+		ID id;
+		if (freeIDs.size() > 0) {
+			id = *(freeIDs.begin());
+			freeIDs.erase(freeIDs.begin());
+		} else {
+			id = nextFreeID++;
+		}
+		entity->id = id;
+
+		if (entities.count(id) > 0)
+			throw "Consistency - ID already in dababase";
+
+		entities.insert(pair<ID, Entity*>(id, entity));
 	}
 
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
 	{
 		entity->position = D3DXVECTOR3((float)x, (float)y, (float)z);
 		entity->rotY = angle;
-		entities.push_back(entity);
+		add(entity);
 	}
 
-	void loadTestMap();
+	void remove(Entity* entity)
+	{
+		remove(entity->id);
+	}
 
-	void clear() {
-		for(list<Entity*>::iterator it = entities.begin(); it != entities.end(); it++) {
-			delete *it;
+	void remove(ID id)
+	{
+		hash_map<ID, Entity*>::iterator it = entities.find(id);
+		if (it == entities.end())
+			throw "Entity not found";
+
+		// Unassign ID
+		freeIDs.insert(id);
+		it->second->id = 0xFFFFFFFF;
+
+		delete it->second;
+		entities.erase(it);
+	}
+
+	void clear()
+	{
+		while(entities.size() > 0) {
+			remove(entities.begin()->first);
 		}
-		entities.clear();
 	}
 
 	~Database() { clear(); }
+
+	void loadTestMap();
 };
 
 static inline D3DXVECTOR3 min3(D3DXVECTOR3 a, D3DXVECTOR3 b)

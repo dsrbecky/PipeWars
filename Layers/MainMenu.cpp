@@ -226,7 +226,7 @@ public:
 		localPlayer = new Player(input);
 		localPlayer->position = D3DXVECTOR3(5, 4.3f, 14);
 		localPlayer->score++;
-		db.entities.push_front(localPlayer);
+		db.add(localPlayer);
 	}
 
 	static void OnJoinPressed()

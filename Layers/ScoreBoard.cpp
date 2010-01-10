@@ -41,8 +41,8 @@ class ScoreBoard: Layer
 		sprite->Release();
 
 		vector<Player*> players;
-		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end(); it++) {
-			Player* player = dynamic_cast<Player*>(*it);
+		DbLoop(it) {
+			Player* player = dynamic_cast<Player*>(it->second);
 			if (player != NULL)
 				players.push_back(player);
 		}

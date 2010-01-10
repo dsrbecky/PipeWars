@@ -9,7 +9,6 @@ extern void (*onCameraSet)(IDirect3DDevice9* dev); // Event for others
 
 class GameLogic: Layer
 {
-	bool firing;
 	static int lastMouseX;
 	static int lastMouseY;
 
@@ -17,7 +16,7 @@ class GameLogic: Layer
 
 public:
 
-	GameLogic(): firing(false), nextLoadedTime(0) {}
+	GameLogic(): nextLoadedTime(0) {}
 
 	bool KeyboardProc(UINT nChar, bool bKeyDown, bool bAltDown)
 	{
@@ -38,10 +37,11 @@ public:
 
 	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
 	{
-		firing = bLeftButtonDown;
+		if (localPlayer != NULL)
+			localPlayer->firing = bLeftButtonDown;
 		lastMouseX = xPos;
 		lastMouseY = yPos;
-		return firing;
+		return false;
 	}
 
 	void FrameMove(double fTime, float fElapsedTime)
@@ -54,17 +54,15 @@ public:
 			onCameraSet = &RotateLocalPlayer;
 
 			// Fire
-			if (firing && fTime >= nextLoadedTime) {
+			if (localPlayer->firing && fTime >= nextLoadedTime) {
 				int* ammo = &localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon];
 				if (*ammo > 0) {
 					float speed = 15.0;
 					float reloadTime = 0.5;
 					float range = 10;
-					Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon);
-					bullet->position = localPlayer->position;
+					Bullet* bullet = new Bullet(localPlayer, localPlayer->selectedWeapon, localPlayer->position, range);
 					bullet->rotY = localPlayer->rotY + 90;
-					bullet->velocity = RotYToDirecion(localPlayer->rotY) * speed;
-					bullet->rangeLeft = range;
+					bullet->velocityRight = speed;
 					db.add(bullet);
 					(*ammo)--;
 					nextLoadedTime = fTime + reloadTime;
@@ -74,31 +72,41 @@ public:
 			onCameraSet = NULL;
 		}
 
-		// Move entities
-		for(list<Entity*>::iterator it = db.entities.begin(); it != db.entities.end();) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(*it);
-			if (entity == NULL) {
-				it++; continue;
-			}
+		vector<Entity*> toDelete;
 
-			entity->position += entity->velocity * fElapsedTime;
+		// Move entities
+		DbLoop(it) {
+			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
+			if (entity == NULL || entity == localPlayer)
+				continue;
+
+			if (entity->velocityForward != 0.0f)
+				entity->position += RotYToDirecion(entity->rotY) * (entity->velocityForward * fElapsedTime);
+			if (entity->velocityRight != 0.0f)
+				entity->position += RotYToDirecion(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
 			entity->rotY += entity->rotY_velocity * fElapsedTime;
 
 			Bullet* bullet = dynamic_cast<Bullet*>(entity);
 			if (bullet != NULL) {
-				bullet->rangeLeft -= D3DXVec3Length(&entity->velocity) * fElapsedTime;
+				D3DXVECTOR3 pathTraveled = bullet->position - bullet->origin;
+				float distTraveled = D3DXVec3Length(&pathTraveled);
+
 				D3DXVECTOR3 offset1(+0.3f, 0, 0.3f);
 				D3DXVECTOR3 offset2(-0.3f, 0, 0.3f);
 				bool onPath = IsPointOnPath(bullet->position) || 
 					IsPointOnPath(bullet->position + offset1) || IsPointOnPath(bullet->position - offset1) ||
 					IsPointOnPath(bullet->position + offset2) || IsPointOnPath(bullet->position - offset2);
-				if (bullet->rangeLeft < 0 || !onPath) {
-					it = db.entities.erase(it);
+
+				if (distTraveled > bullet->range || !onPath) {
+					toDelete.push_back(bullet);
 					continue;
 				}
 			}
+		}
 
-			it++;
+		// Perform the deletes
+		for (vector<Entity*>::iterator it = toDelete.begin(); it != toDelete.end(); it++) {
+			db.remove(*it);
 		}
 	}
 
@@ -145,16 +153,16 @@ public:
 			float direction = localPlayer->rotY + dirOffset;
 
 			// Move forward / back
-			float speed = 0.0;
-			if (keyDown['W']) speed += +PlayerMoveSpeed;
-			if (keyDown['S']) speed += -PlayerMoveSpeed;
-			pos = pos + RotYToDirecion(direction) * speed * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI);
+			localPlayer->velocityForward = 0.0f;
+			if (keyDown['W']) localPlayer->velocityForward += +PlayerMoveSpeed;
+			if (keyDown['S']) localPlayer->velocityForward += -PlayerMoveSpeed;
+			pos = pos + RotYToDirecion(direction) * (localPlayer->velocityForward * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI));
 
 			// Move left / right
-			float strafeSpeed = 0.0;
-			if (keyDown['D']) strafeSpeed += +PlayerStrafeSpeed;
-			if (keyDown['A']) strafeSpeed += -PlayerStrafeSpeed;
-			pos = pos + RotYToDirecion(direction - 90) * strafeSpeed * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI); 
+			localPlayer->velocityRight = 0.0f;
+			if (keyDown['D']) localPlayer->velocityRight += +PlayerStrafeSpeed;
+			if (keyDown['A']) localPlayer->velocityRight += -PlayerStrafeSpeed;
+			pos = pos + RotYToDirecion(direction - 90) * (localPlayer->velocityRight * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI)); 
 
 			float outY;
 			if (IsPointOnPath(pos, &outY)) {

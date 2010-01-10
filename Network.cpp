@@ -9,38 +9,6 @@ using namespace stdext;
 extern Database db;
 extern Player* localPlayer;
 
-// A small selection of data that the client is allowed to change
-// It is small enough so that it can be just copied to this helpper class
-struct ClientUpdate
-{
-	static const int sentinelValue = 0x00DA1D00;
-	int sentinel;
-	int clientUpdateSize;
-	int playerID;
-	D3DXVECTOR3 position;
-	float velocityForward;
-	float velocityRight;
-	float rotY;
-	float rotY_velocity;
-	ItemType selectedWeapon;
-	bool firing;
-};
-
-void network_SendUpdateToServer()
-{
-	ClientUpdate update;
-	update.sentinel = ClientUpdate::sentinelValue;
-	update.clientUpdateSize = sizeof(update);
-	update.playerID = localPlayer->id;
-	update.position = localPlayer->position;
-	update.velocityForward = localPlayer->velocityForward;
-	update.velocityRight = localPlayer->velocityRight;
-	update.rotY = localPlayer->rotY;
-	update.rotY_velocity = localPlayer->rotY_velocity;
-	update.selectedWeapon = localPlayer->selectedWeapon;
-	update.firing = localPlayer->firing;
-}
-
 // Very primitive compression
 void WriteInt(vector<UCHAR>& out, UINT32 i)
 {
@@ -81,35 +49,61 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 	//  0x80       Optional checksum (followed by UINT)
 	//  0x81-0xFF  Changed data count (followed by the data)
 
+	entity->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
+
 	int size = entity->GetSize();
 	UCHAR* myData = (UCHAR*)entity;
 	UCHAR* myEnd = myData + size;
 	myData += 4; // Skip V-Table pointer
 
 	while(true) {
-		// Process unchanged data
-		int numSame = 0;
-		while (*myData == *lastData && numSame < 0x7F && myData < myEnd) {
-			numSame++;
-			myData++;
-			lastData++;
-		}
-		if (numSame > 0) {
-			out.push_back(numSame);
-		}
-
-		// Proces changed data
+		// Count changed data
+		UCHAR* diffStart = myData;
 		int numDiff = 0;
-		while (*myData != *lastData && numDiff < 0x7F && myData < myEnd) {
+	countChangedData:
+		while (myData < myEnd && *myData != *lastData && numDiff < 0x7F) {
 			numDiff++;
 			myData++;
 			lastData++;
 		}
+
+		// Count unchanged data
+		int numSame = 0;
+		// Optimization - unrolled loop  - 8 at a time
+		while (myData + 7 < myEnd && numSame + 7 < 0x7F) {
+			if ((*(myData + 0) != *(lastData + 0)) || (*(myData + 1) != *(lastData + 1)) ||
+				(*(myData + 2) != *(lastData + 2)) || (*(myData + 3) != *(lastData + 3)) ||
+				(*(myData + 4) != *(lastData + 4)) || (*(myData + 5) != *(lastData + 5)) ||
+				(*(myData + 6) != *(lastData + 6)) || (*(myData + 7) != *(lastData + 7))
+			   ) break;
+			numSame += 8;
+			myData += 8;
+			lastData += 8;
+		}
+		while (myData < myEnd && *myData == *lastData && numSame < 0x7F) {
+			numSame++;
+			myData++;
+			lastData++;
+		}
+
+		// Optimization - it is not worth reporting just one or two unchanged bytes so report them as changed.
+		if (numSame == 1 || numSame == 2 && (numDiff + numSame) <= 0x7F) {
+			numDiff += numSame;
+			numSame = 0;
+			goto countChangedData; // Add more changed data
+		}
+
+		// Write the changed data
 		if (numDiff > 0) {
 			out.push_back(0x80 + numDiff);
-			copy(myData - numDiff, myData, back_inserter(out));
+			copy(diffStart, diffStart + numDiff, back_inserter(out));
 			if (upadeLastData)
-				copy(myData - numDiff, myData, lastData - numDiff);
+				copy(diffStart, diffStart + numDiff, lastData - numDiff - numSame);
+		}
+
+		// Write the unchanged data
+		if (numSame > 0) {
+			out.push_back(numSame);
 		}
 
 		// End of entity
@@ -157,7 +151,7 @@ void ReadEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastData, bo
 }
 
 // Entity ID -> Entity Data
-hash_map<UINT32, UCHAR*> lastDatas;
+hash_map<ID, UCHAR*> lastDatas;
 
 // The packet has format
 //    <delete count> <id> <id> ...
@@ -169,21 +163,21 @@ void network_SendIncrementalUpdateToClients()
 	vector<UCHAR> out;
 
 	// Sort all existing entities into groups
-	hash_map<UINT32, UCHAR*> deleted(lastDatas);
+	hash_map<ID, UCHAR*> deleted(lastDatas);
 	vector<Entity*> added;
-	vector<Entity*> modified(db.entities.size());
+	vector<Entity*> modified(db.size());
 	DbLoop(it) {
-		deleted.erase((*it)->id);
-		if (lastDatas.count((*it)->id) == 0) {
-			added.push_back(*it);
+		deleted.erase(it->first);
+		if (lastDatas.count(it->first) == 0) {
+			added.push_back(it->second);
 		} else {
-			modified.push_back(*it);
+			modified.push_back(it->second);
 		}
 	}
 
 	// Send deleted entities
 	WriteInt(out, deleted.size());
-	for(hash_map<UINT32, UCHAR*>::iterator it = deleted.begin(); it != deleted.end(); it++) {
+	for(hash_map<ID, UCHAR*>::iterator it = deleted.begin(); it != deleted.end(); it++) {
 		WriteInt(out, it->first);
 
 		delete it->second;
@@ -221,16 +215,16 @@ void network_SendIncrementalUpdateToClients()
 	WriteInt(out, 0xD5);
 }
 
-void network_SendFreshUpdateToClient()
+void network_SendFreshUpdateToNewClient()
 {
 	vector<UCHAR> out;
 
 	WriteInt(out, 0); // No deleted
 
 	// All entities are send as added
-	WriteInt(out, db.entities.size());
+	WriteInt(out, db.size());
 	DbLoop(it) {
-		Entity* e = *it;
+		Entity* e = it->second;
 
 		// Default is all zeros
 		int size = e->GetSize();
@@ -240,7 +234,7 @@ void network_SendFreshUpdateToClient()
 		// Send the entity data
 		WriteInt(out, e->GetType());
 		WriteInt(out, e->id);
-		WriteEntity(out, e, lastData, true);
+		WriteEntity(out, e, lastData, false);
 
 		delete lastData;
 	}
@@ -253,13 +247,13 @@ void network_SendFreshUpdateToClient()
 
 void netwoek_ReceiveUpdatesFromServer()
 {
-	vector<UCHAR>::iterator& in;
+	vector<UCHAR>::iterator in;
 	
 	// Delete entities
 	int deletedCount = ReadInt(in);
 	for(int i = 0; i < deletedCount; i++) {
 		UINT32 id = ReadInt(in);
-		db.entities.remove(id);
+		db.remove(id);
 		delete lastDatas[id];
 		lastDatas.erase(id);
 	}
@@ -267,8 +261,8 @@ void netwoek_ReceiveUpdatesFromServer()
 	// Add new entities
 	int addedCount = ReadInt(in);
 	for(int i = 0; i < addedCount; i++) {
-		UINT32 id = ReadInt(in);
 		UCHAR type = (UCHAR)ReadInt(in);
+		UINT32 id = ReadInt(in);
 		Entity* newEntity = NULL;
 		switch(type) {
 			case MeshEntity::Type:   newEntity = new MeshEntity(); break;
@@ -288,7 +282,7 @@ void netwoek_ReceiveUpdatesFromServer()
 	int modifiedCount = ReadInt(in);
 	for(int i = 0; i < modifiedCount; i++) {
 		UINT32 id = ReadInt(in);
-		Entity* entity = db.entities[id];
+		Entity* entity = db[id];
 		UCHAR* lastData = lastDatas[id];
 		ReadEntity(in, entity, lastData, true); 
 	}
@@ -298,6 +292,37 @@ void netwoek_ReceiveUpdatesFromServer()
 		throw "Sentinel not found";
 }
 
-// TODO: Ensure that Database does not have any pointers/strings
 // TODO: Actual socket communication
 // TODO: Debug check sum
+
+// A small selection of data that the client is allowed to change
+// It is small enough so that it can be just copied to this helpper class
+struct ClientUpdate
+{
+	static const int sentinelValue = 0xD5D5D5D5;
+	int sentinel;
+	int clientUpdateSize;
+	int playerID;
+	D3DXVECTOR3 position;
+	float velocityForward;
+	float velocityRight;
+	float rotY;
+	float rotY_velocity;
+	ItemType selectedWeapon;
+	bool firing;
+};
+
+void network_SendUpdateToServer()
+{
+	ClientUpdate update;
+	update.sentinel = ClientUpdate::sentinelValue;
+	update.clientUpdateSize = sizeof(update);
+	update.playerID = localPlayer->id;
+	update.position = localPlayer->position;
+	update.velocityForward = localPlayer->velocityForward;
+	update.velocityRight = localPlayer->velocityRight;
+	update.rotY = localPlayer->rotY;
+	update.rotY_velocity = localPlayer->rotY_velocity;
+	update.selectedWeapon = localPlayer->selectedWeapon;
+	update.firing = localPlayer->firing;
+}
