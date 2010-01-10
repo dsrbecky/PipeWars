@@ -143,6 +143,8 @@ public:
 	{
 		if (headerAlfa == 0) return;
 
+		resources.LoadFont(dev); // Preload
+
 		int headerColor = ((int)(headerAlfa * 255 * 0.90f) << 24) + 0x00FFFFFF;
 
 		left = 0;

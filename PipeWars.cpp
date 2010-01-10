@@ -3,10 +3,12 @@
 #include "Resources.h"
 #include "Layers/LayerChain.h"
 #include "Util.h"
+#include "Network.h"
 
 Database db;
 Player* localPlayer = NULL;
 Resources resources;
+Network network;
 
 // Layers have interface that allows them to both handle user input and participate in
 // the rendering.  Usually, the layer will set some internal state based on the input
@@ -21,7 +23,8 @@ class MainMenu; extern MainMenu mainMenu;
 class ScoreBoard; extern ScoreBoard scoreBoard;
 class HelpScreen; extern HelpScreen helpScreen;
 class HUD; extern HUD hud;
-class GameLogic; extern GameLogic gameLogic;
+class ClientLogic; extern ClientLogic clientLogic;
+class ServerLogic; extern ServerLogic serverLogic;
 class Renderer; extern Renderer renderer;
 
 void InitLayers()
@@ -30,7 +33,8 @@ void InitLayers()
 	layers.add(&scoreBoard);
 	layers.add(&helpScreen);
 	layers.add(&hud);
-	layers.add(&gameLogic);
+	layers.add(&clientLogic);
+	layers.add(&serverLogic);
 	layers.add(&renderer);
 }
 
@@ -46,6 +50,8 @@ void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMidd
 
 void CALLBACK OnFrameMove(double fTime, float fElapsedTime, void* pUserContext)
 {
+	fElapsedTime = min(0.1f, fElapsedTime);
+
 	layers.FrameMove(fTime, fElapsedTime);
 }
 

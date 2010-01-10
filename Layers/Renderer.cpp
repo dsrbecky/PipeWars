@@ -365,8 +365,10 @@ public:
 		msg << fixed << std::setprecision(1);
 		msg << "FPS = " << DXUTGetFPS() << " (target = " << targetFPS << ")" << "    ";
 		msg << "Objects = " << stat_objRendered << " (hq = " << (int)hiQualityPipes << ")" << "    ";
-		if (localPlayer != NULL)
-			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << ","<< localPlayer->position.z << "    ";
+		if (localPlayer != NULL) {
+			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << "," << localPlayer->position.z << "    ";
+			msg << "Rot = " << localPlayer->rotY << " ("<< localPlayer->rotY_velocity << ")" << "    ";
+		}
 		msg << "Press H for help or ESC to exit.";
 		
 		textX = 8; textY = 8;

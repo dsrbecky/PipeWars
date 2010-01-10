@@ -1,15 +1,11 @@
 #include "StdAfx.h"
 #include "Entities.h"
-
-using namespace stdext;
-
-extern Database db;
-extern Player* localPlayer;
+#include "Network.h"
 
 const string pipeFilename = "pipe.dae";
 
 // Very primitive compression
-void WriteInt(vector<UCHAR>& out, UINT32 i)
+inline void SendInt(vector<UCHAR>& out, UINT32 i)
 {
 	if (i < 0xFF) {
 		out.push_back((UCHAR)i);
@@ -22,7 +18,7 @@ void WriteInt(vector<UCHAR>& out, UINT32 i)
 	}
 }
 
-UINT32 ReadInt(vector<UCHAR>::iterator& in)
+inline UINT32 RecvInt(vector<UCHAR>::iterator& in)
 {
 	if (*in < 0xFF) {
 		return *(in++);
@@ -40,7 +36,7 @@ UINT32 ReadInt(vector<UCHAR>::iterator& in)
 
 // Writes the content of the entity to the stream
 // The data is encoded so that only modifications are send
-void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upadeLastData = true)
+void SendEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastSendData)
 {
 	// Byte encoding:
 	//  0x00       Reserved
@@ -54,31 +50,31 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 	UCHAR* myData = (UCHAR*)entity;
 	UCHAR* myEnd = myData + size;
 	myData += sizeof(void*); // Skip V-Table pointer
-	lastData += sizeof(void*);
+	lastSendData += sizeof(void*);
 
 	while(true) {
 		// Count changed data
 		UCHAR* diffStart = myData;
 		int numDiff = 0;
 	countChangedData:
-		while (myData < myEnd && *myData != *lastData && numDiff < 0x7F) {
+		while (myData < myEnd && *myData != *lastSendData && numDiff < 0x7F) {
 			numDiff++;
 			myData++;
-			lastData++;
+			lastSendData++;
 		}
 
 		// Count unchanged data
 		int numSame = 0;
 		// Optimization - 8 at a time
-		while (myData + 7 < myEnd && memcmp(myData, lastData, 8) == 0 && numSame + 7 < 0x7F) {
+		while (myData + 7 < myEnd && memcmp(myData, lastSendData, 8) == 0 && numSame + 7 < 0x7F) {
 			numSame += 8;
 			myData += 8;
-			lastData += 8;
+			lastSendData += 8;
 		}
-		while (myData < myEnd && *myData == *lastData && numSame < 0x7F) {
+		while (myData < myEnd && *myData == *lastSendData && numSame < 0x7F) {
 			numSame++;
 			myData++;
-			lastData++;
+			lastSendData++;
 		}
 
 		// Optimization - it is not worth reporting just one or two unchanged bytes so report them as changed.
@@ -92,8 +88,7 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 		if (numDiff > 0) {
 			out.push_back(0x80 + numDiff);
 			copy(diffStart, diffStart + numDiff, back_inserter(out));
-			if (upadeLastData)
-				copy(diffStart, diffStart + numDiff, lastData - numDiff - numSame);
+			copy(diffStart, diffStart + numDiff, lastSendData - numDiff - numSame);
 		}
 
 		// Write the unchanged data
@@ -109,13 +104,13 @@ void WriteEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastData, bool upade
 }
 
 // Reads entity from stream, completly overwritting it
-void ReadEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastData, bool upadeLastData = true)
+void RecvEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastRecvData)
 {
 	int size = entity->GetSize();
 	UCHAR* myData = (UCHAR*)entity;
 	UCHAR* myEnd = myData + size;
 	myData += sizeof(void*); // Skip V-Table pointer
-	lastData += sizeof(void*);
+	lastRecvData += sizeof(void*);
 
 	while(true) {
 		if (myData == myEnd) break; // End of data
@@ -127,43 +122,39 @@ void ReadEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastData, bo
 		} else if (descr <= 0x7F) {
 			// Unmodified
 			int count = descr;
-			copy(lastData, lastData + count, myData);
+			copy(lastRecvData, lastRecvData + count, myData);
 			myData += count;
-			lastData += count;
+			lastRecvData += count;
 		} else if (descr == 0x80) {
 			throw "Error in network stream: 0x80 seen";
 		} else if (descr > 0x80) {
 			// Modified
 			int count = descr - 0x80;
 			copy(in, in + count, myData);
-			if (upadeLastData)
-				copy(in, in + count, lastData);
+			copy(in, in + count, lastRecvData);
 			myData += count;
-			lastData += count;
+			lastRecvData += count;
 			in += count;
 		}
 	}
 }
 
-// Entity ID -> Entity Data
-hash_map<ID, UCHAR*> lastDatas;
-
 // The packet has format
-//    <delete count> <id> <id> ...
+//
+//    <delete count (-1 = clear)> <id> <id> ...
 //    <add count> <type><id><data> <type><id><data> ...
 //    <modify count> <id><data> <id><data>
 //    <sentinel 0xD5>
-void network_SendIncrementalUpdateToClients()
+//
+void Network::SendDatabaseUpdate(vector<UCHAR>& out, Database& db)
 {
-	vector<UCHAR> out;
-
 	// Sort all existing entities into groups
-	hash_map<ID, UCHAR*> deleted(lastDatas);
+	hash_map<ID, UCHAR*> deleted(lastSendDatas);
 	vector<Entity*> added;
 	vector<Entity*> modified;
 	DbLoop(it) {
 		deleted.erase(it->first);
-		if (lastDatas.count(it->first) == 0) {
+		if (lastSendDatas.count(it->first) == 0) {
 			added.push_back(it->second);
 		} else {
 			MeshEntity* meshEntity = dynamic_cast<MeshEntity*>(it->second);
@@ -172,10 +163,10 @@ void network_SendIncrementalUpdateToClients()
 
 			// Was it modified?
 			Entity* e = it->second;
-			UCHAR* lastData = lastDatas[it->first];
+			UCHAR* lastSendData = lastSendDatas[it->first];
 			e->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
 			int size = e->GetSize();
-			if (memcmp((UCHAR*)e + sizeof(void*), lastData + sizeof(void*), size - sizeof(void*)) == 0)
+			if (memcmp((UCHAR*)e + sizeof(void*), lastSendData + sizeof(void*), size - sizeof(void*)) == 0)
 				continue; // Not modified at all
 
 			modified.push_back(it->second);
@@ -183,92 +174,92 @@ void network_SendIncrementalUpdateToClients()
 	}
 
 	// Send deleted entities
-	WriteInt(out, deleted.size());
+	SendInt(out, deleted.size());
 	for(hash_map<ID, UCHAR*>::iterator it = deleted.begin(); it != deleted.end(); it++) {
-		WriteInt(out, it->first);
+		SendInt(out, it->first);
 
 		delete it->second;
-		lastDatas.erase(it->first);
+		lastSendDatas.erase(it->first);
 	}
 
 	// Send added entities
-	WriteInt(out, added.size());
+	SendInt(out, added.size());
 	for(vector<Entity*>::iterator it = added.begin(); it != added.end(); it++) {
 		Entity* e = *it;
 
 		// Default is all zeros
 		int size = e->GetSize();
-		UCHAR* lastData = new UCHAR[size];
-		ZeroMemory(lastData, size);
-		lastDatas[e->id] = lastData;
+		UCHAR* lastSendData = new UCHAR[size];
+		ZeroMemory(lastSendData, size);
+		lastSendDatas[e->id] = lastSendData;
 
 		// Send the entity data
-		WriteInt(out, e->GetType());
-		WriteInt(out, e->id);
-		WriteEntity(out, e, lastData, true);
+		SendInt(out, e->GetType());
+		SendInt(out, e->id);
+		SendEntity(out, e, lastSendData);
 	}
 
 	// Send modified entites
-	WriteInt(out, modified.size());
+	SendInt(out, modified.size());
 	for(vector<Entity*>::iterator it = modified.begin(); it != modified.end(); it++) {
 		Entity* e = *it;
-		UCHAR* lastData = lastDatas[e->id];
-		WriteInt(out, e->id);
-		WriteEntity(out, e, lastData, true);
+		UCHAR* lastSendData = lastSendDatas[e->id];
+		SendInt(out, e->id);
+		SendEntity(out, e, lastSendData);
 	}
 
 	// Sentinel
-	WriteInt(out, 0xD5);
+	SendInt(out, 0xD5);
 }
 
-void network_SendFreshUpdateToNewClient()
+void Network::SendFullDatabase(vector<UCHAR>& out, Database& db)
 {
-	vector<UCHAR> out;
-
-	WriteInt(out, 0); // No deleted
+	SendInt(out, 0xFFFFFFFF); // Clear
 
 	// All entities are send as added
-	WriteInt(out, db.size());
+	SendInt(out, db.size());
 	DbLoop(it) {
 		Entity* e = it->second;
 
 		// Default is all zeros
 		int size = e->GetSize();
-		UCHAR* lastData = new UCHAR[size];
-		ZeroMemory(lastData, size);
+		UCHAR* lastSendData = new UCHAR[size];
+		ZeroMemory(lastSendData, size);
 
 		// Send the entity data
-		WriteInt(out, e->GetType());
-		WriteInt(out, e->id);
-		WriteEntity(out, e, lastData, false);
+		SendInt(out, e->GetType());
+		SendInt(out, e->id);
+		SendEntity(out, e, lastSendData);
 
-		delete lastData;
+		delete lastSendData;
 	}
 
-	WriteInt(out, 0); // No modified
+	SendInt(out, 0); // No modified
 
 	// Sentinel
-	WriteInt(out, 0xD5);
+	SendInt(out, 0xD5);
 }
 
-void netwoek_ReceiveUpdatesFromServer()
-{
-	vector<UCHAR>::iterator in;
-	
+void Network::RecvDatabase(vector<UCHAR>::iterator& in, Database& db)
+{	
 	// Delete entities
-	int deletedCount = ReadInt(in);
-	for(int i = 0; i < deletedCount; i++) {
-		UINT32 id = ReadInt(in);
-		db.remove(id);
-		delete lastDatas[id];
-		lastDatas.erase(id);
+	int deletedCount = RecvInt(in);
+	if (deletedCount == 0xFFFFFFFF) {
+		db.clear();
+	} else {
+		for(int i = 0; i < deletedCount; i++) {
+			UINT32 id = RecvInt(in);
+			db.remove(id);
+			delete lastRecvDatas[id];
+			lastRecvDatas.erase(id);
+		}
 	}
 
 	// Add new entities
-	int addedCount = ReadInt(in);
+	int addedCount = RecvInt(in);
 	for(int i = 0; i < addedCount; i++) {
-		UCHAR type = (UCHAR)ReadInt(in);
-		UINT32 id = ReadInt(in);
+		UCHAR type = (UCHAR)RecvInt(in);
+		UINT32 id = RecvInt(in);
 		Entity* newEntity = NULL;
 		switch(type) {
 			case MeshEntity::Type:   newEntity = new MeshEntity(); break;
@@ -278,57 +269,53 @@ void netwoek_ReceiveUpdatesFromServer()
 			case RespawnPoint::Type: newEntity = new RespawnPoint(); break;
 			default: throw "Received unknown entity type";
 		}
-		UCHAR* lastData = new UCHAR[newEntity->GetSize()];
-		ZeroMemory(lastData, newEntity->GetSize());
-		lastDatas[id] = lastData;
-		ReadEntity(in, newEntity, lastData, true); 
+		UCHAR* lastRecvData = new UCHAR[newEntity->GetSize()];
+		ZeroMemory(lastRecvData, newEntity->GetSize());
+		lastRecvDatas[id] = lastRecvData;
+		RecvEntity(in, newEntity, lastRecvData); 
 	}
 
 	// Modify entities
-	int modifiedCount = ReadInt(in);
+	int modifiedCount = RecvInt(in);
 	for(int i = 0; i < modifiedCount; i++) {
-		UINT32 id = ReadInt(in);
+		UINT32 id = RecvInt(in);
 		Entity* entity = db[id];
-		UCHAR* lastData = lastDatas[id];
-		ReadEntity(in, entity, lastData, true); 
+		UCHAR* lastRecvData = lastRecvDatas[id];
+		RecvEntity(in, entity, lastRecvData); 
 	}
 
-	UINT32 sentinel = ReadInt(in);
+	UINT32 sentinel = RecvInt(in);
 	if (sentinel != 0xD5)
 		throw "Sentinel corrupted";
 }
 
-// TODO: Actual socket communication
-// TODO: Debug check sum
-
-// A small selection of data that the client is allowed to change
-// It is small enough so that it can be just copied to this helpper class
-struct ClientUpdate
-{
-	static const int sentinelValue = 0xD5D5D5D5;
-	int sentinel;
-	int clientUpdateSize;
-	int playerID;
-	D3DXVECTOR3 position;
-	float velocityForward;
-	float velocityRight;
-	float rotY;
-	float rotY_velocity;
-	ItemType selectedWeapon;
-	bool firing;
-};
-
-void network_SendUpdateToServer()
+ClientUpdate Network::SendPlayerData(Player* player)
 {
 	ClientUpdate update;
-	update.sentinel = ClientUpdate::sentinelValue;
-	update.clientUpdateSize = sizeof(update);
-	update.playerID = localPlayer->id;
-	update.position = localPlayer->position;
-	update.velocityForward = localPlayer->velocityForward;
-	update.velocityRight = localPlayer->velocityRight;
-	update.rotY = localPlayer->rotY;
-	update.rotY_velocity = localPlayer->rotY_velocity;
-	update.selectedWeapon = localPlayer->selectedWeapon;
-	update.firing = localPlayer->firing;
+	update.playerID = player->id;
+	update.position = player->position;
+	update.velocityForward = player->velocityForward;
+	update.velocityRight = player->velocityRight;
+	update.rotY = player->rotY;
+	update.rotY_velocity = player->rotY_velocity;
+	update.selectedWeapon = player->selectedWeapon;
+	update.firing = player->firing;
+	update.sentinel = ClientUpdate::SentinelValue;
+	return update;
+}
+
+void Network::RecvPlayerData(Database& db, ClientUpdate& update)
+{
+	if (update.sentinel != ClientUpdate::SentinelValue)
+		throw "Sentinel corrupted";
+	Player* player = dynamic_cast<Player*>(db[update.playerID]);
+	if (player == NULL)
+		throw "Player is not in dababase";
+	player->position = update.position;
+	player->velocityForward = update.velocityForward;
+	player->velocityRight = update.velocityRight;
+	player->rotY = update.rotY;
+	player->rotY_velocity = update.rotY_velocity;
+	player->selectedWeapon = update.selectedWeapon;
+	player->firing = update.firing;
 }

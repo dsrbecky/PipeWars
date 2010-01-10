@@ -89,7 +89,7 @@ struct MeshEntity: public Entity
 	};
 };
 
-static const float PlayerMoveSpeed = 5.0f;
+static const float PlayerMoveSpeed = 6.0f;
 static const float PlayerStrafeSpeed = 3.0f;
 static const float PlayerRaiseAbovePath = 0.65f;
 
@@ -104,6 +104,7 @@ struct Player: public MeshEntity
 
 	ItemType selectedWeapon;
 	bool firing;
+	double nextLoadedTime;
 	int inventory[ItemType_End];
 
 	Player() {}
@@ -112,7 +113,7 @@ struct Player: public MeshEntity
 		MeshEntity("Merman.dae", "Revolver"),
 		health(100), armour(0),
 		score(0), kills(0), deaths(0),
-		selectedWeapon(Weapon_Revolver), firing(false)
+		selectedWeapon(Weapon_Revolver), firing(false), nextLoadedTime(0)
 	{
 		ZeroMemory(name, sizeof(name));
 		ZeroMemory(inventory, sizeof(inventory));
@@ -126,7 +127,7 @@ struct Player: public MeshEntity
 	UCHAR GetType() { return Type; };
 	int GetSize() { return sizeof(Player); };
 
-	bool selectWeapon(ItemType weapon)
+	bool trySelectWeapon(ItemType weapon)
 	{
 		if (inventory[weapon] == 0)
 			return false;  // Do not have that weapon
