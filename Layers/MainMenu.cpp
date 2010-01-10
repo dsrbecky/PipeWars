@@ -225,10 +225,10 @@ public:
 		showHeader = false;
 		showInput = false;
 
-		localPlayer = new Player(input);
-		localPlayer->position = D3DXVECTOR3(5, 4.3f, 14);
-		localPlayer->score++;
-		db.add(localPlayer);
+		//localPlayer = new Player(input);
+		//localPlayer->position = D3DXVECTOR3(5, 4.3f, 14);
+		//localPlayer->score++;
+		//db.add(localPlayer);
 	}
 
 	static void OnJoinPressed()

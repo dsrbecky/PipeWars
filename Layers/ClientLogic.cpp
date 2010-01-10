@@ -3,12 +3,18 @@
 #include "../Entities.h"
 #include "../Resources.h"
 #include "../Math.h"
+#include "../Network.h"
 
 extern Database db;
 extern Player* localPlayer;
+extern Network network;
 
 extern void (*onCameraSet)(IDirect3DDevice9* dev); // Renderer
+bool MovePlayer(Player* player, float fElapsedTime);
 bool IsPointOnPath(Database& db, D3DXVECTOR3 pos, float* outY = NULL);
+
+extern vector<UCHAR> lastClientUpdate;
+extern vector<UCHAR> lastDataBaseUpdate;
 
 class ClientLogic: Layer
 {
@@ -49,6 +55,17 @@ public:
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
+		vector<UCHAR> bk;
+		if (localPlayer != NULL)
+			network.SendPlayerData(bk, localPlayer);
+		if (lastDataBaseUpdate.size() > 0) {
+			network.RecvDatabase(lastDataBaseUpdate.begin(), db);
+			if (localPlayer == NULL)
+				localPlayer = dynamic_cast<Player*>(db[2]);
+		}
+		if (bk.size() > 0)
+			network.RecvPlayerData(bk.begin(), db);
+
 		if (localPlayer != NULL) {
 			// Set velocity forward / back
 			localPlayer->velocityForward = 0.0f;
@@ -68,30 +85,30 @@ public:
 			onCameraSet = NULL;
 		}
 
-		// Move other entities
 		DbLoop(it) {
-			if (it->second == localPlayer)
-				continue;
+			if (it->second == localPlayer) continue;
 
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity == NULL)
-				continue;
+			if (entity == NULL) continue;
 
 			Player* player = dynamic_cast<Player*>(it->second);
 			if (player != NULL) {
+				// Move player
 				MovePlayer(player, fElapsedTime);
 				player->rotY += player->rotY_velocity * fElapsedTime;
-				continue;
+			} else {
+				// Move other entities
+				if (entity->velocityForward != 0.0f)
+					entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
+				if (entity->velocityRight != 0.0f)
+					entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
+				entity->rotY += entity->rotY_velocity * fElapsedTime;
 			}
-
-			if (entity->velocityForward != 0.0f)
-				entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
-
-			if (entity->velocityRight != 0.0f)
-				entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
-
-			entity->rotY += entity->rotY_velocity * fElapsedTime;
 		}
+
+		lastClientUpdate.clear();
+		if (localPlayer != NULL)
+			network.SendPlayerData(lastClientUpdate, localPlayer);
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)
@@ -127,33 +144,6 @@ public:
 		localPlayer->rotY = angle;
 		localPlayer->rotY_velocity = 0.75f * localPlayer->rotY_velocity + 0.25f * velocity;
 	}
-
-	bool MovePlayer(Player* player, float fElapsedTime)
-	{
-		// Try to move at an angle if you can not go forward
-		static float dirOffsets[] = {0, -10, 10, -25, 25, -40, 40, -55, 55, -70, 70, -85, 85};
-
-		for (int i = 0; i < (sizeof(dirOffsets) / sizeof(float)); i++) {
-			float dirOffset = dirOffsets[i];
-
-			D3DXVECTOR3 pos = player->position;
-			float direction = player->rotY + dirOffset;
-			
-			// Move forward / back
-			pos = pos + RotateY(direction) * (player->velocityForward * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI));
-
-			// Move left / right
-			pos = pos + RotateY(direction - 90) * (player->velocityRight * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI)); 
-
-			float outY;
-			if (IsPointOnPath(db, pos, &outY)) {
-				pos.y = outY + PlayerRaiseAbovePath;
-				player->position = pos;
-				return true; // Done, moved
-			}
-		}
-		return false; // Can not move
-	}
 };
 
 int ClientLogic::lastMouseX = 0;
@@ -161,6 +151,33 @@ int ClientLogic::lastMouseY = 0;
 
 ClientLogic clientLogic;
 
+
+bool MovePlayer(Player* player, float fElapsedTime)
+{
+	// Try to move at an angle if you can not go forward
+	static float dirOffsets[] = {0, -10, 10, -25, 25, -40, 40, -55, 55, -70, 70, -85, 85};
+
+	for (int i = 0; i < (sizeof(dirOffsets) / sizeof(float)); i++) {
+		float dirOffset = dirOffsets[i];
+
+		D3DXVECTOR3 pos = player->position;
+		float direction = player->rotY + dirOffset;
+		
+		// Move forward / back
+		pos = pos + RotateY(direction) * (player->velocityForward * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI));
+
+		// Move left / right
+		pos = pos + RotateY(direction - 90) * (player->velocityRight * fElapsedTime * cos(dirOffset / 360 * 2 * D3DX_PI)); 
+
+		float outY;
+		if (IsPointOnPath(db, pos, &outY)) {
+			pos.y = outY + PlayerRaiseAbovePath;
+			player->position = pos;
+			return true; // Done, moved
+		}
+	}
+	return false; // Can not move
+}
 
 bool IsPointOnPath(Database& db, D3DXVECTOR3 pos, float* outY)
 {

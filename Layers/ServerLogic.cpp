@@ -2,15 +2,26 @@
 #include "Layer.h"
 #include "../Entities.h"
 #include "../Math.h"
+#include "../Network.h"
 
-extern Database db;
+extern Network network;
+extern Database serverDb;
 
+extern bool MovePlayer(Player* player, float fElapsedTime);
 extern bool IsPointOnPath(Database& db, D3DXVECTOR3 pos, float* outY = NULL);
+
+vector<UCHAR> lastClientUpdate;
+vector<UCHAR> lastDataBaseUpdate;
 
 class ServerLogic: Layer
 {
 	void FrameMove(double fTime, float fElapsedTime)
 	{
+		Database& db = serverDb;
+
+		if (lastClientUpdate.size() > 0)
+			network.RecvPlayerData(lastClientUpdate.begin(), db);
+
 		vector<Entity*> toDelete;
 
 		DbLoop(it) {
@@ -35,6 +46,17 @@ class ServerLogic: Layer
 						player->nextLoadedTime = fTime + reloadTime;
 					}
 				}
+
+				// Move player
+				MovePlayer(player, fElapsedTime);
+				player->rotY += player->rotY_velocity * fElapsedTime;
+			} else {
+				// Move other entities
+				if (entity->velocityForward != 0.0f)
+					entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
+				if (entity->velocityRight != 0.0f)
+					entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
+				entity->rotY += entity->rotY_velocity * fElapsedTime;
 			}
 
 			// Remove bullet
@@ -63,6 +85,9 @@ class ServerLogic: Layer
 		for (vector<Entity*>::iterator it = toDelete.begin(); it != toDelete.end(); it++) {
 			db.remove(*it);
 		}
+
+		lastDataBaseUpdate.clear();
+		network.SendDatabaseUpdate(lastDataBaseUpdate, serverDb);
 	}
 };
 

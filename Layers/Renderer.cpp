@@ -6,6 +6,7 @@
 #include "../Util.h"
 
 extern Database db;
+extern Database serverDb;
 extern Player* localPlayer;
 
 void (*onCameraSet)(IDirect3DDevice9* dev) = NULL; // Event for others
@@ -147,6 +148,8 @@ public:
 		SetupCamera(dev);
 		SetupLight(dev);
 
+		Database& database = keyToggled['T'] ? serverDb : db;
+
 		// Get the camera settings
 		D3DVIEWPORT9 viewport;
 		D3DXMATRIX matProj;
@@ -158,7 +161,7 @@ public:
 		// Find and mark pipes to be rendered in hi-quality
 		// (the closeset ones to the player)
 		multiset<pair<float, MeshEntity*>> pipes;
-		DbLoop(it) {
+		for(hash_map<ID, Entity*>::iterator it = database.begin(); it != database.end(); it++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
 			if (entity != NULL && entity->getMesh()->filename == PipeFilename) {
 				D3DXVECTOR3 playerPos(0, 0, 0);

@@ -239,23 +239,22 @@ public:
 
 	void add(Entity* entity)
 	{
-		if (entity->id != 0)
-			throw "Entity already in database?";
-
-		// Assign ID
-		ID id;
-		if (freeIDs.size() > 0) {
-			id = *(freeIDs.begin());
-			freeIDs.erase(freeIDs.begin());
-		} else {
-			id = nextFreeID++;
+		if (entity->id == 0) {
+			// Assign ID
+			ID id;
+			if (freeIDs.size() > 0) {
+				id = *(freeIDs.begin());
+				freeIDs.erase(freeIDs.begin());
+			} else {
+				id = nextFreeID++;
+			}
+			entity->id = id;
 		}
-		entity->id = id;
 
-		if (entities.count(id) > 0)
+		if (entities.count(entity->id) > 0)
 			throw "Consistency - ID already in dababase";
 
-		entities.insert(pair<ID, Entity*>(id, entity));
+		entities.insert(pair<ID, Entity*>(entity->id, entity));
 	}
 
 	void add(double x, double y, double z, float angle, MeshEntity* entity)

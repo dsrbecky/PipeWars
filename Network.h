@@ -14,6 +14,11 @@ struct ClientUpdate
 	ItemType selectedWeapon;
 	bool firing;
 	UCHAR sentinel;
+
+	ClientUpdate()
+	{
+		ZeroMemory(this, sizeof(*this));
+	}
 };
 
 class Network
@@ -26,6 +31,6 @@ public:
 	void SendDatabaseUpdate(vector<UCHAR>& out, Database& db);
 	void SendFullDatabase(vector<UCHAR>& out, Database& db);
 	void RecvDatabase(vector<UCHAR>::iterator& in, Database& db);
-	ClientUpdate SendPlayerData(Player* player);
-	void RecvPlayerData(Database& db, ClientUpdate& clientUpdate);
+	void SendPlayerData(vector<UCHAR>& out, Player* player);
+	void RecvPlayerData(vector<UCHAR>::iterator& in, Database& db);
 };

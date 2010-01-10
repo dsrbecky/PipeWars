@@ -272,7 +272,8 @@ void Network::RecvDatabase(vector<UCHAR>::iterator& in, Database& db)
 		UCHAR* lastRecvData = new UCHAR[newEntity->GetSize()];
 		ZeroMemory(lastRecvData, newEntity->GetSize());
 		lastRecvDatas[id] = lastRecvData;
-		RecvEntity(in, newEntity, lastRecvData); 
+		RecvEntity(in, newEntity, lastRecvData);
+		db.add(newEntity);
 	}
 
 	// Modify entities
@@ -289,7 +290,7 @@ void Network::RecvDatabase(vector<UCHAR>::iterator& in, Database& db)
 		throw "Sentinel corrupted";
 }
 
-ClientUpdate Network::SendPlayerData(Player* player)
+void Network::SendPlayerData(vector<UCHAR>& out, Player* player)
 {
 	ClientUpdate update;
 	update.playerID = player->id;
@@ -301,11 +302,17 @@ ClientUpdate Network::SendPlayerData(Player* player)
 	update.selectedWeapon = player->selectedWeapon;
 	update.firing = player->firing;
 	update.sentinel = ClientUpdate::SentinelValue;
-	return update;
+
+	copy((UCHAR*)&update, (UCHAR*)(&update + 1), back_inserter(out));
 }
 
-void Network::RecvPlayerData(Database& db, ClientUpdate& update)
+void Network::RecvPlayerData(vector<UCHAR>::iterator& in, Database& db)
 {
+	ClientUpdate update;
+
+	copy(in, in + sizeof(ClientUpdate), (UCHAR*)&update);
+	in += sizeof(ClientUpdate);
+
 	if (update.sentinel != ClientUpdate::SentinelValue)
 		throw "Sentinel corrupted";
 	Player* player = dynamic_cast<Player*>(db[update.playerID]);
