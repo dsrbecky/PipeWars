@@ -69,7 +69,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib libcollada14dom21-d.lib libboost_filesystem-d.lib libboost_system-d.lib"
+				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib libcollada14dom21-d.lib libboost_filesystem-d.lib libboost_system-d.lib Ws2_32.lib Mswsock.lib Advapi32.lib"
 				OutputFile="$(OutDir)/PipeWars.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=".\bin;&quot;.\dom\external-libs\boost\lib\vc9&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
@@ -424,6 +424,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\Network\Entities.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\Entities.h"
 			>
 		</File>
@@ -452,11 +456,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Network.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Network.h"
+			RelativePath=".\Network\Network.h"
 			>
 		</File>
 		<File
@@ -469,6 +469,10 @@
 		</File>
 		<File
 			RelativePath=".\PipeWars.rc"
+			>
+		</File>
+		<File
+			RelativePath=".\Network\PlayerData.cpp"
 			>
 		</File>
 		<File
@@ -493,6 +497,10 @@
 		</File>
 		<File
 			RelativePath=".\Layers\ServerLogic.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\Network\Socks.cpp"
 			>
 		</File>
 		<File

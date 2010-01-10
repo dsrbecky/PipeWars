@@ -1,8 +1,8 @@
 #include "StdAfx.h"
-#include "Entities.h"
+#include "../Entities.h"
 #include "Network.h"
 
-const string pipeFilename = "pipe.dae";
+extern Player* localPlayer;
 
 // Very primitive compression
 inline void SendInt(vector<UCHAR>& out, UINT32 i)
@@ -103,7 +103,7 @@ void SendEntity(vector<UCHAR>& out, Entity* entity, UCHAR* lastSendData)
 	}
 }
 
-// Reads entity from stream, completly overwritting it
+// Reads entity from stream
 void RecvEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastRecvData)
 {
 	int size = entity->GetSize();
@@ -146,7 +146,7 @@ void RecvEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastRecvData
 //    <modify count> <id><data> <id><data>
 //    <sentinel 0xD5>
 //
-void Network::SendDatabaseUpdate(vector<UCHAR>& out, Database& db)
+void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 {
 	// Sort all existing entities into groups
 	hash_map<ID, UCHAR*> deleted(lastSendDatas);
@@ -212,7 +212,7 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out, Database& db)
 	SendInt(out, 0xD5);
 }
 
-void Network::SendFullDatabase(vector<UCHAR>& out, Database& db)
+void Network::SendFullDatabase(vector<UCHAR>& out)
 {
 	SendInt(out, 0xFFFFFFFF); // Clear
 
@@ -240,7 +240,7 @@ void Network::SendFullDatabase(vector<UCHAR>& out, Database& db)
 	SendInt(out, 0xD5);
 }
 
-void Network::RecvDatabase(vector<UCHAR>::iterator& in, Database& db)
+void Network::RecvDatabase(vector<UCHAR>::iterator& in)
 {	
 	// Delete entities
 	int deletedCount = RecvInt(in);
@@ -290,39 +290,35 @@ void Network::RecvDatabase(vector<UCHAR>::iterator& in, Database& db)
 		throw "Sentinel corrupted";
 }
 
-void Network::SendPlayerData(vector<UCHAR>& out, Player* player)
+// Format <int32-updateSize><int32-yourID><...update...>
+void Network::SendDatabaseUpdateToClients()
 {
-	ClientUpdate update;
-	update.playerID = player->id;
-	update.position = player->position;
-	update.velocityForward = player->velocityForward;
-	update.velocityRight = player->velocityRight;
-	update.rotY = player->rotY;
-	update.rotY_velocity = player->rotY_velocity;
-	update.selectedWeapon = player->selectedWeapon;
-	update.firing = player->firing;
-	update.sentinel = ClientUpdate::SentinelValue;
-
-	copy((UCHAR*)&update, (UCHAR*)(&update + 1), back_inserter(out));
+	vector<UCHAR> updateData;
+	SendDatabaseUpdate(updateData);
+	int updateSize = updateData.size();
+	{ ConnLoop
+		copy((CHAR*)&updateSize, ((CHAR*)&updateSize) + 4, back_inserter(conn->outBuffer));
+		ID yourId = conn->player->id;
+		copy((CHAR*)&yourId, ((CHAR*)&yourId) + 4, back_inserter(conn->outBuffer));
+		copy(updateData.begin(), updateData.end(), back_inserter(conn->outBuffer));
+	}
 }
 
-void Network::RecvPlayerData(vector<UCHAR>::iterator& in, Database& db)
+void Network::RecvDatabaseFromServer()
 {
-	ClientUpdate update;
+	// There will be just one
+	{ ConnLoop
+		while(true) {
+			if (conn->inBuffer.size() < 8) break;
+			int packetSize;
+			ID myId;
+			copy(conn->inBuffer.begin() + 0, conn->inBuffer.begin() + 4, (UCHAR*)&packetSize);
+			copy(conn->inBuffer.begin() + 4, conn->inBuffer.begin() + 8, (UCHAR*)&myId);
+			if ((int)conn->inBuffer.size() < packetSize + 8) break;
+			RecvDatabase(conn->inBuffer.begin() + 8);
+			Skip(conn->inBuffer, packetSize + 8);
 
-	copy(in, in + sizeof(ClientUpdate), (UCHAR*)&update);
-	in += sizeof(ClientUpdate);
-
-	if (update.sentinel != ClientUpdate::SentinelValue)
-		throw "Sentinel corrupted";
-	Player* player = dynamic_cast<Player*>(db[update.playerID]);
-	if (player == NULL)
-		throw "Player is not in dababase";
-	player->position = update.position;
-	player->velocityForward = update.velocityForward;
-	player->velocityRight = update.velocityRight;
-	player->rotY = update.rotY;
-	player->rotY_velocity = update.rotY_velocity;
-	player->selectedWeapon = update.selectedWeapon;
-	player->firing = update.firing;
+			localPlayer = dynamic_cast<Player*>(db[myId]);
+		}
+	}
 }

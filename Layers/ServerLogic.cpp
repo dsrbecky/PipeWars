@@ -2,7 +2,7 @@
 #include "Layer.h"
 #include "../Entities.h"
 #include "../Math.h"
-#include "../Network.h"
+#include "../Network/Network.h"
 
 extern Network network;
 extern Database serverDb;
@@ -19,8 +19,8 @@ class ServerLogic: Layer
 	{
 		Database& db = serverDb;
 
-		if (lastClientUpdate.size() > 0)
-			network.RecvPlayerData(lastClientUpdate.begin(), db);
+		//if (lastClientUpdate.size() > 0)
+		//	network.RecvPlayerDataFrom(lastClientUpdate.begin());
 
 		vector<Entity*> toDelete;
 
@@ -87,7 +87,7 @@ class ServerLogic: Layer
 		}
 
 		lastDataBaseUpdate.clear();
-		network.SendDatabaseUpdate(lastDataBaseUpdate, serverDb);
+		network.SendDatabaseUpdate(lastDataBaseUpdate);
 	}
 };
 

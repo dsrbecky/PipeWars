@@ -3,6 +3,7 @@
 #include "../Entities.h"
 #include "../Resources.h"
 #include "../Util.h"
+#include "../Network/Network.h"
 
 extern Database db;
 extern Player* localPlayer;

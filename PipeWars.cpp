@@ -3,12 +3,12 @@
 #include "Resources.h"
 #include "Layers/LayerChain.h"
 #include "Util.h"
-#include "Network.h"
+#include "Network/Network.h"
 
 Database db;
 Player* localPlayer = NULL;
 Resources resources;
-Network network;
+Network network(db);
 Database serverDb;
 
 // Layers have interface that allows them to both handle user input and participate in

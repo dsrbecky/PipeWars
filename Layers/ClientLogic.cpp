@@ -3,7 +3,7 @@
 #include "../Entities.h"
 #include "../Resources.h"
 #include "../Math.h"
-#include "../Network.h"
+#include "../Network/Network.h"
 
 extern Database db;
 extern Player* localPlayer;
@@ -57,14 +57,14 @@ public:
 	{
 		vector<UCHAR> bk;
 		if (localPlayer != NULL)
-			network.SendPlayerData(bk, localPlayer);
+			network.SendPlayerDataTo(bk, localPlayer);
 		if (lastDataBaseUpdate.size() > 0) {
-			network.RecvDatabase(lastDataBaseUpdate.begin(), db);
+			network.RecvDatabase(lastDataBaseUpdate.begin());
 			if (localPlayer == NULL)
 				localPlayer = dynamic_cast<Player*>(db[2]);
 		}
 		if (bk.size() > 0)
-			network.RecvPlayerData(bk.begin(), db);
+			network.RecvPlayerDataFrom(bk.begin(), localPlayer);
 
 		if (localPlayer != NULL) {
 			// Set velocity forward / back
@@ -108,7 +108,7 @@ public:
 
 		lastClientUpdate.clear();
 		if (localPlayer != NULL)
-			network.SendPlayerData(lastClientUpdate, localPlayer);
+			network.SendPlayerDataTo(lastClientUpdate, localPlayer);
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)

@@ -1,7 +1,10 @@
 #ifndef __STDAFX__
 #define __STDAFX__
 
-#include <Windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <mmsystem.h>
 #include <d3dx9.h>
 #pragma warning( disable : 4996 ) // disable deprecated warning 
