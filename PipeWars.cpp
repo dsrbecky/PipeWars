@@ -25,8 +25,7 @@ class MainMenu; extern MainMenu mainMenu;
 class ScoreBoard; extern ScoreBoard scoreBoard;
 class HelpScreen; extern HelpScreen helpScreen;
 class HUD; extern HUD hud;
-class ClientLogic; extern ClientLogic clientLogic;
-class ServerLogic; extern ServerLogic serverLogic;
+class GameLogic; extern GameLogic gameLogic;
 class Renderer; extern Renderer renderer;
 
 void InitLayers()
@@ -35,8 +34,7 @@ void InitLayers()
 	layers.add(&scoreBoard);
 	layers.add(&helpScreen);
 	layers.add(&hud);
-	layers.add(&clientLogic);
-	layers.add(&serverLogic);
+	layers.add(&gameLogic);
 	layers.add(&renderer);
 }
 

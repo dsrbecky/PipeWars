@@ -4,10 +4,14 @@
 
 class HelpScreen: Layer
 {
-	static const int lineHeight = 16;
-	static const int tabWidth = 100;
+	int lineHeight;
+	int tabWidth;
 
 	IDirect3DDevice9* dev;
+
+public:
+
+	HelpScreen(): lineHeight(16), tabWidth(120) {}
 	
 	void Render(IDirect3DDevice9* device)
 	{
@@ -17,7 +21,7 @@ class HelpScreen: Layer
 
 		RenderBlackRectangle(dev, 50, 50, 700, 450, keyToggled_Alt['X'] ? 1.0f : 0.75f);
 
-		textX = 82; textY = 66;
+		textX = 82; textY = 66; tabWidth = 100;
 
 		RenderHeader("Game control:");
 		RenderKey("A,S,D,W", "Movement");
@@ -32,13 +36,14 @@ class HelpScreen: Layer
 		RenderKey("Alt+Enter", "Toggle full screen");
 		RenderKey("", "");
 
-		RenderHeader("Lighting:");
-		RenderKey("Alt+A", "Ambient");
-		RenderKey("Alt+S", "Specular");
-		RenderKey("Alt+D", "Diffuse");
+		RenderHeader("Credits:");
+		RenderKey("Programming", "David Srbecky");
+		RenderKey("3D modeling", "Alison Shaw");
+		RenderKey("Music", "D. Schneidemesser");
 		RenderKey("", "");
 
-		textX = 400; textY = 66;
+
+		textX = 400; textY = 66; tabWidth = 60;
 
 		RenderHeader("Rendering:");
 		RenderKey("Alt+W", "Wireframe");
@@ -47,9 +52,16 @@ class HelpScreen: Layer
 		RenderKey("Alt+B", "Bounding boxes");
 		RenderKey("Alt+G", "Grid");
 		RenderKey("Alt+C", "Frustum culling");
-		RenderKey("Alt+V", "View frustum");
+		RenderKey("Alt+V", "Debug frustum");
 		RenderKey("Alt+F", "Frame stats");
 		RenderKey("Alt+E", "Enable rendering");
+		RenderKey("", "");
+		RenderKey("", "");
+
+		RenderHeader("Lighting:");
+		RenderKey("Alt+A", "Ambient");
+		RenderKey("Alt+S", "Specular");
+		RenderKey("Alt+D", "Diffuse");
 		RenderKey("", "");
 	}
 

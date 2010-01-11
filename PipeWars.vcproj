@@ -365,10 +365,6 @@
 	</References>
 	<Files>
 		<File
-			RelativePath=".\Layers\ClientLogic.cpp"
-			>
-		</File>
-		<File
 			RelativePath="DXUT\Optional\directx.ico"
 			>
 		</File>
@@ -429,6 +425,10 @@
 		</File>
 		<File
 			RelativePath=".\Entities.h"
+			>
+		</File>
+		<File
+			RelativePath=".\Layers\GameLogic.cpp"
 			>
 		</File>
 		<File
@@ -493,10 +493,6 @@
 		</File>
 		<File
 			RelativePath=".\Layers\ScoreBoard.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\Layers\ServerLogic.cpp"
 			>
 		</File>
 		<File
