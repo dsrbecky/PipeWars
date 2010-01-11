@@ -36,6 +36,7 @@ public:
 		serverRunning(false), clientRunning(false)
 	{
 	}
+
 	~Network();
 
 	// Socks

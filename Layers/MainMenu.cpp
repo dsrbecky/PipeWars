@@ -166,7 +166,7 @@ public:
 		dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 		dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-		IDirect3DTexture9* header = resources.LoadTexture(dev, "Header.jpg"); // 800x200
+		IDirect3DTexture9* header = resources.LoadTexture(dev, "Header.png"); // 800x200
 
 		ID3DXSprite* sprite;
 		D3DXCreateSprite(dev, &sprite);

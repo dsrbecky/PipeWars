@@ -213,6 +213,12 @@ loop:
 
 Network::~Network()
 {
+	for(hash_map<ID, UCHAR*>::iterator it = lastSendDatas.begin(); it != lastSendDatas.end(); it++) {
+		delete it->second;
+	}
+	for(hash_map<ID, UCHAR*>::iterator it = lastRecvDatas.begin(); it != lastRecvDatas.end(); it++) {
+		delete it->second;
+	}
 	{ ConnLoop
 		closesocket(conn->socket);
 		delete conn;
