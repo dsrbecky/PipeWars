@@ -94,6 +94,25 @@ static const float PlayerMoveSpeed = 6.0f;
 static const float PlayerStrafeSpeed = 3.0f;
 static const float PlayerRaiseAbovePath = 0.65f;
 
+static D3DCOLOR colorsArmour[] = {
+	D3DCOLOR_XRGB(0x25, 0x2E, 0x4D),
+	D3DCOLOR_XRGB(230, 80, 0),  
+	D3DCOLOR_XRGB(90, 0, 90),
+	D3DCOLOR_XRGB(255, 150, 0),
+	D3DCOLOR_XRGB(0, 0, 0),
+	D3DCOLOR_XRGB(0, 100, 0),
+	D3DCOLOR_XRGB(150, 0, 0)
+};
+static D3DCOLOR colorsArmourDetail[] = {
+	D3DCOLOR_XRGB(0x41, 0x6A, 0xAC),
+	D3DCOLOR_XRGB(255, 110, 0),
+	D3DCOLOR_XRGB(120, 0, 120),
+	D3DCOLOR_XRGB(255, 195, 0),
+	D3DCOLOR_XRGB(30, 30, 30),
+	D3DCOLOR_XRGB(0, 130, 0),
+	D3DCOLOR_XRGB(190, 0, 0)
+};
+
 struct Player: public MeshEntity
 {
 	char name[MAX_STR_LEN];
@@ -108,9 +127,12 @@ struct Player: public MeshEntity
 	double nextLoadedTime;
 	int inventory[ItemType_End];
 
+	D3DCOLOR colorArmour;
+	D3DCOLOR colorArmoutDetail;
+
 	Player() {}
 
-	Player(string _name):
+	Player(string _name, int colorId):
 		MeshEntity("Merman.dae", "Revolver"),
 		health(100), armour(0),
 		score(0), kills(0), deaths(0),
@@ -124,6 +146,10 @@ struct Player: public MeshEntity
 		inventory[Weapon_Shotgun] = 1;
 		inventory[Ammo_Revolver] = 200;
 		inventory[Ammo_Shotgun] = 500;
+
+		int colorsCount = sizeof(colorsArmour) / sizeof(D3DCOLOR);
+		colorArmour = colorsArmour[colorId % colorsCount];
+		colorArmoutDetail = colorsArmourDetail[colorId % colorsCount];
 	}
 
 	static const UCHAR Type = 'P';

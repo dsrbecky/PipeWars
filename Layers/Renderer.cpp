@@ -185,6 +185,7 @@ public:
 
 		// Render meshes
 		{ DbLoop_Meshes(db, it)
+			Mesh* mesh = entity->getMesh();
 
 			// Set the WORLD for the this entity
 
@@ -242,7 +243,7 @@ public:
 					
 					outsideFrustum = true;
 					for(int j = 0; j < 8; j++) {
-						D3DXVECTOR3 bbCorner = entity->getMesh()->boundingBox.corners[j];
+						D3DXVECTOR3 bbCorner = mesh->boundingBox.corners[j];
 						D3DXVECTOR3 bbCornerRelativeToP = bbCorner - nP;
 						bool isIn = D3DXVec3Dot(&n, &bbCornerRelativeToP) > 0;
 						if (isIn) {
@@ -267,15 +268,28 @@ public:
 				dev->SetTransform(D3DTS_VIEW, &newView);
 			}
 
-			entity->getMesh()->Render(dev, "OuterWall", "Path", entity->hiQuality ? "-Low" : "-Hi");
+			D3DCOLOR on = 0xFFFFFFFF;
+			D3DCOLOR off = 0;
+			if (mesh->isPipeOrTank) {
+				mesh->SetMaterialColor("Path", keyToggled_Alt['P'] ? on : off);
+				mesh->SetMaterialColor("-Low", entity->hiQuality ? off : on);
+				mesh->SetMaterialColor("-Hi",  entity->hiQuality ? on : off);
+				mesh->SetMaterialColor("OuterWall", entity->showWall ? on : off);
+			}
+			if (entity->GetType() == Player::Type) {
+				mesh->SetMaterialColor("Armour", ((Player*)entity)->colorArmour);
+				mesh->SetMaterialColor("ArmourDetail", ((Player*)entity)->colorArmoutDetail);
+			}
+
+			mesh->Render(dev);
 			entity->hiQuality = false; // Reset
 			stat_objRendered++;
-			if (entity->getMesh()->filename == PipeFilename)
+			if (mesh->isPipeOrTank)
 				stat_pipesRendered++;
 
 
 			if (keyToggled_Alt['B']) {
-				RenderBoundingBox(dev, entity->getMesh()->boundingBox);
+				RenderBoundingBox(dev, mesh->boundingBox);
 			}
 
 			dev->SetTransform(D3DTS_VIEW, &oldView);

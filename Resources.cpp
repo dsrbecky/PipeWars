@@ -248,15 +248,12 @@ IDirect3DTexture9* Resources::LoadTexture(IDirect3DDevice9* dev, string textureF
 	return loadedTextures[textureFilename];
 }
 
-void Mesh::Render(IDirect3DDevice9* dev, string hide1, string hide2, string hide3)
+void Mesh::Render(IDirect3DDevice9* dev)
 {
 	for(int i = 0; i < (int)tristrips.size(); i++) {
 		Tristrip& ts = tristrips[i];
-		if (hide1.size() > 0 && ts.getMaterialName().find(hide1) != -1) continue;
-		if (hide2.size() > 0 && ts.getMaterialName().find(hide2) != -1) continue;
-		if (hide3.size() > 0 && ts.getMaterialName().find(hide3) != -1) continue;
-
-		ts.Render(dev);
+		if (ts.material.Diffuse.a != 0.0f)
+			ts.Render(dev);
 	}
 }
 
@@ -291,7 +288,7 @@ bool Mesh::IsOnPath(float x, float z, float* outY)
 {
 	for(int i = 0; i < (int)tristrips.size(); i++) {
 		Tristrip& ts = tristrips[i];
-		if (ts.getMaterialName() == pathMaterialName) {
+		if (ts.materialName == pathMaterialName) {
 			if (ts.IntersectsYRay(x, z, outY))
 				return true;
 		}
@@ -340,9 +337,9 @@ void Resources::LoadTestMap(Database* db)
 {
 	db->add(3, 0, 0, 180,      new MeshEntity("suzanne.dae", "Suzanne"));
 
-	db->add(12, 0.45, 28, 0,   new Player("Ali"));
-	db->add(25, -1.4, 32, 0,   new Player("Shephan"));
-	db->add(5.5, -3.5, 16, 0,  new Player("Ed"));
+	//db->add(12, 0.45, 28, 0,   new Player("Ali"));
+	//db->add(25, -1.4, 32, 0,   new Player("Shephan"));
+	//db->add(5.5, -3.5, 16, 0,  new Player("Ed"));
 	
 	db->add(-10, 0.5, 8, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(-10, 0.5, 0, 0,    new MeshEntity("pipe.dae", "LongStraight"));

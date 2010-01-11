@@ -24,8 +24,6 @@ struct Tristrip
 	D3DMATERIAL9 material;
 	string textureFilename;
 
-	string getMaterialName() { return materialName; }
-
 	void Render(IDirect3DDevice9* dev);
 
 	void ReleaseDeviceResources()
@@ -80,7 +78,22 @@ struct Mesh
 		isPipeOrTank(_filename == pipeFileName || _filename == tankFileName)
 	{}
 
-	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "", string hide3 = "");
+	void Render(IDirect3DDevice9* dev);
+
+	void SetMaterialColor(string name, DWORD color)
+	{
+		for(int i = 0; i < (int)tristrips.size(); i++) {
+			if (tristrips[i].materialName.find(name) != -1) {
+				D3DCOLORVALUE colorValue = {
+					(float)((color >> 16) & 0xFF) / 256,
+					(float)((color >> 8) & 0xFF) / 256,
+					(float)(color & 0xFF) / 256,
+					(float)(color >> 24) / 256
+				};
+				tristrips[i].material.Diffuse = colorValue;
+			}
+		}
+	}
 
 	void ReleaseDeviceResources()
 	{

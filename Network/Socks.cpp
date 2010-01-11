@@ -48,6 +48,8 @@ void Network::StartListening()
 	this->serverRunning = true;
 }
 
+int nextPlayerColourId = 0;
+
 void Network::AcceptNewConnection()
 {
 	// NOTE: Only one connection can be accepted per server frame!
@@ -75,7 +77,7 @@ void Network::AcceptNewConnection()
 	SendFullDatabaseToClient(connection);
 
 	// Add player
-	connection->player = new Player("(new player)");
+	connection->player = new Player("(new player)", nextPlayerColourId++);
 	connection->nameTransmited = false;
 	this->database.add(connection->player);
 

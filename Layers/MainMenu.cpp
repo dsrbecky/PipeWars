@@ -247,7 +247,7 @@ public:
 	{
 		joinPlayerName = input;
 		inputQuery = "Enter IP address or host name of server:";
-		input = "";
+		input = "127.0.0.1";
 		inputOnEntered = &OnJoinIPEntered;
 	}
 

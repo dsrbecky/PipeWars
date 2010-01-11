@@ -54,6 +54,7 @@ public:
 		RenderKey("Alt+C", "Frustum culling");
 		RenderKey("Alt+V", "Debug frustum");
 		RenderKey("Alt+F", "Frame stats");
+		RenderKey("Alt+P", "Show path");
 		RenderKey("Alt+E", "Enable rendering");
 		RenderKey("", "");
 		RenderKey("", "");
