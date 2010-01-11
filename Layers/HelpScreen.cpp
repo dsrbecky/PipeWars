@@ -27,6 +27,7 @@ class HelpScreen: Layer
 		RenderKey("Scroll wheel", "Zoom");
 		RenderKey("Tab", "Scoreboard");
 		RenderKey("H", "Help");
+		RenderKey("M", "Music");
 		RenderKey("ESC", "Exit");
 		RenderKey("Alt+Enter", "Toggle full screen");
 		RenderKey("", "");

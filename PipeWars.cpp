@@ -98,6 +98,7 @@ INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 	resources.LoadTestMap(&db);
 	resources.LoadTestMap(&serverDb);
+	resources.LoadMusic();
 
     DXUTMainLoop();
 

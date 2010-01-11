@@ -69,10 +69,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib libcollada14dom21-d.lib libboost_filesystem-d.lib libboost_system-d.lib Ws2_32.lib Mswsock.lib Advapi32.lib"
+				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib libcollada14dom21-d.lib libboost_filesystem-d.lib libboost_system-d.lib Ws2_32.lib Mswsock.lib Advapi32.lib fmodex_vc.lib"
 				OutputFile="$(OutDir)/PipeWars.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=".\bin;&quot;.\dom\external-libs\boost\lib\vc9&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
+				AdditionalLibraryDirectories=".\bin;.\fmod\lib\;&quot;.\dom\external-libs\boost\lib\vc9&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/PipeWars.pdb"

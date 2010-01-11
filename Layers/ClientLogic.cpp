@@ -8,6 +8,7 @@
 extern Database db;
 extern Player* localPlayer;
 extern Network clientNetwork;
+extern Resources resources;
 
 extern void (*onCameraSet)(IDirect3DDevice9* dev); // Renderer
 
@@ -57,6 +58,11 @@ public:
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
+		if (resources.fmodSystem != NULL) {
+			resources.fmodSystem->update();
+			resources.fmodChannel->setPaused(keyToggled['M'] ^ keyToggled_Alt['M']);
+		}
+
 		if (!clientNetwork.clientRunning) return;
 
 		// Move local player

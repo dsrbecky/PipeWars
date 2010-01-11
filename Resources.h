@@ -2,6 +2,10 @@
 #define __RESOURCES__
 
 #include "StdAfx.h"
+#include "fmod/inc/fmod.hpp"
+
+static const string MusicFilename = "../data/music/Entering the Stronghold.mp3";
+static const float Volume = 0.1f;
 
 class Database;
 
@@ -92,7 +96,11 @@ class Resources
 
 public:
 
-	Resources(): font(NULL) {}
+	FMOD::System*  fmodSystem;
+    FMOD::Sound*   fmodSound;
+    FMOD::Channel* fmodChannel;
+
+	Resources(): font(NULL), fmodSystem(NULL) {}
 
 	~Resources() { Release(); }
 
@@ -115,6 +123,17 @@ public:
 	}
 
 	void LoadTestMap(Database* db);
+
+	#define FMODCHK(cmd) if (cmd != FMOD_OK) { fmodSystem = NULL; return; }
+
+	void LoadMusic()
+	{
+		FMODCHK( FMOD::System_Create(&fmodSystem) );
+		FMODCHK( fmodSystem->init(1, FMOD_INIT_NORMAL, 0) );
+		FMODCHK( fmodSystem->createStream(MusicFilename.c_str(), FMOD_HARDWARE | FMOD_LOOP_NORMAL | FMOD_2D, 0, &fmodSound) );
+		FMODCHK( fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodChannel) );
+		fmodChannel->setVolume(Volume);
+	}
 
 	void ReleaseDeviceResources()
 	{
@@ -146,6 +165,13 @@ public:
 			delete it->second;
 		}
 		loadedMeshes.clear();
+
+		if (fmodSystem != NULL) {
+			fmodSound->release();
+			fmodSystem->close();
+			fmodSystem->release();
+			fmodSystem = NULL;
+		}
 	}
 };
 
