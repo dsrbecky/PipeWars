@@ -7,9 +7,11 @@
 
 extern Database db;
 extern Player* localPlayer;
-extern Network network;
+extern Network clientNetwork;
 
 extern void (*onCameraSet)(IDirect3DDevice9* dev); // Renderer
+
+void PredictMovement(Database& db, float fElapsedTime, Player* except = NULL);
 bool MovePlayer(Player* player, float fElapsedTime);
 bool IsPointOnPath(Database& db, D3DXVECTOR3 pos, float* outY = NULL);
 
@@ -55,17 +57,9 @@ public:
 
 	void FrameMove(double fTime, float fElapsedTime)
 	{
-		vector<UCHAR> bk;
-		if (localPlayer != NULL)
-			network.SendPlayerDataTo(bk, localPlayer);
-		if (lastDataBaseUpdate.size() > 0) {
-			network.RecvDatabase(lastDataBaseUpdate.begin());
-			if (localPlayer == NULL)
-				localPlayer = dynamic_cast<Player*>(db[2]);
-		}
-		if (bk.size() > 0)
-			network.RecvPlayerDataFrom(bk.begin(), localPlayer);
+		if (!clientNetwork.clientRunning) return;
 
+		// Move local player
 		if (localPlayer != NULL) {
 			// Set velocity forward / back
 			localPlayer->velocityForward = 0.0f;
@@ -85,30 +79,14 @@ public:
 			onCameraSet = NULL;
 		}
 
-		DbLoop(it) {
-			if (it->second == localPlayer) continue;
+		// Send player position to network
+		clientNetwork.SendPlayerDataToServer();
 
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity == NULL) continue;
+		// Predict movement of others
+		PredictMovement(db, fElapsedTime, localPlayer);
 
-			Player* player = dynamic_cast<Player*>(it->second);
-			if (player != NULL) {
-				// Move player
-				MovePlayer(player, fElapsedTime);
-				player->rotY += player->rotY_velocity * fElapsedTime;
-			} else {
-				// Move other entities
-				if (entity->velocityForward != 0.0f)
-					entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
-				if (entity->velocityRight != 0.0f)
-					entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
-				entity->rotY += entity->rotY_velocity * fElapsedTime;
-			}
-		}
-
-		lastClientUpdate.clear();
-		if (localPlayer != NULL)
-			network.SendPlayerDataTo(lastClientUpdate, localPlayer);
+		// Receive actual positions from network
+		clientNetwork.RecvDatabaseUpdateFromServer();
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)
@@ -151,6 +129,29 @@ int ClientLogic::lastMouseY = 0;
 
 ClientLogic clientLogic;
 
+void PredictMovement(Database& db, float fElapsedTime, Player* except)
+{
+	DbLoop(it) {
+		if (it->second == except) continue;
+
+		MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
+			if (entity == NULL) continue;
+
+		Player* player = dynamic_cast<Player*>(it->second);
+		if (player != NULL) {
+			// Move and rotate player
+			MovePlayer(player, fElapsedTime);
+			player->rotY += player->rotY_velocity * fElapsedTime;
+		} else {
+			// Move other entities
+			if (entity->velocityForward != 0.0f)
+				entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
+			if (entity->velocityRight != 0.0f)
+				entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
+			entity->rotY += entity->rotY_velocity * fElapsedTime;
+		}
+	}
+}
 
 bool MovePlayer(Player* player, float fElapsedTime)
 {

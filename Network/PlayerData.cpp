@@ -61,30 +61,37 @@ void Network::RecvPlayerDataFrom(vector<UCHAR>::iterator& in, Player* player)
 
 void Network::SendPlayerDataToServer()
 {
-	// There will be just one
+	assert(this->clientRunning);
+
+	assert(connections.size() == 1);
+
 	{ ConnLoop
-		Player* player = localPlayer;
 		if (localPlayer == NULL) continue;
-		if (!conn->nameTransmited) {
-			copy(player->name, player->name + MAX_STR_LEN, back_inserter(conn->outBuffer));
-			conn->nameTransmited = true;
-		}
-		SendPlayerDataTo(conn->outBuffer, conn->player);
+		if (conn->outBuffer.size() != 0) continue; // The connection is saturated
+
+		SendPlayerDataTo(conn->outBuffer, localPlayer);
 	}
+
+	SendSocketData();
 }
 
-void Network::RecvPlayerDataFromClient()
+void Network::RecvPlayerDataFromClients()
 {
+	assert(this->serverRunning);
+
+	RecvSocketData();
+
 	{ ConnLoop
 		while(true) {
 			if (conn->nameTransmited) {
-				if (conn->inBuffer.size() > sizeof(ClientUpdate)) {
+				if (conn->inBuffer.size() >= sizeof(ClientUpdate)) {
 					RecvPlayerDataFrom(conn->inBuffer.begin(), conn->player);
 					Skip(conn->inBuffer, sizeof(ClientUpdate));
 					continue;
 				}
 			} else {
-				if (conn->inBuffer.size() > MAX_STR_LEN) {
+				// The name was send immedialy in the Join method
+				if (conn->inBuffer.size() >= MAX_STR_LEN) {
 					copy(conn->inBuffer.begin(), conn->inBuffer.begin() + MAX_STR_LEN, conn->player->name);
 					Skip(conn->inBuffer, MAX_STR_LEN);
 					conn->nameTransmited = true;

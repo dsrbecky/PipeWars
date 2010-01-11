@@ -4,7 +4,7 @@ const string pipeFilename = "pipe.dae";
 static const char* Port = "27182";
 const int BuffLen = 2048;
 
-#define ConnLoop } for(set<Connetion*>::iterator connIt = connections.begin(); connIt != connections.end(); connIt++) { Connetion*& conn = *connIt; 
+#define ConnLoop } for(set<Connetion*>::iterator connIt = connections.begin(); connIt != connections.end(); connIt++) { Connetion* conn = *connIt; 
 
 struct Connetion
 {
@@ -13,6 +13,8 @@ struct Connetion
 	bool nameTransmited;
 	vector<UCHAR> inBuffer;
 	vector<UCHAR> outBuffer;
+
+	Connetion(): socket(INVALID_SOCKET), player(NULL), nameTransmited(false) {}
 };
 
 class Network
@@ -20,38 +22,47 @@ class Network
 	hash_map<ID, UCHAR*> lastSendDatas;
 	hash_map<ID, UCHAR*> lastRecvDatas;
 
-	Database& db;
+	Database& database;
 	set<Connetion*> connections;
 	SOCKET listenSocket;
 
 public:
 
-	Network(Database& _db): listenSocket(0), db(_db) {}
+	bool serverRunning;
+	bool clientRunning;
+
+	Network(Database& _db):
+		listenSocket(INVALID_SOCKET), database(_db),
+		serverRunning(false), clientRunning(false)
+	{
+	}
+	~Network();
 
 	// Socks
 	void StartListening();
-	void AcceptNewConnections();
-	void Joint(string ip);
+	void AcceptNewConnection();
+	bool Joint(string ip, string playerName, bool nonBlocking);
 	void RecvSocketData();
 	void SendSocketData();
-	void Shutdown();
+	void CloseConn(Connetion* conn);
 
 	// Entities
 	void SendDatabaseUpdate(vector<UCHAR>& out);
 	void SendFullDatabase(vector<UCHAR>& out);
-	void RecvDatabase(vector<UCHAR>::iterator& in);
+	void RecvDatabaseUpdate(vector<UCHAR>::iterator& in);
 	void SendDatabaseUpdateToClients();
-	void RecvDatabaseFromServer();
+	void SendFullDatabaseToClient(Connetion* conn);
+	void RecvDatabaseUpdateFromServer();
 
 	// Player
 	void SendPlayerDataTo(vector<UCHAR>& out, Player* player);
 	void RecvPlayerDataFrom(vector<UCHAR>::iterator& in, Player* player);
 	void SendPlayerDataToServer();
-	void RecvPlayerDataFromClient();
+	void RecvPlayerDataFromClients();
 
 private:
 
-	void Skip(vector<UCHAR> buffer, int count)
+	void Skip(vector<UCHAR>& buffer, int count)
 	{
 		vector<UCHAR> newBuffer;
 		copy(buffer.begin() + count, buffer.end(), back_inserter(newBuffer));

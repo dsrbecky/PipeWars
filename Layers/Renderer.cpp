@@ -148,7 +148,13 @@ public:
 		SetupCamera(dev);
 		SetupLight(dev);
 
-		Database& database = keyToggled['T'] ? serverDb : db;
+		stat_objRendered = 0;
+		stat_pipesRendered = 0;
+
+		if (keyToggled_Alt['E']) {
+			if (!keyToggled_Alt['F']) RenderFrameStats(dev);
+			return;
+		}
 
 		// Get the camera settings
 		D3DVIEWPORT9 viewport;
@@ -161,7 +167,7 @@ public:
 		// Find and mark pipes to be rendered in hi-quality
 		// (the closeset ones to the player)
 		multiset<pair<float, MeshEntity*>> pipes;
-		for(hash_map<ID, Entity*>::iterator it = database.begin(); it != database.end(); it++) {
+		for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
 			if (entity != NULL && entity->getMesh()->filename == PipeFilename) {
 				D3DXVECTOR3 playerPos(0, 0, 0);
@@ -177,9 +183,6 @@ public:
 			it->second->hiQuality = true;
 			it++;
 		}
-
-		stat_objRendered = 0;
-		stat_pipesRendered = 0;
 
 		// Render meshes
 		DbLoop(it) {
@@ -284,13 +287,8 @@ public:
 
 		hiQualityPipes = min(hiQualityPipes, stat_pipesRendered + 4); // Do not outgrow by more then 4
 
-		if (keyToggled_Alt['G']) {
-			RenderGrid(dev);
-		}
-
-		if (!keyToggled_Alt['F']) {
-			RenderFrameStats(dev);
-		}
+		if (keyToggled_Alt['G']) RenderGrid(dev);
+		if (!keyToggled_Alt['F']) RenderFrameStats(dev);
 	}
 
 	void RenderBoundingBox(IDirect3DDevice9* dev, BoundingBox& bb)

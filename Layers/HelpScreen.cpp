@@ -48,6 +48,7 @@ class HelpScreen: Layer
 		RenderKey("Alt+C", "Frustum culling");
 		RenderKey("Alt+V", "View frustum");
 		RenderKey("Alt+F", "Frame stats");
+		RenderKey("Alt+E", "Enable rendering");
 		RenderKey("", "");
 	}
 

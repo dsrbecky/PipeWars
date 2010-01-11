@@ -152,7 +152,7 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 	hash_map<ID, UCHAR*> deleted(lastSendDatas);
 	vector<Entity*> added;
 	vector<Entity*> modified;
-	DbLoop(it) {
+	DbLoop2(this->database, it) {
 		deleted.erase(it->first);
 		if (lastSendDatas.count(it->first) == 0) {
 			added.push_back(it->second);
@@ -172,6 +172,9 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 			modified.push_back(it->second);
 		}
 	}
+
+	if (deleted.size() == 0 && added.size() == 0 && modified.size() == 0)
+		return; // No updates
 
 	// Send deleted entities
 	SendInt(out, deleted.size());
@@ -217,8 +220,8 @@ void Network::SendFullDatabase(vector<UCHAR>& out)
 	SendInt(out, 0xFFFFFFFF); // Clear
 
 	// All entities are send as added
-	SendInt(out, db.size());
-	DbLoop(it) {
+	SendInt(out, this->database.size());
+	DbLoop2(this->database, it) {
 		Entity* e = it->second;
 
 		// Default is all zeros
@@ -240,16 +243,16 @@ void Network::SendFullDatabase(vector<UCHAR>& out)
 	SendInt(out, 0xD5);
 }
 
-void Network::RecvDatabase(vector<UCHAR>::iterator& in)
+void Network::RecvDatabaseUpdate(vector<UCHAR>::iterator& in)
 {	
 	// Delete entities
 	int deletedCount = RecvInt(in);
 	if (deletedCount == 0xFFFFFFFF) {
-		db.clear();
+		this->database.clear();
 	} else {
 		for(int i = 0; i < deletedCount; i++) {
 			UINT32 id = RecvInt(in);
-			db.remove(id);
+			this->database.remove(id);
 			delete lastRecvDatas[id];
 			lastRecvDatas.erase(id);
 		}
@@ -273,14 +276,14 @@ void Network::RecvDatabase(vector<UCHAR>::iterator& in)
 		ZeroMemory(lastRecvData, newEntity->GetSize());
 		lastRecvDatas[id] = lastRecvData;
 		RecvEntity(in, newEntity, lastRecvData);
-		db.add(newEntity);
+		this->database.add(newEntity);
 	}
 
 	// Modify entities
 	int modifiedCount = RecvInt(in);
 	for(int i = 0; i < modifiedCount; i++) {
 		UINT32 id = RecvInt(in);
-		Entity* entity = db[id];
+		Entity* entity = this->database[id];
 		UCHAR* lastRecvData = lastRecvDatas[id];
 		RecvEntity(in, entity, lastRecvData); 
 	}
@@ -293,6 +296,8 @@ void Network::RecvDatabase(vector<UCHAR>::iterator& in)
 // Format <int32-updateSize><int32-yourID><...update...>
 void Network::SendDatabaseUpdateToClients()
 {
+	assert(this->serverRunning);
+
 	vector<UCHAR> updateData;
 	SendDatabaseUpdate(updateData);
 	int updateSize = updateData.size();
@@ -302,23 +307,57 @@ void Network::SendDatabaseUpdateToClients()
 		copy((CHAR*)&yourId, ((CHAR*)&yourId) + 4, back_inserter(conn->outBuffer));
 		copy(updateData.begin(), updateData.end(), back_inserter(conn->outBuffer));
 	}
+
+	SendSocketData();
 }
 
-void Network::RecvDatabaseFromServer()
+void Network::SendFullDatabaseToClient(Connetion* conn)
 {
-	// There will be just one
+	assert(this->serverRunning);
+
+	vector<UCHAR> updateData;
+	SendFullDatabase(updateData);
+	int updateSize = updateData.size();
+
+	copy((CHAR*)&updateSize, ((CHAR*)&updateSize) + 4, back_inserter(conn->outBuffer));
+	ID yourId = 0; // Do not send ID (player not added to database yet)
+	copy((CHAR*)&yourId, ((CHAR*)&yourId) + 4, back_inserter(conn->outBuffer));
+	copy(updateData.begin(), updateData.end(), back_inserter(conn->outBuffer));
+
+	SendSocketData();
+}
+
+void Network::RecvDatabaseUpdateFromServer()
+{
+	assert(this->clientRunning);
+
+	RecvSocketData();
+
+	// We want to keep the local player position
+	vector<UCHAR> localPlayerData;
+	if (localPlayer != NULL) // When we join we do not know who we are yet
+		SendPlayerDataTo(localPlayerData, localPlayer);
+
+	assert(connections.size() == 1);
+
 	{ ConnLoop
 		while(true) {
 			if (conn->inBuffer.size() < 8) break;
-			int packetSize;
+			int updateSize;
 			ID myId;
-			copy(conn->inBuffer.begin() + 0, conn->inBuffer.begin() + 4, (UCHAR*)&packetSize);
+			copy(conn->inBuffer.begin() + 0, conn->inBuffer.begin() + 4, (UCHAR*)&updateSize);
 			copy(conn->inBuffer.begin() + 4, conn->inBuffer.begin() + 8, (UCHAR*)&myId);
-			if ((int)conn->inBuffer.size() < packetSize + 8) break;
-			RecvDatabase(conn->inBuffer.begin() + 8);
-			Skip(conn->inBuffer, packetSize + 8);
+			if ((int)conn->inBuffer.size() < updateSize + 8) break;
+			if (updateSize != 0)
+				RecvDatabaseUpdate(conn->inBuffer.begin() + 8);
+			Skip(conn->inBuffer, updateSize + 8);
 
-			localPlayer = dynamic_cast<Player*>(db[myId]);
+			if (myId != 0)
+				localPlayer = dynamic_cast<Player*>(this->database[myId]);
 		}
 	}
+
+	// Restore local player data
+	if (localPlayerData.size() > 0)
+		RecvPlayerDataFrom(localPlayerData.begin(), localPlayer);
 }

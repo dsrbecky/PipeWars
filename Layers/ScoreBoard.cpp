@@ -12,7 +12,7 @@ class ScoreBoard: Layer
 {
 	static bool sortByScore(const Player* a, const Player* b)
 	{
-		return (*a).score > (*b).score || ((*a).score == (*b).score && (*a).name < (*b).name);
+		return (*a).score > (*b).score || ((*a).score == (*b).score && string((*a).name) < string((*b).name));
 	}
 
 	virtual void Render(IDirect3DDevice9* dev)

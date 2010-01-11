@@ -4,26 +4,30 @@
 #include "../Math.h"
 #include "../Network/Network.h"
 
-extern Network network;
+extern Network serverNetwork;
 extern Database serverDb;
 
+extern void PredictMovement(Database& db, float fElapsedTime, Player* except = NULL);
 extern bool MovePlayer(Player* player, float fElapsedTime);
 extern bool IsPointOnPath(Database& db, D3DXVECTOR3 pos, float* outY = NULL);
-
-vector<UCHAR> lastClientUpdate;
-vector<UCHAR> lastDataBaseUpdate;
 
 class ServerLogic: Layer
 {
 	void FrameMove(double fTime, float fElapsedTime)
 	{
+		if (!serverNetwork.serverRunning) return;
+
 		Database& db = serverDb;
 
-		//if (lastClientUpdate.size() > 0)
-		//	network.RecvPlayerDataFrom(lastClientUpdate.begin());
+		// Predict movement
+		PredictMovement(serverDb, fElapsedTime);
 
+		// Receive actual movement from network
+		serverNetwork.AcceptNewConnection();
+		serverNetwork.RecvPlayerDataFromClients();
+
+		// Game logic
 		vector<Entity*> toDelete;
-
 		DbLoop(it) {
 			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
 			if (entity == NULL)
@@ -31,32 +35,27 @@ class ServerLogic: Layer
 
 			Player* player = dynamic_cast<Player*>(it->second);
 			if (player != NULL) {
+				// Set mesh
+				player->trySelectWeapon(player->selectedWeapon);
+
 				// Fire player's weapon
 				if (player->firing && fTime >= player->nextLoadedTime) {
 					int* ammo = &player->inventory[Ammo_Revolver + player->selectedWeapon];
-					if (*ammo > 0) {
-						float speed = 15.0;
-						float reloadTime = 0.5;
-						float range = 10;
-						Bullet* bullet = new Bullet(player, player->selectedWeapon, player->position, range);
-						bullet->rotY = player->rotY + 90;
-						bullet->velocityRight = speed;
-						db.add(bullet);
-						(*ammo)--;
-						player->nextLoadedTime = fTime + reloadTime;
+					float speed = 15.0;
+					float reloadTime = 0.5;
+					float range = 10;
+					float directions[] = {0, -1, 1, -3, 3, -6, 6, -9, 9, -12, 12, -15, 15};
+					for(int i = 0; i < sizeof(directions) / sizeof(float); i++) {
+						if (*ammo > 0) {
+							Bullet* bullet = new Bullet(player, player->selectedWeapon, player->position, range);
+							bullet->rotY = player->rotY + 90 + directions[i];
+							bullet->velocityRight = speed;
+							db.add(bullet);
+							(*ammo)--;
+							player->nextLoadedTime = fTime + reloadTime;
+						}
 					}
 				}
-
-				// Move player
-				MovePlayer(player, fElapsedTime);
-				player->rotY += player->rotY_velocity * fElapsedTime;
-			} else {
-				// Move other entities
-				if (entity->velocityForward != 0.0f)
-					entity->position += RotateY(entity->rotY) * (entity->velocityForward * fElapsedTime);
-				if (entity->velocityRight != 0.0f)
-					entity->position += RotateY(entity->rotY - 90) * (entity->velocityRight * fElapsedTime);
-				entity->rotY += entity->rotY_velocity * fElapsedTime;
 			}
 
 			// Remove bullet
@@ -86,8 +85,8 @@ class ServerLogic: Layer
 			db.remove(*it);
 		}
 
-		lastDataBaseUpdate.clear();
-		network.SendDatabaseUpdate(lastDataBaseUpdate);
+		// Send new positions and events to network
+		serverNetwork.SendDatabaseUpdateToClients();
 	}
 };
 

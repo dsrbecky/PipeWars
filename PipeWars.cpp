@@ -5,11 +5,12 @@
 #include "Util.h"
 #include "Network/Network.h"
 
-Database db;
 Player* localPlayer = NULL;
 Resources resources;
-Network network(db);
+Database db;
+Network clientNetwork(db);
 Database serverDb;
+Network serverNetwork(serverDb);
 
 // Layers have interface that allows them to both handle user input and participate in
 // the rendering.  Usually, the layer will set some internal state based on the input
@@ -95,6 +96,7 @@ INT WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 
 	RenderSplashScreen(DXUTGetD3D9Device());
 
+	resources.LoadTestMap(&db);
 	resources.LoadTestMap(&serverDb);
 
     DXUTMainLoop();

@@ -120,7 +120,9 @@ struct Player: public MeshEntity
 
 		_name.copy(name, MAX_STR_LEN);
 		inventory[Weapon_Revolver] = 1;
-		inventory[Ammo_Revolver] = 48;
+		inventory[Weapon_Shotgun] = 1;
+		inventory[Ammo_Revolver] = 200;
+		inventory[Ammo_Shotgun] = 500;
 	}
 
 	static const UCHAR Type = 'P';
@@ -206,12 +208,15 @@ struct RespawnPoint: public Entity
 };
 
 #define DbLoop(it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
+#define DbLoop2(db, it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
 
 class Database
 {
 	set<ID> freeIDs;
 	ID nextFreeID;
 	hash_map<ID, Entity*> entities;
+
+	Database(Database& db) {} // No copying
 
 public:
 
@@ -250,6 +255,8 @@ public:
 			}
 			entity->id = id;
 		}
+		if (entity->id == 0xFFFFFFFF)
+			throw "Readding deleted entity";
 
 		if (entities.count(entity->id) > 0)
 			throw "Consistency - ID already in dababase";

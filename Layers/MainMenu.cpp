@@ -8,6 +8,8 @@
 extern Database db;
 extern Player* localPlayer;
 extern Resources resources;
+extern Network clientNetwork;
+extern Network serverNetwork;
 
 const float fadeOutSpeed = 1.0;
 
@@ -112,7 +114,7 @@ public:
 		// Handle input screen
 		if (showInput && bKeyDown && !bAltDown && nChar != VK_SHIFT) {
 			if (nChar == VK_RETURN) {
-				if (inputOnEntered != NULL)
+				if (input.size() > 0 && inputOnEntered != NULL)
 					inputOnEntered();
 			} else if (nChar == VK_BACK) {
 				if (input.size() > 0)
@@ -226,10 +228,8 @@ public:
 		showHeader = false;
 		showInput = false;
 
-		//localPlayer = new Player(input);
-		//localPlayer->position = D3DXVECTOR3(5, 4.3f, 14);
-		//localPlayer->score++;
-		//db.add(localPlayer);
+		serverNetwork.StartListening();
+		clientNetwork.Joint("127.0.0.1", input, true);
 	}
 
 	static void OnJoinPressed()
@@ -241,17 +241,22 @@ public:
 		inputOnEntered = &OnJoinNameEntered;
 	}
 
+	static string joinPlayerName;
+
 	static void OnJoinNameEntered()
 	{
+		joinPlayerName = input;
 		inputQuery = "Enter IP address or host name of server:";
-		input = "10.0.0.210";
+		input = "";
 		inputOnEntered = &OnJoinIPEntered;
 	}
 
 	static void OnJoinIPEntered()
 	{
-		showHeader = false;
-		showInput = false;
+		if (clientNetwork.Joint(input, joinPlayerName, false)) {
+			showHeader = false;
+			showInput = false;
+		} // else let the user try again
 	}
 
 	static void OnExitPressed()
@@ -270,5 +275,7 @@ bool MainMenu::showInput = false;
 string MainMenu::inputQuery = "";
 string MainMenu::input = "";
 void (*MainMenu::inputOnEntered)() = NULL;
+
+string MainMenu::joinPlayerName = "";
 
 MainMenu mainMenu;

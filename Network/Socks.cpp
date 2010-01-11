@@ -4,14 +4,24 @@
 
 void Error(string msg)
 {
-	MessageBoxA(NULL, msg.c_str() , "Network error", MB_OK);
+	MessageBoxA(NULL, msg.c_str(), "Network error", MB_OK);
 	exit(1);
+}
+
+static bool WSAStarted = false;
+
+void WSAStart()
+{
+	if (!WSAStarted) {
+		WSADATA wsaData;
+		if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) Error("WSAStartup failed");
+		WSAStarted = true;
+	}
 }
 
 void Network::StartListening()
 {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) Error("WSAStartup failed");
+	WSAStart();
 
     struct addrinfo *result = NULL, hints;
 
@@ -25,43 +35,57 @@ void Network::StartListening()
 
 	listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (listenSocket == INVALID_SOCKET) Error("socket failed");
-    if (bind(listenSocket, result->ai_addr, (int)result->ai_addrlen) == SOCKET_ERROR) Error("bind failed");
+    if (bind(listenSocket, result->ai_addr, (int)result->ai_addrlen) == SOCKET_ERROR) Error("Bind failed (server already running?)");
 
 	freeaddrinfo(result);
 
     if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) Error("listen failed");
+
+	// Set the database to "unmodified" state
+	vector<UCHAR> updateData;
+	SendDatabaseUpdate(updateData);
+
+	this->serverRunning = true;
 }
 
-void Network::AcceptNewConnections()
+void Network::AcceptNewConnection()
 {
-	while (true) {
-		fd_set fdset; FD_ZERO(&fdset); FD_SET(listenSocket, &fdset);
-		timeval timeout; timeout.tv_sec = 0; timeout.tv_usec = 0;
+	// NOTE: Only one connection can be accepted per server frame!
+	//
+	// (or adjust the code so that the same initial database is send to
+	// all newcomers - ie. the second player must not recive the first
+	// player in the database.  This is because all player additions
+	// will be reported in next update)
 
-		// Are there new connections?
-		if (select(0, &fdset, NULL, NULL, &timeout) == 0) break;
+	assert(this->serverRunning);
 
-		Connetion* connection = new Connetion();
+	fd_set fdset; FD_ZERO(&fdset); FD_SET(listenSocket, &fdset);
+	timeval timeout; timeout.tv_sec = 0; timeout.tv_usec = 0;
 
-		// Accept connection
-		connection->socket = accept(listenSocket, NULL, NULL);
-		if (connection->socket == INVALID_SOCKET) Error("accept failed");
+	// Are there new connections?
+	if (select(0, &fdset, NULL, NULL, &timeout) == 0) return;
 
-		// Add player
-		connection->player = new Player("New player");
-		connection->nameTransmited = false;
-		db.add(connection->player);
+	Connetion* connection = new Connetion();
 
-		SendFullDatabase(connection->outBuffer);
+	// Accept connection
+	connection->socket = accept(listenSocket, NULL, NULL);
+	if (connection->socket == INVALID_SOCKET) Error("accept failed");
 
-		connections.insert(connection);
-	}
+	// Must do before Player is added (database without the player)
+	SendFullDatabaseToClient(connection);
+
+	// Add player
+	connection->player = new Player("(new player)");
+	connection->nameTransmited = false;
+	this->database.add(connection->player);
+
+	connections.insert(connection);	
 }
 
-void Network::Joint(string ip)
+// If the connection is non-blocking, we assume sucess and continue
+bool Network::Joint(string ip, string playerName, bool nonBlocking)
 {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) Error("WSAStartup failed");
+	WSAStart();
 
 	struct addrinfo *result = NULL, *ptr = NULL, hints;
 
@@ -72,35 +96,73 @@ void Network::Joint(string ip)
     hints.ai_flags = AI_PASSIVE;
 
 	// Resolve name
-	if (getaddrinfo(ip.c_str(), Port, &hints, &result) != 0) Error("getaddrinfo failed");
+	if (getaddrinfo(ip.c_str(), Port, &hints, &result) != 0) {
+		MessageBoxA(NULL, "Can not resolve name", "Network error", MB_OK);
+		return false;
+	}
 
 	// Try all posibilies
 	ptr = result;
 	for(ptr = result; ptr != NULL; ptr=ptr->ai_next) {
 		Connetion* conn = new Connetion();
-		conn->player = NULL;
-		conn->nameTransmited = false;
 
 		conn->socket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 		if (conn->socket == INVALID_SOCKET) Error("socket failed");
 
+		// Enter non-blocking mode
+		if (nonBlocking) {
+			u_long nonBlocking = 1;
+			ioctlsocket(conn->socket, FIONBIO, &nonBlocking);
+		}
+
 		// Try connecting
 		if (connect(conn->socket, ptr->ai_addr, (int)ptr->ai_addrlen) == SOCKET_ERROR) {
-			closesocket(conn->socket);
-            conn->socket = INVALID_SOCKET;
-            continue;
+			if (WSAGetLastError() != WSAEWOULDBLOCK) {
+				closesocket(conn->socket);
+				delete conn;
+				continue; // Try other adress
+			}
         }
 
+		char name[MAX_STR_LEN];
+		ZeroMemory(name, sizeof(name));
+		playerName.copy(name, sizeof(name));
+		copy(name, name + MAX_STR_LEN, back_inserter(conn->outBuffer));
+		conn->nameTransmited = true;
+
 		connections.insert(conn);
-		break;
+		freeaddrinfo(result);
+		this->clientRunning = true;
+
+		return true; // Success
 	}
 
-	freeaddrinfo(result);
+	MessageBoxA(NULL, "Can not connect to server", "Network error", MB_OK);
+	return false;
+}
+
+void Network::CloseConn(Connetion* conn)
+{
+	string msg = this->serverRunning ? "Connection lost to " + string(conn->player->name) : "Connection to server lost";
+	MessageBoxA(NULL, msg.c_str() , "Network error", MB_OK);
+
+	closesocket(conn->socket);
+	if (conn->player != NULL)
+		this->database.remove(conn->player);
+	this->connections.erase(conn);
+	delete conn;
+
+	if (this->clientRunning) {
+		exit(0); // Connection to server lost
+	}
 }
 
 // Generic receive function used both on client and server
 void Network::RecvSocketData()
 {
+	assert(this->serverRunning || this->clientRunning);
+
+loop:
 	{ ConnLoop
 		while(true) {
 			fd_set fdset; FD_ZERO(&fdset); FD_SET(conn->socket, &fdset);
@@ -114,13 +176,8 @@ void Network::RecvSocketData()
 			if (count > 0) {
 				copy(buf, buf + count, back_inserter(conn->inBuffer));
 			} else {
-				// Connection closed
-				closesocket(conn->socket);
-				if (conn->player != NULL)
-					db.remove(conn->player);
-				connections.erase(conn);
-				string msg = conn->player != NULL ? "Connection lost to " + string(conn->player->name) : "Connection lost";
-				MessageBoxA(NULL, msg.c_str() , "Network error", MB_OK);
+				CloseConn(conn);
+				goto loop;
 			}
 		}
 	}
@@ -129,6 +186,9 @@ void Network::RecvSocketData()
 // Generic send function used both on client and server
 void Network::SendSocketData()
 {
+	assert(this->serverRunning || this->clientRunning);
+
+loop:
 	{ ConnLoop
 		while(true) {
 			// Any data to write?
@@ -140,28 +200,28 @@ void Network::SendSocketData()
 			// Can we write?
 			if (select(0, NULL, &fdset, NULL, &timeout) == 0) break;
 
-			char buf[BuffLen];
-			int count = send(conn->socket, buf, sizeof(buf), 0);
+			int count = send(conn->socket, (char*)&conn->outBuffer[0], conn->outBuffer.size(), 0);
 			if (count > 0) {
-				copy(buf, buf + count, back_inserter(conn->inBuffer));
+				Skip(conn->outBuffer, count);
 			} else {
-				// Connection closed
-				closesocket(conn->socket);
-				if (conn->player != NULL)
-					db.remove(conn->player);
-				connections.erase(conn);
-				string msg = conn->player != NULL ? "Connection lost to " + string(conn->player->name) : "Connection lost";
-				MessageBoxA(NULL, msg.c_str() , "Network error", MB_OK);
+				CloseConn(conn);
+				goto loop;
 			}
 		}
 	}
 }
 
-void Network::Shutdown()
+Network::~Network()
 {
 	{ ConnLoop
 		closesocket(conn->socket);
+		delete conn;
 	}
-	closesocket(listenSocket);
-    WSACleanup();
+	connections.clear();
+	if (listenSocket != INVALID_SOCKET)
+		closesocket(listenSocket);
+	if (WSAStarted) {
+		WSACleanup();
+		WSAStarted = false;
+	}
 }
