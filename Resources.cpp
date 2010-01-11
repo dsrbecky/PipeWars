@@ -107,10 +107,8 @@ Mesh* Resources::LoadMesh(string filename, string geometryName)
 	}
 	domMeshRef meshRef = geom->getMesh();
 
-	Mesh* mesh = new Mesh();
+	Mesh* mesh = new Mesh(filename, geometryName);
 	loadedMeshes[filenameAndGeometryName] = mesh;  // Cache
-	mesh->filename = filename;
-	mesh->geometryName = geometryName;
 	
 	// Load the <tristrips/> elements
 	// (other types are ignored for now)

@@ -167,9 +167,8 @@ public:
 		// Find and mark pipes to be rendered in hi-quality
 		// (the closeset ones to the player)
 		multiset<pair<float, MeshEntity*>> pipes;
-		for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity != NULL && entity->getMesh()->filename == PipeFilename) {
+		{ DbLoop_Meshes(db, it)
+			if (entity->getMesh()->isPipeOrTank) {
 				D3DXVECTOR3 playerPos(0, 0, 0);
 				if (localPlayer != NULL) playerPos = localPlayer->position;
 				D3DXVECTOR3 delta = entity->position - playerPos;
@@ -185,10 +184,7 @@ public:
 		}
 
 		// Render meshes
-		DbLoop(it) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity == NULL)
-				continue; // Other type
+		{ DbLoop_Meshes(db, it)
 
 			// Set the WORLD for the this entity
 

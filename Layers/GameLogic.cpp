@@ -95,6 +95,8 @@ public:
 
 		// Receive actual positions from network (if availible)
 		clientNetwork.RecvDatabaseUpdateFromServer();
+
+		// Decide whether to cull walls or not
 	}
 
 	void PerformServerLogic(Database& database, double fTime, float fElapsedTime)
@@ -108,10 +110,7 @@ public:
 
 		// Game logic
 		vector<Entity*> toDelete;
-		DbLoop2(database, it) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity == NULL)
-				continue;
+		{ DbLoop_Meshes(database, it)
 
 			Player* player = dynamic_cast<Player*>(it->second);
 			if (player != NULL) {
@@ -205,11 +204,8 @@ public:
 
 	void PredictMovement(Database& database, float fElapsedTime, Player* except = NULL)
 	{
-		DbLoop2(database, it) {
-			if (it->second == except) continue;
-
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-				if (entity == NULL) continue;
+		{ DbLoop_Meshes(database, it)
+			if (entity == except) continue;
 
 			Player* player = dynamic_cast<Player*>(it->second);
 			if (player != NULL) {
@@ -255,10 +251,7 @@ public:
 
 	bool IsPointOnPath(Database& database, D3DXVECTOR3 pos, float* outY = NULL)
 	{
-		DbLoop2(database, it) {
-			MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second);
-			if (entity == NULL)
-				continue;
+		{ DbLoop_Meshes(database, it)
 			// Position relative to the mesh
 			D3DXVECTOR3 meshPos = RotateY(-entity->rotY, pos - entity->position) / entity->scale;
 			// Quick test - is in BoundingBox?

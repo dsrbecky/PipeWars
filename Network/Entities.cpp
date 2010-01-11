@@ -152,7 +152,7 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 	hash_map<ID, UCHAR*> deleted(lastSendDatas);
 	vector<Entity*> added;
 	vector<Entity*> modified;
-	DbLoop2(this->database, it) {
+	DbLoop(this->database, it) {
 		deleted.erase(it->first);
 		if (lastSendDatas.count(it->first) == 0) {
 			added.push_back(it->second);
@@ -221,7 +221,7 @@ void Network::SendFullDatabase(vector<UCHAR>& out)
 
 	// All entities are send as added
 	SendInt(out, this->database.size());
-	DbLoop2(this->database, it) {
+	DbLoop(this->database, it) {
 		Entity* e = it->second;
 
 		// Default is all zeros

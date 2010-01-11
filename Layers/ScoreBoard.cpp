@@ -41,10 +41,8 @@ class ScoreBoard: Layer
 		sprite->Release();
 
 		vector<Player*> players;
-		DbLoop(it) {
-			Player* player = dynamic_cast<Player*>(it->second);
-			if (player != NULL)
-				players.push_back(player);
+		{ DbLoop_Players(db, it)
+			players.push_back(player);
 		}
 		sort(players.begin(), players.end(), sortByScore);
 

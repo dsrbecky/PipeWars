@@ -59,6 +59,7 @@ struct MeshEntity: public Entity
 	float scale;
 	// Rendering options
 	bool hiQuality;
+	bool showWall;
 
 	MeshEntity() {}
 
@@ -67,7 +68,7 @@ struct MeshEntity: public Entity
 		position(D3DXVECTOR3(0, 0, 0)),
 		velocityForward(0), velocityRight(0),
 		rotY(0), rotY_multiplyByTime(0), rotY_velocity(0),
-		scale(1.0), hiQuality(false)
+		scale(1.0), hiQuality(false), showWall(false)
 	{
 		ZeroMemory(meshFilename, sizeof(meshFilename));
 		ZeroMemory(meshGeometryName, sizeof(meshGeometryName));
@@ -207,8 +208,9 @@ struct RespawnPoint: public Entity
 	int GetSize() { return sizeof(RespawnPoint); };
 };
 
-#define DbLoop(it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
-#define DbLoop2(db, it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
+#define DbLoop(db, it) for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++)
+#define DbLoop_Meshes(db, it) } for(hash_map<ID, Entity*>::iterator it = db.begin(); it != db.end(); it++) { MeshEntity* entity = dynamic_cast<MeshEntity*>(it->second); if (entity == NULL) continue;
+#define DbLoop_Players(db, it) } for(hash_map<ID, Player*>::iterator it = db.players.begin(); it != db.players.end(); it++) { Player* player = it->second;
 
 class Database
 {
@@ -219,6 +221,8 @@ class Database
 	Database(Database& db) {} // No copying
 
 public:
+
+	hash_map<ID, Player*> players; // subset for optimiations
 
 	Database(): nextFreeID(1) {}
 
@@ -262,6 +266,8 @@ public:
 			throw "Consistency - ID already in dababase";
 
 		entities.insert(pair<ID, Entity*>(entity->id, entity));
+		if (typeid(*entity) == typeid(Player))
+			players.insert(pair<ID, Player*>(entity->id, (Player*)entity));
 	}
 
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
@@ -288,6 +294,7 @@ public:
 
 		delete it->second;
 		entities.erase(it);
+		players.erase(id);
 	}
 
 	void clear()

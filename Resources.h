@@ -4,6 +4,8 @@
 #include "StdAfx.h"
 #include "fmod/inc/fmod.hpp"
 
+static const string pipeFileName = "pipe.dae";
+static const string tankFileName = "tank.dae";
 static const string MusicFilename = "../data/music/Entering the Stronghold.mp3";
 static const float Volume = 0.1f;
 
@@ -71,8 +73,12 @@ struct Mesh
 	string geometryName;
 	BoundingBox boundingBox;
 	std::vector<Tristrip> tristrips;
+	bool isPipeOrTank;
 
-	Mesh(): boundingBox(BoundingBox(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,0,0))) {}
+	Mesh(string _filename, string _geometryName):
+		boundingBox(BoundingBox(D3DXVECTOR3(0,0,0), D3DXVECTOR3(0,0,0))),
+		isPipeOrTank(_filename == pipeFileName || _filename == tankFileName)
+	{}
 
 	void Render(IDirect3DDevice9* dev, string hide1 = "", string hide2 = "", string hide3 = "");
 
