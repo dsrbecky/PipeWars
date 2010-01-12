@@ -95,8 +95,6 @@ public:
 
 		// Receive actual positions from network (if availible)
 		clientNetwork.RecvDatabaseUpdateFromServer();
-
-		// Decide whether to cull walls or not
 	}
 
 	void PerformServerLogic(Database& database, double fTime, float fElapsedTime)
@@ -253,7 +251,7 @@ public:
 	{
 		{ DbLoop_Meshes(database, it)
 			// Position relative to the mesh
-			D3DXVECTOR3 meshPos = RotateY(-entity->rotY, pos - entity->position) / entity->scale;
+			D3DXVECTOR3 meshPos = entity->ToMeshCoordinates(pos);
 			// Quick test - is in BoundingBox?
 			if (entity->getMesh()->boundingBox.Contains(meshPos)) {
 				if (entity->getMesh()->IsOnPath(meshPos.x, meshPos.z, outY)) {

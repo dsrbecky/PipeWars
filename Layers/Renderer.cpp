@@ -187,6 +187,25 @@ public:
 		{ DbLoop_Meshes(db, it)
 			Mesh* mesh = entity->getMesh();
 
+			// Render only the level the player is in
+			if (localPlayer != NULL) {
+				float relY = entity->position.y - localPlayer->position.y;
+				// Upper level
+				if (relY > 1.75)
+					continue; // Do not show at all
+				// Lower level
+				float minY;
+				if (mesh->boundingBox.maxCorner.y >= 2.7) // The level up piece
+					minY = -2.25;
+				else 
+					minY = -0.25;
+				entity->showOutside = relY < minY;
+				entity->showInside = relY > minY - 2;
+			} else {
+				entity->showOutside = false;
+				entity->showInside = true;
+			}
+
 			// Set the WORLD for the this entity
 
 			D3DXMATRIXA16 matWorld;
@@ -271,10 +290,15 @@ public:
 			D3DCOLOR on = 0xFFFFFFFF;
 			D3DCOLOR off = 0;
 			if (mesh->isPipeOrTank) {
-				mesh->SetMaterialColor("Path", keyToggled_Alt['P'] ? on : off);
-				mesh->SetMaterialColor("-Low", entity->hiQuality ? off : on);
-				mesh->SetMaterialColor("-Hi",  entity->hiQuality ? on : off);
-				mesh->SetMaterialColor("OuterWall", entity->showWall ? on : off);
+				if (entity->showInside) {
+					mesh->SetMaterialColor("-Low", entity->hiQuality ? off : on);
+					mesh->SetMaterialColor("-Hi",  entity->hiQuality ? on : off);
+					mesh->SetMaterialColor("InnerWall",  on);
+				} else {
+					mesh->SetMaterialColor("*", off);
+				}
+				mesh->SetMaterialColor("Path", keyToggled_Alt['P'] ? 0xFFF800000 : off);
+				mesh->SetMaterialColor("OuterWall", entity->showOutside ? on : off);
 			}
 			if (entity->GetType() == Player::Type) {
 				mesh->SetMaterialColor("Armour", ((Player*)entity)->colorArmour);

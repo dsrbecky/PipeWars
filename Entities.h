@@ -2,6 +2,7 @@
 #define __ENTITIES__
 
 #include "StdAfx.h"
+#include "Math.h"
 
 class Mesh;
 
@@ -59,7 +60,8 @@ struct MeshEntity: public Entity
 	float scale;
 	// Rendering options
 	bool hiQuality;
-	bool showWall;
+	bool showOutside;
+	bool showInside;
 
 	MeshEntity() {}
 
@@ -68,7 +70,7 @@ struct MeshEntity: public Entity
 		position(D3DXVECTOR3(0, 0, 0)),
 		velocityForward(0), velocityRight(0),
 		rotY(0), rotY_multiplyByTime(0), rotY_velocity(0),
-		scale(1.0), hiQuality(false), showWall(false)
+		scale(1.0), hiQuality(false), showOutside(true), showInside(true)
 	{
 		ZeroMemory(meshFilename, sizeof(meshFilename));
 		ZeroMemory(meshGeometryName, sizeof(meshGeometryName));
@@ -88,6 +90,16 @@ struct MeshEntity: public Entity
 		// Do not send memory address to remote computer
 		meshPtrCache = NULL;
 	};
+
+	D3DXVECTOR3 ToWorldCoordinates(D3DXVECTOR3 meshVec)
+	{
+		return RotateY(rotY, (meshVec * scale)) + position;
+	}
+
+	D3DXVECTOR3 ToMeshCoordinates(D3DXVECTOR3 worldVec)
+	{
+		return RotateY(-rotY, (worldVec - position)) / scale;
+	}
 };
 
 static const float PlayerMoveSpeed = 6.0f;

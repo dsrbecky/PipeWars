@@ -41,10 +41,11 @@ struct BoundingBox
 {
 	D3DXVECTOR3 minCorner;
 	D3DXVECTOR3 maxCorner;
+	D3DXVECTOR3 centre;
 	D3DXVECTOR3 corners[8];
 
 	BoundingBox(D3DXVECTOR3 _min, D3DXVECTOR3 _max):
-		minCorner(_min), maxCorner(_max)
+		minCorner(_min), maxCorner(_max), centre((_min + _max) / 2)
 	{
 		corners[0] = D3DXVECTOR3(minCorner.x, minCorner.y, minCorner.z);
 		corners[1] = D3DXVECTOR3(minCorner.x, minCorner.y, maxCorner.z);
@@ -83,7 +84,7 @@ struct Mesh
 	void SetMaterialColor(string name, DWORD color)
 	{
 		for(int i = 0; i < (int)tristrips.size(); i++) {
-			if (tristrips[i].materialName.find(name) != -1) {
+			if (name == "*" || tristrips[i].materialName.find(name) != -1) {
 				D3DCOLORVALUE colorValue = {
 					(float)((color >> 16) & 0xFF) / 256,
 					(float)((color >> 8) & 0xFF) / 256,

@@ -1,3 +1,6 @@
+#ifndef __MATH__
+#define __MATH__
+
 #include "StdAfx.h"
 
 static const float NearClip = 2.0f;
@@ -72,3 +75,5 @@ inline D3DXVECTOR3 GetFrustumNormal(D3DXVECTOR3 near1, D3DXVECTOR3 near2, D3DXVE
 	D3DXVec3Cross(&n, &p, &q);
 	return n;
 }
+
+#endif
