@@ -348,23 +348,28 @@ void Network::RecvDatabaseUpdateFromServer()
 
 	RecvSocketData();
 
-	// We want to keep the local player position
-	vector<UCHAR> localPlayerData;
-	if (localPlayer != NULL) // When we join we do not know who we are yet
-		SendPlayerDataTo(localPlayerData, localPlayer);
-
 	assert(connections.size() == 1);
 
 	stat_netDatabaseUpdateSize = 0;
 
 	{ ConnLoop
 		while(true) {
+			// Check that we have all the data
 			if (conn->inBuffer.size() < 8) break;
 			int updateSize;
 			ID myId;
 			copy(conn->inBuffer.begin() + 0, conn->inBuffer.begin() + 4, (UCHAR*)&updateSize);
 			copy(conn->inBuffer.begin() + 4, conn->inBuffer.begin() + 8, (UCHAR*)&myId);
 			if ((int)conn->inBuffer.size() < updateSize + 8) break;
+
+			// We want to keep the local player position
+			// (this has to be inside the loop otherwise we might miss position update due to consecutive packets)
+			vector<UCHAR> localPlayerData;
+			localPlayerData.clear();
+			if (localPlayer != NULL) // When we join we do not know who we are yet
+				SendPlayerDataTo(localPlayerData, localPlayer);
+
+			// Do the acutal update
 			if (updateSize != 0)
 				RecvDatabaseUpdate(conn->inBuffer.begin() + 8);
 			Skip(conn->inBuffer, updateSize + 8);
@@ -372,19 +377,19 @@ void Network::RecvDatabaseUpdateFromServer()
 
 			if (myId != 0)
 				localPlayer = dynamic_cast<Player*>(this->database[myId]);
-		}
-	}
 
-	// Restore local player data
-	if (localPlayerData.size() > 0) {
-		D3DXVECTOR3 positionOnServer = localPlayer->position;
-		ItemType selectedWeaponOnServer = localPlayer->selectedWeapon;
-		// Restore our complete state from backup
-		RecvPlayerDataFrom(localPlayerData.begin(), localPlayer);
-		// If the server forced to override these
-		if (localPlayer->position_ServerChanged)
-			localPlayer->position = positionOnServer;
-		if (localPlayer->selectedWeapon_ServerChanged)
-			localPlayer->selectedWeapon = selectedWeaponOnServer;
+			// Restore local player data
+			if (localPlayerData.size() > 0) {
+				D3DXVECTOR3 positionOnServer = localPlayer->position;
+				ItemType selectedWeaponOnServer = localPlayer->selectedWeapon;
+				// Restore our complete state from backup
+				RecvPlayerDataFrom(localPlayerData.begin(), localPlayer);
+				// If the server forced to override these
+				if (localPlayer->position_ServerChanged)
+					localPlayer->position = positionOnServer;
+				if (localPlayer->selectedWeapon_ServerChanged)
+					localPlayer->selectedWeapon = selectedWeaponOnServer;
+			}
+		}
 	}
 }

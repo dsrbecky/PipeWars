@@ -414,7 +414,7 @@ public:
 		if (localPlayer != NULL) {
 			msg << "Net-in = " << stat_netDatabaseUpdateSize / DXUTGetElapsedTime() / 1000 << " kb/s" << "    ";
 			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << "," << localPlayer->position.z << "    ";
-			msg << "Rot = " << localPlayer->rotY << " ("<< localPlayer->rotY_velocity << ")" << "    ";
+			// msg << "Rot = " << localPlayer->rotY << " ("<< localPlayer->rotY_velocity << ")" << "    ";
 		}
 		msg << "Press H for help or ESC to exit.";
 		

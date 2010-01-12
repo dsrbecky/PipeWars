@@ -143,6 +143,7 @@ public:
 						continue; // Do not shoot yourself
 
 					D3DXVECTOR3 distVec = bullet->position - player->position;
+					distVec.y /= 4;
 					float dist = D3DXVec3Length(&distVec);
 					if (dist <= 0.75) {
 						// The player might have disconnected
