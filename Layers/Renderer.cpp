@@ -177,7 +177,8 @@ public:
 			if (entity->getMesh()->isPipeOrTank) {
 				D3DXVECTOR3 playerPos(0, 0, 0);
 				if (localPlayer != NULL) playerPos = localPlayer->position;
-				D3DXVECTOR3 delta = entity->position - playerPos;
+				D3DXVECTOR3 entityPos = entity->ToWorldCoordinates(entity->getMesh()->boundingBox.centre);
+				D3DXVECTOR3 delta = entityPos - playerPos;
 				float distance = D3DXVec3LengthSq(&delta);
 				pipes.insert(pair<float, MeshEntity*>(distance, entity));
 				entity->hiQuality = false; // Defualt
