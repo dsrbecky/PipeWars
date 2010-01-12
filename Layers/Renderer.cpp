@@ -83,12 +83,16 @@ public:
 		D3DXMATRIXA16 matYawPitch;
 		D3DXMatrixMultiply(&matYawPitch, &matYaw, &matPitch);
 		D3DXMATRIXA16 matZoom;
-		D3DXMatrixTranslation(&matZoom, 0, 0, cameraDistance);
+		if (localPlayer == NULL) {
+			D3DXMatrixTranslation(&matZoom, 0, 0, 20);
+		} else {
+			D3DXMatrixTranslation(&matZoom, 0, 0, cameraDistance);
+		}
 		D3DXMATRIXA16 matView;
 		D3DXMatrixMultiply(&matView, &matYawPitch, &matZoom);
 		D3DXMATRIXA16 matMove;
 		if (localPlayer == NULL) {
-			D3DXMatrixIdentity(&matMove);
+			D3DXMatrixTranslation(&matMove, 0, 0, -7);
 		} else {
 			D3DXMatrixTranslation(&matMove, -localPlayer->position.x, -localPlayer->position.y, -localPlayer->position.z);
 		}
@@ -188,7 +192,7 @@ public:
 			Mesh* mesh = entity->getMesh();
 
 			// Render only the level the player is in
-			if (localPlayer != NULL) {
+			if (localPlayer != NULL && keyToggled_Alt['L']) {
 				float relY = entity->position.y - localPlayer->position.y;
 				// Upper level
 				if (relY > 1.75)
@@ -216,7 +220,7 @@ public:
 			D3DXMatrixMultiply(&matWorld, &matWorld, &matScale);
 
 			D3DXMATRIXA16 matRot;
-			D3DXMatrixRotationY(&matRot, -entity->rotY / 360 * 2 * D3DX_PI);
+			D3DXMatrixRotationY(&matRot, -(entity->rotY + entity->rotY_multiplyByTime * DXUTGetTime()) / 360 * 2 * D3DX_PI);
 			D3DXMatrixMultiply(&matWorld, &matWorld, &matRot);
 
 			D3DXMATRIXA16 matTrans;
@@ -297,7 +301,7 @@ public:
 				} else {
 					mesh->SetMaterialColor("*", off);
 				}
-				mesh->SetMaterialColor("Path", keyToggled_Alt['P'] ? 0xFFF800000 : off);
+				mesh->SetMaterialColor("Path", keyToggled_Alt['P'] ? (DWORD)0xFFF800000 : off);
 				mesh->SetMaterialColor("OuterWall", entity->showOutside ? on : off);
 			}
 			if (entity->GetType() == Player::Type) {

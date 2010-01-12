@@ -24,7 +24,7 @@ public:
 		textX = 82; textY = 66; tabWidth = 100;
 
 		RenderHeader("Game control:");
-		RenderKey("A,S,D,W", "Movement");
+		RenderKey("A,S,D,W,E", "Movement");
 		RenderKey("Left mouse", "Shoot");
 		RenderKey("1,2,3,4,5", "Select weapon");
 		RenderKey("Middle mouse", "Rotate camera");
@@ -55,8 +55,8 @@ public:
 		RenderKey("Alt+V", "Debug frustum");
 		RenderKey("Alt+F", "Frame stats");
 		RenderKey("Alt+P", "Show path");
+		RenderKey("Alt+L", "Show only this level");
 		RenderKey("Alt+E", "Enable rendering");
-		RenderKey("", "");
 		RenderKey("", "");
 
 		RenderHeader("Lighting:");

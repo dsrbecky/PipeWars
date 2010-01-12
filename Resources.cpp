@@ -335,11 +335,11 @@ Mesh* MeshEntity::getMesh()
 
 void Resources::LoadTestMap(Database* db)
 {
-	db->add(3, 0, 0, 180,      new MeshEntity("suzanne.dae", "Suzanne"));
+	// Preload meshs
+	LoadMesh("Merman.dae", "Revolver");
+	LoadMesh("Bullets.dae", "RevolverBullet");
 
-	//db->add(12, 0.45, 28, 0,   new Player("Ali"));
-	//db->add(25, -1.4, 32, 0,   new Player("Shephan"));
-	//db->add(5.5, -3.5, 16, 0,  new Player("Ed"));
+	db->add(4, 0, 6, 180,      new MeshEntity("suzanne.dae", "Suzanne"));
 	
 	db->add(-10, 0.5, 8, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(-10, 0.5, 0, 0,    new MeshEntity("pipe.dae", "LongStraight"));
@@ -347,8 +347,13 @@ void Resources::LoadTestMap(Database* db)
 	db->add(-6, 0.5, 0, 0,     new MeshEntity("pipe.dae", "LevelUp"));
 	db->add(-10, 2.5, 8, 0,    new MeshEntity("pipe.dae", "UTurn"));
 	db->add(-10, 2.5, 6, 180,  new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(-6, 4.5, -6, 90,   new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(-6, 4.5, -6, 90,   new MeshEntity("pipe.dae", "LeftTurn"));
+	db->add(-8, 4.5, -8, 90,   new MeshEntity("tank.dae", "Tank5x5"));
+	db->add(-20, 4.5, -10, 0,  new MeshEntity("pipe.dae", "LeftTurn"));
+	db->add(-16, 4.5, -16, 90, new MeshEntity("pipe.dae", "LeftTurn"));
+	db->add(-10, 4.5, -12, 180,new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(-4, 4.5, -6, 270,  new MeshEntity("pipe.dae", "LongStraight"));
+
 	db->add(10, 2.5, -6, 90,   new MeshEntity("pipe.dae", "LevelUp"));
 	db->add(12, 2.5, -6, 270,  new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(16, 2.5, -12, 180, new MeshEntity("pipe.dae", "LeftTurn"));
@@ -373,32 +378,38 @@ void Resources::LoadTestMap(Database* db)
 	db->add(40, -3.5, 12, 270, new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(44, -3.5, 6, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	db->add(10, 4.5, 30, 0,    new MeshEntity("tank.dae", "Tank3x5"));
-	db->add(2, 4.5, 28, 0,     new MeshEntity("pipe.dae", "LeftTurn"));
-	db->add(10, 4.5, 20, 0,    new MeshEntity("pipe.dae", "LongStraight"));
-	db->add(0, 4.5, 20, 0,     new MeshEntity("pipe.dae", "STurn1"));
-	db->add(10, 4.5, 18, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
-	db->add(4, 4.5, 14, 90,    new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(10, 4.5, 30, 0,    new MeshEntity("tank.dae", "Tank3x5"));
+	//db->add(2, 4.5, 28, 0,     new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(10, 4.5, 20, 0,    new MeshEntity("pipe.dae", "LongStraight"));
+	//db->add(0, 4.5, 20, 0,     new MeshEntity("pipe.dae", "STurn1"));
+	//db->add(10, 4.5, 18, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(4, 4.5, 14, 90,    new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	db->add(20, 2.5, 32, 90,   new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(22, 2.5, 32, 270,  new MeshEntity("pipe.dae", "UTurn"));
-	db->add(14, 0.5, 28, 270,  new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(12, 0.5, 28, 90,   new MeshEntity("pipe.dae", "UTurn"));
-	db->add(20, -1.5, 32, 90,  new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(22, -1.5, 32, 270, new MeshEntity("pipe.dae", "LongStraight"));
-	db->add(30, -1.5, 32, 270, new MeshEntity("pipe.dae", "UTurn"));
-	db->add(22, -3.5, 28, 270, new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(20, -3.5, 24, 90,  new MeshEntity("pipe.dae", "UTurn"));
+	//db->add(20, 2.5, 32, 90,   new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(22, 2.5, 32, 270,  new MeshEntity("pipe.dae", "UTurn"));
+	//db->add(14, 0.5, 28, 270,  new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(12, 0.5, 28, 90,   new MeshEntity("pipe.dae", "UTurn"));
+	//db->add(20, -1.5, 32, 90,  new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(22, -1.5, 32, 270, new MeshEntity("pipe.dae", "LongStraight"));
+	//db->add(30, -1.5, 32, 270, new MeshEntity("pipe.dae", "UTurn"));
+	//db->add(22, -3.5, 28, 270, new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(20, -3.5, 24, 90,  new MeshEntity("pipe.dae", "UTurn"));
 	
-	db->add(26, -3.5, 12, 0,   new MeshEntity("pipe.dae", "LongStraight"));
-	db->add(22, -3.5, 24, 270, new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(26, -3.5, 12, 0,   new MeshEntity("pipe.dae", "LongStraight"));
+	//db->add(22, -3.5, 24, 270, new MeshEntity("pipe.dae", "LeftTurn"));
 	
-	db->add(18, 0.5, 20, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
-	db->add(28, 0.5, 28, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
-	db->add(28, 0.5, 30, 0,    new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(24, 2.5, 42, 270,  new MeshEntity("pipe.dae", "LeftTurn"));
-	db->add(22, 2.5, 42, 90,   new MeshEntity("pipe.dae", "LevelUp"));
-	db->add(10, 4.5, 38, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(18, 0.5, 20, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(28, 0.5, 28, 180,  new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(28, 0.5, 30, 0,    new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(24, 2.5, 42, 270,  new MeshEntity("pipe.dae", "LeftTurn"));
+	//db->add(22, 2.5, 42, 90,   new MeshEntity("pipe.dae", "LevelUp"));
+	//db->add(10, 4.5, 38, 0,    new MeshEntity("pipe.dae", "LeftTurn"));
+
+	db->add(18, -1.5, 26, 180, new MeshEntity("pipe.dae", "LevelUp"));
+	db->add(18, -1.5, 28, 0,   new MeshEntity("pipe.dae", "LeftTurn"));
+	db->add(24, -1.5, 32, 270, new MeshEntity("pipe.dae", "LeftTurn"));
+	db->add(28, -1.5, 26, 180, new MeshEntity("pipe.dae", "STurn1"));
+	db->add(26, -3.5, 12, 0,   new MeshEntity("pipe.dae", "LevelUp"));
 	
 	db->add(0, 0.5, 16, 0,     new MeshEntity("pipe.dae", "LeftTurn"));
 	db->add(12, -1.5, 20, 90,  new MeshEntity("pipe.dae", "LevelUp"));
@@ -409,47 +420,53 @@ void Resources::LoadTestMap(Database* db)
 	db->add(6, -3.5, 6, 270,   new MeshEntity("pipe.dae", "LongStraight"));
 	db->add(12, -3.5, 6, 270,  new MeshEntity("pipe.dae", "LongStraight"));
 	
-	db->add(0, 0, 8, 0,         new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
-	db->add(44, -3.4, 8, 0,     new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
-	db->add(21.6, 0.1, 9.4, 0,  new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
-	db->add(31.5, -1.1, 12, 0,  new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
-	db->add(21, -3.2, 24, 0,    new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
-	db->add(0, 0, 12, 0,        new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
-	db->add(20, -1.6, -6.8, 0,  new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
-	db->add(24, -3.4, 7, 0,     new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
-	db->add(14, 2.3, -7.2, 0,   new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
-	db->add(15, -1.75, 17.5, 0, new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
-	db->add(25.5, -2.2, 28, 0,  new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
-	db->add(-8, 2.5, 9, 0,      new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
-	db->add(14.5, 0.6, 17.5, 0, new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
+	db->add(0, 0, 8, 0,       new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	db->add(44, -4, 8, 0,     new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	db->add(21.6, 0, 9.4, 0,  new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	db->add(23, -2, 32, 0,    new PowerUp(Weapon_Revolver, "Weapons.dae", "Revolver"));
+	db->add(-8, 2, 9, 0,      new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
+	db->add(14.5, 0, 17.5, 0, new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
+	db->add(0, 0, 12, 0,      new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
+	db->add(20, -2, -6.8, 0,  new PowerUp(Weapon_AK47, "Weapons.dae", "AK47"));
+	db->add(31.5, -2, 12, 0,  new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
+	db->add(15, -2, 17.5, 0,  new PowerUp(Weapon_Jackhammer, "Weapons.dae", "Jackhammer"));
+	db->add(24, -4, 7, 0,     new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
+	db->add(14, 2, -7.2, 0,   new PowerUp(Weapon_Nailgun, "Weapons.dae", "Nailgun"));
+	//db->add(25.5, -2.2, 28, 0,  new PowerUp(Weapon_Shotgun, "Weapons.dae", "SawedOff"));
 	
-	db->add(new RespawnPoint(5, 4.3, 14));
-	db->add(new RespawnPoint(12, 0.45, 28));
-	db->add(new RespawnPoint(25.4, -1.45, 32));
-	db->add(new RespawnPoint(5.5, -3.5, 16));
-	db->add(new RespawnPoint(33.0, -3.0, -7.0));
-	db->add(new RespawnPoint(-8, 0.4, -3));
-	db->add(new RespawnPoint(0, -3, 12));
+	db->add(new RespawnPoint(5.5, -4, 16));
+	db->add(new RespawnPoint(33.0, -4, -7.0));
+	db->add(new RespawnPoint(-8, 0, -3));
+	db->add(new RespawnPoint(0, 0, 3));
+	db->add(new RespawnPoint(9, 0, 12));
+	db->add(new RespawnPoint(40, -4, 12));
+	db->add(new RespawnPoint(23, -2, -8));
+	db->add(new RespawnPoint(18, -2, 27));
+	db->add(new RespawnPoint(0, -4, 12));
 	
-	db->add(10.0, 4.0, 22, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
-	db->add(6.0, 0.0, 20, 0,    new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
-	db->add(16.0, 0.0, 12, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
-	db->add(44.0, -4.0, 6, 0,   new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
-	db->add(4.0, 4.0, 14.0, 0,  new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
-	db->add(0.0, 4.3, -6, 0,    new PowerUp(Shiny, "Shiny.dae", "Green"));
-	db->add(28.0, 1.0, 31, 0,   new PowerUp(Shiny, "Shiny.dae", "Red"));
-	db->add(0.0, 0.6, 7, 0,     new PowerUp(Shiny, "Shiny.dae", "Blue"));
-	db->add(26.0, -4.0, 14, 0,  new PowerUp(Skull, "skull.dae", "Skull"));
-	db->add(11.0, 4.0, 32, 0,   new PowerUp(Monkey, "Monkey.dae", "LeChuck"));
+	db->add(6.0, 0, 20, 0,    new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	db->add(16.0, 0, 12, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	db->add(44.0, -4, 6, 0,   new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
+	db->add(0.0, 4, -6, 0,    new PowerUp(Shiny, "Shiny.dae", "Green"));
+	db->add(0.0, 0, 7, 0,     new PowerUp(Shiny, "Shiny.dae", "Blue"));
+	db->add(21, -4, 9, 0,     new PowerUp(Shiny, "Shiny.dae", "Red"));
+	db->add(-10, 4, -6, 0,    new PowerUp(Monkey, "Monkey.dae", "LeChuck"));
+	//db->add(10.0, 4.0, 22, 0,   new PowerUp(HealthPack, "HealthPack.dae", "MediBox"));
+	//db->add(4.0, 4.0, 14.0, 0,  new PowerUp(ArmourPack, "HealthPack.dae", "Armour"));
+	//db->add(28.0, 1.0, 31, 0,   new PowerUp(Shiny, "Shiny.dae", "Red"));
+	//db->add(26.0, -4.0, 14, 0,  new PowerUp(Skull, "skull.dae", "Skull"));
 
-	db->add(28.0, -3.0, -8, 0,  new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
-	db->add(18.0, 0.0, 15, 0,   new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
-	db->add(26.0, -2.0, 32, 0,  new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
-	db->add(10.0, -4.0, 6, 0,   new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
-	db->add(23.0, 2.0, 29.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
-	db->add(22.0, 2.0, 42.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
-	db->add(-7.0, 0.0, -3.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
-	db->add(14.0, -4.0, 6.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
-	db->add(0.0, -4.0, 10, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
-	db->add(28.0, -4.0, 2, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
+	db->add(31.0, -4, -8, 0,  new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
+	db->add(18.0, 0, 15, 0,   new PowerUp(Ammo_Revolver, "Ammo.dae", "RevolverAmmo"));
+	db->add(26.5, -2, 31, 0,  new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
+	db->add(5, 2, -12, 0,     new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
+	db->add(0.0, -4, 10, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
+	db->add(28.0, -4, 2, 0,   new PowerUp(Ammo_AK47, "Ammo.dae", "AKAmmo"));
+	db->add(-7.0, 0, -3.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
+	db->add(14.0, -4, 6.0, 0, new PowerUp(Ammo_Jackhammer, "Ammo.dae", "JackhammerAmmo"));
+	db->add(10.0, -4, 6, 0,   new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
+	db->add(31, -4, 9, 0,     new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
+	//db->add(26.0, -2.0, 32, 0,  new PowerUp(Ammo_Nailgun, "Ammo.dae", "NailgunAmmo"));
+	//db->add(23.0, 2.0, 29.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
+	//db->add(22.0, 2.0, 42.0, 0, new PowerUp(Ammo_Shotgun, "Ammo.dae", "ShotgunShells"));
 }

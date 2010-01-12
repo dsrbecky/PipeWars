@@ -310,6 +310,9 @@ public:
 
 	void add(double x, double y, double z, float angle, MeshEntity* entity)
 	{
+		// Raise all power ups
+		if (entity->GetType() == PowerUp::Type)
+			y += 0.6;
 		entity->position = D3DXVECTOR3((float)x, (float)y, (float)z);
 		entity->rotY = angle;
 		add(entity);
@@ -339,6 +342,18 @@ public:
 	{
 		while(entities.size() > 0) {
 			remove(entities.begin()->first);
+		}
+	}
+
+	void clearNonPlayers()
+	{
+		vector<ID> nonPlayers;
+		DbLoop((*this), it) {
+			if (it->second->GetType() != Player::Type)
+				nonPlayers.push_back(it->first);
+		}
+		for(vector<ID>::iterator it = nonPlayers.begin(); it != nonPlayers.end(); it++) {
+			remove(*it);
 		}
 	}
 

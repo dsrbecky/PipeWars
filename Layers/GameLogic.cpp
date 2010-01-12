@@ -64,7 +64,7 @@ public:
 
 		if (resources.fmodSystem != NULL) {
 			resources.fmodSystem->update();
-			resources.fmodChannel->setPaused(keyToggled['M'] ^ keyToggled_Alt['M']);
+			resources.fmodChannel->setPaused(true ^ keyToggled['M'] ^ keyToggled_Alt['M']);
 		}
 	}
 
@@ -75,6 +75,7 @@ public:
 			// Set velocity
 			localPlayer->velocityForward = localPlayer->velocityRight = 0.0f;
 			if (keyDown['W'] || keyDown[VK_UP])    localPlayer->velocityForward += +PlayerMoveSpeed;
+			if (keyDown['E'])                      localPlayer->velocityForward = 1.5f * PlayerMoveSpeed;
 			if (keyDown['S'] || keyDown[VK_DOWN])  localPlayer->velocityForward += -PlayerMoveSpeed;
 			if (keyDown['D'] || keyDown[VK_RIGHT]) localPlayer->velocityRight   += +PlayerStrafeSpeed;
 			if (keyDown['A'] || keyDown[VK_LEFT])  localPlayer->velocityRight   += -PlayerStrafeSpeed;
@@ -105,6 +106,10 @@ public:
 		// Receive actual movement from network
 		serverNetwork.AcceptNewConnection();
 		serverNetwork.RecvPlayerDataFromClients();
+
+		// Reload map - for interactive map editing
+		//database.clearNonPlayers();
+		//resources.LoadTestMap(&database);
 
 		// Game logic
 		vector<Entity*> toDelete;
