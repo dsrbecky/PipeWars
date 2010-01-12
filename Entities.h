@@ -148,20 +148,28 @@ struct Player: public MeshEntity
 
 	Player(string _name, int colorId):
 		MeshEntity("Merman.dae", "Revolver"),
-		health(100), armour(0),
 		score(0), kills(0), deaths(0),
 		selectedWeapon(Weapon_Revolver), firing(false), nextLoadedTime(0),
 		position_ServerChanged(false), selectedWeapon_ServerChanged(false)
 	{
 		ZeroMemory(name, sizeof(name));
-		ZeroMemory(inventory, sizeof(inventory));
-
 		_name.copy(name, MAX_STR_LEN);
-		inventory[Weapon_Revolver] = 1;
 
 		int colorsCount = sizeof(colorsArmour) / sizeof(D3DCOLOR);
 		colorArmour = colorsArmour[colorId % colorsCount];
 		colorArmoutDetail = colorsArmourDetail[colorId % colorsCount];
+
+		Reset();
+	}
+
+	void Reset()
+	{
+		health = 100;
+		armour = 0;
+		ZeroMemory(inventory, sizeof(inventory));
+		inventory[Weapon_Revolver] = 1;
+		inventory[Ammo_Revolver] = 50;
+		trySelectWeapon(Weapon_Revolver);
 	}
 
 	static const UCHAR Type = 'P';

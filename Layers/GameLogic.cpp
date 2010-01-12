@@ -100,11 +100,15 @@ public:
 
 	void PerformServerLogic(Database& database, double fTime, float fElapsedTime)
 	{
+		// Accept new player
+		Player* newPlayer = serverNetwork.AcceptNewConnection();
+		if (newPlayer != NULL)
+			Respawn(database, newPlayer);
+
 		// Predict movement
 		PredictMovement(database, fElapsedTime);
 
 		// Receive actual movement from network
-		serverNetwork.AcceptNewConnection();
 		serverNetwork.RecvPlayerDataFromClients();
 
 		// Reload map - for map editing
@@ -134,6 +138,22 @@ public:
 			// Remove bullet
 			Bullet* bullet = dynamic_cast<Bullet*>(entity);
 			if (bullet != NULL) {
+				{ DbLoop_Players(database, it)
+					if (player->id == bullet->shooter)
+						continue; // Do not shoot yourself
+
+					D3DXVECTOR3 distVec = bullet->position - player->position;
+					float dist = D3DXVec3Length(&distVec);
+					if (dist <= 0.5) {
+						// The player might have disconnected
+						Player* shooter = database.players.count(bullet->shooter) != 0 ? database.players[bullet->shooter] : NULL;
+						HitPlayer(player, shooter);
+						
+						toDelete.push_back(bullet);
+						goto bullets_end;
+					}
+				}
+
 				D3DXVECTOR3 pathTraveled = bullet->position - bullet->origin;
 				float distTraveled = D3DXVec3Length(&pathTraveled);
 
@@ -151,6 +171,7 @@ public:
 					continue;
 				}
 			}
+			bullets_end:
 
 			PowerUp* powerUp = dynamic_cast<PowerUp*>(entity);
 			if (powerUp != NULL) {
@@ -262,6 +283,44 @@ public:
 				inv[Weapon_Revolver] = 2;
 				break;
 			case Skull: break;
+		}
+	}
+
+	void HitPlayer(Player* player, Player* shooter)
+	{
+		int damage = 5 + rand() % 6;
+
+		if (player->armour > 0) {
+			player->armour = max(0, player->armour - damage);
+		} else {
+			player->health = max(0, player->health - damage);
+		}
+
+		if (player->health == 0) {
+			player->deaths++;
+			player->score--;
+			shooter->kills++;
+			shooter->score++;
+		}
+	}
+
+	void Respawn(Database& database, Player* player)
+	{
+		static int index = rand();
+		DbLoop(database, it) {
+			// Obtain list of all valid respawn points
+			vector<D3DXVECTOR3> respawnPoints;
+			RespawnPoint* respawnPoint = dynamic_cast<RespawnPoint*>(it->second);
+			if (respawnPoint != NULL) {
+				if (IsPointOnPath(database, respawnPoint->position))
+					respawnPoints.push_back(respawnPoint->position);
+			}
+			assert(respawnPoints.size() > 0);
+			
+			// Respawn the player
+			player->Reset();
+			player->position = respawnPoints[(index++) & respawnPoints.size()];
+			player->position_ServerChanged = true;
 		}
 	}
 

@@ -50,7 +50,7 @@ void Network::StartListening()
 
 int nextPlayerColourId = 0;
 
-void Network::AcceptNewConnection()
+Player* Network::AcceptNewConnection()
 {
 	// NOTE: Only one connection can be accepted per server frame!
 	//
@@ -65,7 +65,7 @@ void Network::AcceptNewConnection()
 	timeval timeout; timeout.tv_sec = 0; timeout.tv_usec = 0;
 
 	// Are there new connections?
-	if (select(0, &fdset, NULL, NULL, &timeout) == 0) return;
+	if (select(0, &fdset, NULL, NULL, &timeout) == 0) return NULL;
 
 	Connetion* connection = new Connetion();
 
@@ -82,6 +82,8 @@ void Network::AcceptNewConnection()
 	this->database.add(connection->player);
 
 	connections.insert(connection);	
+
+	return connection->player;
 }
 
 // If the connection is non-blocking, we assume sucess and continue

@@ -41,7 +41,7 @@ public:
 
 	// Socks
 	void StartListening();
-	void AcceptNewConnection();
+	Player* AcceptNewConnection();
 	bool Joint(string ip, string playerName, bool nonBlocking);
 	void RecvSocketData();
 	void SendSocketData();

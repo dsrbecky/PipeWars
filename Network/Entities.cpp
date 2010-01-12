@@ -376,6 +376,15 @@ void Network::RecvDatabaseUpdateFromServer()
 	}
 
 	// Restore local player data
-	if (localPlayerData.size() > 0)
+	if (localPlayerData.size() > 0) {
+		D3DXVECTOR3 positionOnServer = localPlayer->position;
+		ItemType selectedWeaponOnServer = localPlayer->selectedWeapon;
+		// Restore our complete state from backup
 		RecvPlayerDataFrom(localPlayerData.begin(), localPlayer);
+		// If the server forced to override these
+		if (localPlayer->position_ServerChanged)
+			localPlayer->position = positionOnServer;
+		if (localPlayer->selectedWeapon_ServerChanged)
+			localPlayer->selectedWeapon = selectedWeaponOnServer;
+	}
 }
