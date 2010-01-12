@@ -122,21 +122,7 @@ public:
 
 				// Fire player's weapon
 				if (player->firing && fTime >= player->nextLoadedTime) {
-					int* ammo = &player->inventory[Ammo_Revolver + player->selectedWeapon];
-					float speed = 15.0;
-					float reloadTime = 0.5;
-					float range = 10;
-					float directions[] = {0, -1, 1, -3, 3, -6, 6, -9, 9, -12, 12, -15, 15};
-					for(int i = 0; i < sizeof(directions) / sizeof(float); i++) {
-						if (*ammo > 0) {
-							Bullet* bullet = new Bullet(player, player->selectedWeapon, player->position, range);
-							bullet->rotY = player->rotY + 90 + directions[i];
-							bullet->velocityRight = speed;
-							database.add(bullet);
-							(*ammo)--;
-							player->nextLoadedTime = fTime + reloadTime;
-						}
-					}
+					FireWeapon(database, player, fTime);
 				}
 			}
 
@@ -169,6 +155,52 @@ public:
 
 		// Send new positions and events to network
 		serverNetwork.SendDatabaseUpdateToClients();
+	}
+	
+	void FireWeapon(Database& database, Player* player, double fTime)
+	{
+		ItemType weapon = player->selectedWeapon;
+		int* ammo = &player->inventory[Ammo_Revolver + weapon];
+		float speed = 15.0;
+		float reloadTime = 0.5;
+		float range = 10;
+		float directions[] = {0, -1, 1, -3, 3, -6, 6, -9, 9};
+		float directionsCount = 1;
+		string geomName = "RevolverBullet";
+		
+		switch(weapon) {
+			case Weapon_Revolver:
+				if (player->inventory[Weapon_Revolver] == 2) reloadTime *= 0.5f;
+				geomName = "RevolverBullet";
+				break;
+			case Weapon_Shotgun:
+				directionsCount = 9;
+				geomName = "ShotgunPellet";
+				break;
+			case Weapon_AK47:
+				reloadTime *= 0.25f;
+				geomName = "AKBullet";
+				break;
+			case Weapon_Jackhammer:
+				reloadTime *= 0.25f;
+				geomName = "Nail";
+				break;
+			case Weapon_Nailgun:
+				reloadTime *= 0.5f; directionsCount = 5;
+				geomName = "Nail";
+				break;
+		}
+
+		for(int i = 0; i < directionsCount; i++) {
+			if (*ammo > 0) {
+				Bullet* bullet = new Bullet(player, geomName, player->position, range);
+				bullet->rotY = player->rotY + 90 + directions[i];
+				bullet->velocityRight = speed;
+				database.add(bullet);
+				(*ammo)--;
+				player->nextLoadedTime = fTime + reloadTime;
+			}
+		}
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)

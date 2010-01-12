@@ -192,18 +192,16 @@ struct Player: public MeshEntity
 struct Bullet: public MeshEntity
 {
 	ID shooter;
-	int weapon;
 	D3DXVECTOR3 origin;
 	float range;
 
 	Bullet() {}
 	
-	Bullet(Player* _shooter, int _weapon, D3DXVECTOR3 _position, float range):
-		MeshEntity("Bullets.dae", "RevolverBullet"),
-		shooter(_shooter->id), weapon(_weapon),
-		origin(_position), range(range)
+	Bullet(Player* _shooter, string geomName, D3DXVECTOR3 _origin, float range):
+		MeshEntity("Bullets.dae", geomName),
+		shooter(_shooter->id), origin(_origin), range(range)
 	{
-		position = _position;
+		position = _origin;
 	}
 
 	static const UCHAR Type = 'B';

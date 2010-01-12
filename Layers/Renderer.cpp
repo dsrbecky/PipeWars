@@ -222,7 +222,7 @@ public:
 			D3DXMatrixMultiply(&matWorld, &matWorld, &matScale);
 
 			D3DXMATRIXA16 matRot;
-			D3DXMatrixRotationY(&matRot, -(entity->rotY + entity->rotY_multiplyByTime * DXUTGetTime()) / 360 * 2 * D3DX_PI);
+			D3DXMatrixRotationY(&matRot, -(entity->rotY + entity->rotY_multiplyByTime * (float)DXUTGetTime()) / 360 * 2 * D3DX_PI);
 			D3DXMatrixMultiply(&matWorld, &matWorld, &matRot);
 
 			D3DXMATRIXA16 matTrans;
