@@ -2,7 +2,7 @@
 #define __ENTITIES__
 
 #include "StdAfx.h"
-#include "Math.h"
+#include "Maths.h"
 
 class Mesh;
 

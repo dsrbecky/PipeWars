@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Layer.h"
 #include "../Entities.h"
-#include "../Math.h"
+#include "../Maths.h"
 #include "../Resources.h"
 #include "../Util.h"
 
@@ -34,7 +34,7 @@ public:
 
 	Renderer():
 	  gridBuffer(NULL), hiQualityPipes(0),
-	  cameraYaw(D3DX_PI / 4), cameraPitch(-D3DX_PI / 4), cameraDistance(10),
+	  cameraYaw(D3DX_PI / 4), cameraPitch(-D3DX_PI / 4 * 0.75f), cameraDistance(15),
 	  lastMouseX(0), lastMouseY(0) {}
 
 	bool MouseProc(bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, int nMouseWheelDelta, int xPos, int yPos)
@@ -194,7 +194,7 @@ public:
 			Mesh* mesh = entity->getMesh();
 
 			// Render only the level the player is in
-			if (localPlayer != NULL && keyToggled_Alt['L']) {
+			if (localPlayer != NULL && !keyToggled_Alt['L']) {
 				float relY = entity->position.y - localPlayer->position.y;
 				// Upper level
 				if (relY > 1.75)
@@ -214,7 +214,7 @@ public:
 
 			// Is it hidden powerup?
 			PowerUp* powerUp = dynamic_cast<PowerUp*>(entity);
-			if (!powerUp->present)
+			if (powerUp != NULL && !powerUp->present)
 				continue;
 
 			// Set the WORLD for the this entity
@@ -412,9 +412,9 @@ public:
 		msg << "FPS = " << DXUTGetFPS() << " (target = " << targetFPS << ")" << "    ";
 		msg << "Objects = " << stat_objRendered << " (hq = " << (int)hiQualityPipes << ")" << "    ";
 		if (localPlayer != NULL) {
+			msg << "Net-in = " << stat_netDatabaseUpdateSize / DXUTGetElapsedTime() / 1000 << " kb/s" << "    ";
 			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << "," << localPlayer->position.z << "    ";
 			msg << "Rot = " << localPlayer->rotY << " ("<< localPlayer->rotY_velocity << ")" << "    ";
-			msg << "Net-in = " << stat_netDatabaseUpdateSize / DXUTGetElapsedTime() / 1000 << " kb/s" << "    ";
 		}
 		msg << "Press H for help or ESC to exit.";
 		

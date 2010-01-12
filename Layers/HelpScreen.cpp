@@ -35,6 +35,7 @@ public:
 		RenderKey("ESC", "Exit");
 		RenderKey("Alt+Enter", "Toggle full screen");
 		RenderKey("", "");
+		RenderKey("", "");
 
 		RenderHeader("Credits:");
 		RenderKey("Programming", "David Srbecky");

@@ -2,7 +2,7 @@
 #include "Layer.h"
 #include "../Entities.h"
 #include "../Resources.h"
-#include "../Math.h"
+#include "../Maths.h"
 #include "../Network/Network.h"
 
 extern Player* localPlayer;
@@ -64,7 +64,7 @@ public:
 
 		if (resources.fmodSystem != NULL) {
 			resources.fmodSystem->update();
-			resources.fmodChannel->setPaused(true ^ keyToggled['M'] ^ keyToggled_Alt['M']);
+			resources.fmodChannel->setPaused(keyToggled['M'] ^ keyToggled_Alt['M']);
 		}
 	}
 
@@ -144,10 +144,10 @@ public:
 
 					D3DXVECTOR3 distVec = bullet->position - player->position;
 					float dist = D3DXVec3Length(&distVec);
-					if (dist <= 0.5) {
+					if (dist <= 0.75) {
 						// The player might have disconnected
 						Player* shooter = database.players.count(bullet->shooter) != 0 ? database.players[bullet->shooter] : NULL;
-						HitPlayer(player, shooter);
+						HitPlayer(database, player, shooter);
 						
 						toDelete.push_back(bullet);
 						goto bullets_end;
@@ -180,7 +180,7 @@ public:
 				{ DbLoop_Players(database, it)
 					D3DXVECTOR3 distVec = powerUp->position - player->position;
 					float dist = D3DXVec3Length(&distVec);
-					if (dist <= 0.75) {
+					if (dist <= 0.75 && powerUp->present) {
 						UsePowerUp(player, powerUp);
 						powerUp->present = false;
 						powerUp->rechargeAt = (float)fTime + 60;
@@ -219,11 +219,11 @@ public:
 				geomName = "ShotgunPellet";
 				break;
 			case Weapon_AK47:
-				reloadTime *= 0.25f;
+				reloadTime *= 0.33f;
 				geomName = "AKBullet";
 				break;
 			case Weapon_Jackhammer:
-				reloadTime *= 0.25f;
+				reloadTime *= 0.33f;
 				geomName = "Nail";
 				break;
 			case Weapon_Nailgun:
@@ -237,6 +237,8 @@ public:
 				Bullet* bullet = new Bullet(player, geomName, player->position, range);
 				bullet->rotY = player->rotY + 90 + directions[i];
 				bullet->velocityRight = speed;
+				if (geomName == "Nail")
+					bullet->scale = 2.0f;
 				database.add(bullet);
 				(*ammo)--;
 				player->nextLoadedTime = fTime + reloadTime;
@@ -251,7 +253,7 @@ public:
 
 		// Weapon
 		if (Weapon_Revolver <= item && item <= Weapon_Nailgun) {
-			if (inv[item] == 0 && player->selectedWeapon < item) {
+			if (inv[item] == 0 && (player->selectedWeapon < item || inv[Ammo_Revolver + player->selectedWeapon] == 0)) {
 				player->selectedWeapon = item;
 				player->selectedWeapon_ServerChanged = true;
 			}
@@ -261,7 +263,7 @@ public:
 		
 		// Ammo
 		if (Ammo_Revolver <= item && item <= Ammo_Nailgun) {
-			if (inv[item] == 0 && player->selectedWeapon < item) {
+			if (inv[item] == 0 && player->selectedWeapon < item && inv[item - Ammo_Revolver] > 0) {
 				player->selectedWeapon = (ItemType)(item - Ammo_Revolver);
 				player->selectedWeapon_ServerChanged = true;
 			}
@@ -286,7 +288,7 @@ public:
 		}
 	}
 
-	void HitPlayer(Player* player, Player* shooter)
+	void HitPlayer(Database& database, Player* player, Player* shooter)
 	{
 		int damage = 5 + rand() % 6;
 
@@ -301,27 +303,33 @@ public:
 			player->score--;
 			shooter->kills++;
 			shooter->score++;
+			Respawn(database, player);
 		}
 	}
 
 	void Respawn(Database& database, Player* player)
 	{
 		static int index = rand();
+
+		vector<D3DXVECTOR3> respawnPoints;
 		DbLoop(database, it) {
 			// Obtain list of all valid respawn points
-			vector<D3DXVECTOR3> respawnPoints;
 			RespawnPoint* respawnPoint = dynamic_cast<RespawnPoint*>(it->second);
 			if (respawnPoint != NULL) {
-				if (IsPointOnPath(database, respawnPoint->position))
+				float outY;
+				if (IsPointOnPath(database, respawnPoint->position, &outY)) {
+					respawnPoint->position.y = outY + PlayerRaiseAbovePath; // Exactly allign
 					respawnPoints.push_back(respawnPoint->position);
+				}
 			}
-			assert(respawnPoints.size() > 0);
-			
-			// Respawn the player
-			player->Reset();
-			player->position = respawnPoints[(index++) & respawnPoints.size()];
-			player->position_ServerChanged = true;
 		}
+
+		assert(respawnPoints.size() > 0);
+			
+		// Respawn the player
+		player->Reset();
+		player->position = respawnPoints[(index++) % respawnPoints.size()];
+		player->position_ServerChanged = true;
 	}
 
 	static void RotateLocalPlayer(IDirect3DDevice9* dev)

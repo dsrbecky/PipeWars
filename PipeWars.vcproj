@@ -4,16 +4,13 @@
 	Version="9,00"
 	Name="PipeWars"
 	ProjectGUID="{D3D09006-96D0-4629-88B8-122C0256058C}"
-	RootNamespace="Meshes"
+	RootNamespace="PipeWars"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
 			Name="Win32"
-		/>
-		<Platform
-			Name="x64"
 		/>
 	</Platforms>
 	<ToolFiles>
@@ -46,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				AdditionalIncludeDirectories=".;.\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML;_SCL_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -105,92 +102,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="DXUT\Core"
-				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;PROFILE;_WINDOWS"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="0"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9d.lib d3d9.lib winmm.lib"
-				OutputFile="$(OutDir)/Meshes.exe"
-				LinkIncremental="2"
-				GenerateManifest="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/Meshes.pdb"
-				SubSystem="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="17"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-				EmbedManifest="false"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="bin"
+			IntermediateDirectory="bin\obj\"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="1"
@@ -212,19 +126,21 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zm200"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="0"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="DXUT\Core"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				AdditionalIncludeDirectories=".\;.\dom\include;.\dom\include\1.4;&quot;.\dom\external-libs\boost&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DOM_DYNAMIC;BOOST_ALL_NO_LIB;PCRE_STATIC;DOM_INCLUDE_LIBXML;_SCL_SECURE_NO_WARNINGS"
 				StringPooling="true"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -238,104 +154,19 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9.lib d3d9.lib winmm.lib"
-				OutputFile="$(OutDir)/Meshes.exe"
+				AdditionalDependencies="comctl32.lib d3dxof.lib dxerr.lib dxguid.lib d3dx9.lib d3d9.lib winmm.lib libcollada14dom21.lib libboost_filesystem.lib libboost_system.lib Ws2_32.lib Mswsock.lib Advapi32.lib fmodex_vc.lib"
+				OutputFile="$(OutDir)/PipeWars.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories=".\bin;.\fmod\lib\;&quot;.\dom\external-libs\boost\lib\vc9&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/PipeWars.pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-				EmbedManifest="false"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				OmitFramePointers="true"
-				AdditionalIncludeDirectories="DXUT\Core"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				StringPooling="true"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="false"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalOptions="/IGNORE:4089"
-				AdditionalDependencies="d3dxof.lib dxguid.lib d3dx9.lib d3d9.lib winmm.lib"
-				OutputFile="$(OutDir)/Meshes.exe"
-				LinkIncremental="1"
-				GenerateManifest="false"
-				GenerateDebugInformation="true"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -452,7 +283,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Math.h"
+			RelativePath=".\Maths.h"
 			>
 		</File>
 		<File

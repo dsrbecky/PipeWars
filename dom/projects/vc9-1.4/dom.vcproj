@@ -100,8 +100,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\..\build\vc9-1.4\"
-			IntermediateDirectory="..\..\build\vc9-1.4\obj\$(ProjectName)"
+			OutputDirectory="..\..\..\bin\"
+			IntermediateDirectory="..\..\..\bin\obj\$(ProjectName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"

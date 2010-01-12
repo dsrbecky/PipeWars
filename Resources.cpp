@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "Resources.h"
 #include "Entities.h"
-#include "Math.h"
+#include "Maths.h"
 
 extern Resources resources;
 
