@@ -9,6 +9,8 @@ extern Database db;
 extern Database serverDb;
 extern Player* localPlayer;
 
+extern float stat_netDatabaseUpdateSize;
+
 void (*onCameraSet)(IDirect3DDevice9* dev) = NULL; // Event for others
 
 const string PipeFilename = "pipe.dae";
@@ -92,7 +94,7 @@ public:
 		D3DXMatrixMultiply(&matView, &matYawPitch, &matZoom);
 		D3DXMATRIXA16 matMove;
 		if (localPlayer == NULL) {
-			D3DXMatrixTranslation(&matMove, 0, 0, -7);
+			D3DXMatrixTranslation(&matMove, 0, -2, -7);
 		} else {
 			D3DXMatrixTranslation(&matMove, -localPlayer->position.x, -localPlayer->position.y, -localPlayer->position.z);
 		}
@@ -407,6 +409,7 @@ public:
 		if (localPlayer != NULL) {
 			msg << "Pos = " << localPlayer->position.x << ","<< localPlayer->position.y << "," << localPlayer->position.z << "    ";
 			msg << "Rot = " << localPlayer->rotY << " ("<< localPlayer->rotY_velocity << ")" << "    ";
+			msg << "Net-in = " << stat_netDatabaseUpdateSize / DXUTGetElapsedTime() / 1000 << " kb/s" << "    ";
 		}
 		msg << "Press H for help or ESC to exit.";
 		

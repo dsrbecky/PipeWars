@@ -202,7 +202,9 @@ public:
 		velocity = max(-360, min(360, velocity));
 
 		localPlayer->rotY = angle;
-		localPlayer->rotY_velocity = 0.75f * localPlayer->rotY_velocity + 0.25f * velocity;
+		localPlayer->rotY_velocity = floor(0.5f * localPlayer->rotY_velocity + 0.5f * velocity);
+		if (abs(localPlayer->rotY_velocity) < 10)
+			localPlayer->rotY_velocity = 0;
 	}
 
 	void PredictMovement(Database& database, float fElapsedTime, Player* except = NULL)

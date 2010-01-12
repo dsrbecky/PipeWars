@@ -4,6 +4,8 @@
 
 extern Player* localPlayer;
 
+float stat_netDatabaseUpdateSize = 0;
+
 // Very primitive compression
 inline void SendInt(vector<UCHAR>& out, UINT32 i)
 {
@@ -353,6 +355,8 @@ void Network::RecvDatabaseUpdateFromServer()
 
 	assert(connections.size() == 1);
 
+	stat_netDatabaseUpdateSize = 0;
+
 	{ ConnLoop
 		while(true) {
 			if (conn->inBuffer.size() < 8) break;
@@ -364,6 +368,7 @@ void Network::RecvDatabaseUpdateFromServer()
 			if (updateSize != 0)
 				RecvDatabaseUpdate(conn->inBuffer.begin() + 8);
 			Skip(conn->inBuffer, updateSize + 8);
+			stat_netDatabaseUpdateSize += updateSize;
 
 			if (myId != 0)
 				localPlayer = dynamic_cast<Player*>(this->database[myId]);
