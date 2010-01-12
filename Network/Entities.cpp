@@ -143,33 +143,42 @@ void RecvEntity(vector<UCHAR>::iterator& in, Entity* entity, UCHAR* lastRecvData
 //
 //    <delete count (-1 = clear)> <id> <id> ...
 //    <add count> <type><id><data> <type><id><data> ...
-//    <modify count> <id><data> <id><data>
+//    <modify count> <type><id><data> <type><id><data>
 //    <sentinel 0xD5>
 //
 void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 {
 	// Sort all existing entities into groups
-	hash_map<ID, UCHAR*> deleted(lastSendDatas);
+	hash_map<ID, pair<UCHAR, UCHAR*>> deleted(lastSendDatas);
 	vector<Entity*> added;
 	vector<Entity*> modified;
 	DbLoop(this->database, it) {
-		deleted.erase(it->first);
-		if (lastSendDatas.count(it->first) == 0) {
-			added.push_back(it->second);
+		int id = it->first;
+		Entity* entity = it->second;
+
+		deleted.erase(id);
+		if (lastSendDatas.count(id) == 0) {
+			added.push_back(entity);
 		} else {
-			MeshEntity* meshEntity = dynamic_cast<MeshEntity*>(it->second);
-			if (meshEntity != NULL && meshEntity->meshFilename == pipeFilename)
-				continue; // Optimization - Pipes do not change
+			// Was the entity at the given ID replaced by completly other type?
+			if (entity->GetType() != lastSendDatas[id].first) {
+				deleted[id] = lastSendDatas[id];
+				added.push_back(entity);
+				continue;
+			}
+
+			//MeshEntity* meshEntity = dynamic_cast<MeshEntity*>(e);
+			//if (meshEntity != NULL && meshEntity->meshFilename == pipeFilename)
+			//	continue; // Optimization - Pipes do not change
 
 			// Was it modified?
-			Entity* e = it->second;
-			UCHAR* lastSendData = lastSendDatas[it->first];
-			e->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
-			int size = e->GetSize();
-			if (memcmp((UCHAR*)e + sizeof(void*), lastSendData + sizeof(void*), size - sizeof(void*)) == 0)
+			UCHAR* lastSendData = lastSendDatas[id].second;
+			entity->OnSerializing(); // Pre-porcessing steps (strip memory pointers)
+			int size = entity->GetSize();
+			if (memcmp((UCHAR*)entity + sizeof(void*), lastSendData + sizeof(void*), size - sizeof(void*)) == 0)
 				continue; // Not modified at all
 
-			modified.push_back(it->second);
+			modified.push_back(entity);
 		}
 	}
 
@@ -178,10 +187,10 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 
 	// Send deleted entities
 	SendInt(out, deleted.size());
-	for(hash_map<ID, UCHAR*>::iterator it = deleted.begin(); it != deleted.end(); it++) {
+	for(hash_map<ID, pair<UCHAR, UCHAR*>>::iterator it = deleted.begin(); it != deleted.end(); it++) {
 		SendInt(out, it->first);
 
-		delete it->second;
+		delete it->second.second;
 		lastSendDatas.erase(it->first);
 	}
 
@@ -194,7 +203,7 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 		int size = e->GetSize();
 		UCHAR* lastSendData = new UCHAR[size];
 		ZeroMemory(lastSendData, size);
-		lastSendDatas[e->id] = lastSendData;
+		lastSendDatas[e->id] = pair<UCHAR, UCHAR*>(e->GetType(), lastSendData);
 
 		// Send the entity data
 		SendInt(out, e->GetType());
@@ -206,7 +215,8 @@ void Network::SendDatabaseUpdate(vector<UCHAR>& out)
 	SendInt(out, modified.size());
 	for(vector<Entity*>::iterator it = modified.begin(); it != modified.end(); it++) {
 		Entity* e = *it;
-		UCHAR* lastSendData = lastSendDatas[e->id];
+		UCHAR* lastSendData = lastSendDatas[e->id].second;
+		SendInt(out, e->GetType());
 		SendInt(out, e->id);
 		SendEntity(out, e, lastSendData);
 	}
@@ -282,8 +292,11 @@ void Network::RecvDatabaseUpdate(vector<UCHAR>::iterator& in)
 	// Modify entities
 	int modifiedCount = RecvInt(in);
 	for(int i = 0; i < modifiedCount; i++) {
+		UCHAR type = (UCHAR)RecvInt(in);
 		UINT32 id = RecvInt(in);
 		Entity* entity = this->database[id];
+		if (type != entity->GetType())
+			throw "Received type did not match the one already in database";
 		UCHAR* lastRecvData = lastRecvDatas[id];
 		RecvEntity(in, entity, lastRecvData); 
 	}

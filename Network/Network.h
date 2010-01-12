@@ -19,7 +19,7 @@ struct Connetion
 
 class Network
 {
-	hash_map<ID, UCHAR*> lastSendDatas;
+	hash_map<ID, pair<UCHAR, UCHAR*>> lastSendDatas; // ID -> Type, Data
 	hash_map<ID, UCHAR*> lastRecvDatas;
 
 	Database& database;
