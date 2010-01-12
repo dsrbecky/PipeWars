@@ -134,7 +134,9 @@ struct Player: public MeshEntity
 	int kills;
 	int deaths;
 
+	bool position_ServerChanged;
 	ItemType selectedWeapon;
+	bool selectedWeapon_ServerChanged;
 	bool firing;
 	double nextLoadedTime;
 	int inventory[ItemType_End];
@@ -148,16 +150,14 @@ struct Player: public MeshEntity
 		MeshEntity("Merman.dae", "Revolver"),
 		health(100), armour(0),
 		score(0), kills(0), deaths(0),
-		selectedWeapon(Weapon_Revolver), firing(false), nextLoadedTime(0)
+		selectedWeapon(Weapon_Revolver), firing(false), nextLoadedTime(0),
+		position_ServerChanged(false), selectedWeapon_ServerChanged(false)
 	{
 		ZeroMemory(name, sizeof(name));
 		ZeroMemory(inventory, sizeof(inventory));
 
 		_name.copy(name, MAX_STR_LEN);
 		inventory[Weapon_Revolver] = 1;
-		inventory[Weapon_Shotgun] = 1;
-		inventory[Ammo_Revolver] = 200;
-		inventory[Ammo_Shotgun] = 500;
 
 		int colorsCount = sizeof(colorsArmour) / sizeof(D3DCOLOR);
 		colorArmour = colorsArmour[colorId % colorsCount];
@@ -213,13 +213,13 @@ struct PowerUp: public MeshEntity
 {
 	ItemType itemType;
 	bool present;
-	float rechargeAfter;
+	float rechargeAt;
 
 	PowerUp() {}
 
 	PowerUp(ItemType _itemType, string filename, string geometryName):
 		MeshEntity(filename, geometryName),
-		itemType(_itemType), present(true), rechargeAfter(0)
+		itemType(_itemType), present(true), rechargeAt(0)
 	{
 		rotY_multiplyByTime = 90;
 	}

@@ -107,11 +107,16 @@ public:
 		serverNetwork.AcceptNewConnection();
 		serverNetwork.RecvPlayerDataFromClients();
 
-		// Reload map - for interactive map editing
+		// Reload map - for map editing
 		//database.clearNonPlayers();
 		//resources.LoadTestMap(&database);
 
 		// Game logic
+		{ DbLoop_Players(database, it)
+			player->position_ServerChanged = false;
+			player->selectedWeapon_ServerChanged = false;
+		}
+
 		vector<Entity*> toDelete;
 		{ DbLoop_Meshes(database, it)
 
@@ -144,6 +149,21 @@ public:
 				if (distTraveled > bullet->range || !onPath) {
 					toDelete.push_back(bullet);
 					continue;
+				}
+			}
+
+			PowerUp* powerUp = dynamic_cast<PowerUp*>(entity);
+			if (powerUp != NULL) {
+				if (powerUp->rechargeAt < fTime)
+					powerUp->present = true;
+				{ DbLoop_Players(database, it)
+					D3DXVECTOR3 distVec = powerUp->position - player->position;
+					float dist = D3DXVec3Length(&distVec);
+					if (dist <= 0.75) {
+						UsePowerUp(player, powerUp);
+						powerUp->present = false;
+						powerUp->rechargeAt = (float)fTime + 60;
+					}
 				}
 			}
 		}
@@ -200,6 +220,48 @@ public:
 				(*ammo)--;
 				player->nextLoadedTime = fTime + reloadTime;
 			}
+		}
+	}
+
+	void UsePowerUp(Player* player, PowerUp* powerUp)
+	{
+		int* inv = player->inventory;
+		ItemType item = powerUp->itemType;
+
+		// Weapon
+		if (Weapon_Revolver <= item && item <= Weapon_Nailgun) {
+			if (inv[item] == 0 && player->selectedWeapon < item) {
+				player->selectedWeapon = item;
+				player->selectedWeapon_ServerChanged = true;
+			}
+			inv[item] = item == Weapon_Revolver ? 2 : 1;
+			inv[Ammo_Revolver + item] += 50;
+		}
+		
+		// Ammo
+		if (Ammo_Revolver <= item && item <= Ammo_Nailgun) {
+			if (inv[item] == 0 && player->selectedWeapon < item) {
+				player->selectedWeapon = (ItemType)(item - Ammo_Revolver);
+				player->selectedWeapon_ServerChanged = true;
+			}
+			inv[item] += 100;
+		}
+
+		// Other powerups
+		switch(powerUp->itemType) {
+			case HealthPack: if (player->health < 100) player->health = 100; break;
+			case ArmourPack: if (player->armour < 100) player->armour = 100; break;
+			case Shiny: player->health += 25; break;
+			case Monkey:
+				if (player->health < 100) player->health = 100;
+				if (player->armour < 100) player->armour = 100;
+				for(int i = 0; i < 5; i++) {
+					inv[Weapon_Revolver + i] = 1;
+					inv[Ammo_Revolver + i] = max(inv[Ammo_Revolver + i], 50);
+				}
+				inv[Weapon_Revolver] = 2;
+				break;
+			case Skull: break;
 		}
 	}
 

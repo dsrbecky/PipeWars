@@ -212,6 +212,11 @@ public:
 				entity->showInside = true;
 			}
 
+			// Is it hidden powerup?
+			PowerUp* powerUp = dynamic_cast<PowerUp*>(entity);
+			if (!powerUp->present)
+				continue;
+
 			// Set the WORLD for the this entity
 
 			D3DXMATRIXA16 matWorld;
