@@ -176,15 +176,22 @@ public:
 
 			PowerUp* powerUp = dynamic_cast<PowerUp*>(entity);
 			if (powerUp != NULL) {
-				if (powerUp->rechargeAt < fTime)
-					powerUp->present = true;
-				{ DbLoop_Players(database, it)
-					D3DXVECTOR3 distVec = powerUp->position - player->position;
-					float dist = D3DXVec3Length(&distVec);
-					if (dist <= 0.75 && powerUp->present) {
-						UsePowerUp(player, powerUp);
-						powerUp->present = false;
-						powerUp->rechargeAt = (float)fTime + 60;
+				// Skull is speical
+				if (powerUp->itemType == Skull) {
+					if (powerUp->rechargeAt < fTime)
+						toDelete.push_back(powerUp);
+
+				} else {
+					if (powerUp->rechargeAt < fTime)
+						powerUp->present = true;
+					{ DbLoop_Players(database, it)
+						D3DXVECTOR3 distVec = powerUp->position - player->position;
+						float dist = D3DXVec3Length(&distVec);
+						if (dist <= 0.75 && powerUp->present) {
+							UsePowerUp(player, powerUp);
+							powerUp->present = false;
+							powerUp->rechargeAt = (float)fTime + 60;
+						}
 					}
 				}
 			}
@@ -220,15 +227,15 @@ public:
 				geomName = "ShotgunPellet";
 				break;
 			case Weapon_AK47:
-				reloadTime *= 0.33f;
+				reloadTime *= 0.25f;
 				geomName = "AKBullet";
 				break;
 			case Weapon_Jackhammer:
-				reloadTime *= 0.33f;
+				reloadTime *= 0.25f;
 				geomName = "Nail";
 				break;
 			case Weapon_Nailgun:
-				reloadTime *= 0.5f; directionsCount = 5;
+				reloadTime *= 0.75f; directionsCount = 5;
 				geomName = "Nail";
 				break;
 		}
@@ -243,6 +250,15 @@ public:
 				database.add(bullet);
 				(*ammo)--;
 				player->nextLoadedTime = fTime + reloadTime;
+				if (*ammo == 0) {
+					for (int i = Weapon_Nailgun; i >= Weapon_Revolver; i--) {
+						if (player->inventory[i] > 0 && player->inventory[Ammo_Revolver + i] > 0) {
+							player->trySelectWeapon((ItemType)i);
+							player->selectedWeapon_ServerChanged = true;
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -264,7 +280,7 @@ public:
 		
 		// Ammo
 		if (Ammo_Revolver <= item && item <= Ammo_Nailgun) {
-			if (inv[item] == 0 && player->selectedWeapon < item && inv[item - Ammo_Revolver] > 0) {
+			if (inv[item] == 0 && (player->selectedWeapon < (item - Ammo_Revolver) || inv[Ammo_Revolver + player->selectedWeapon] == 0) && inv[item - Ammo_Revolver] > 0) {
 				player->selectedWeapon = (ItemType)(item - Ammo_Revolver);
 				player->selectedWeapon_ServerChanged = true;
 			}
@@ -304,6 +320,12 @@ public:
 			player->score--;
 			shooter->kills++;
 			shooter->score++;
+
+			PowerUp* skull = new PowerUp(Skull, "skull.dae", "Skull");
+			skull->position = player->position;
+			skull->rechargeAt = DXUTGetTime() + 60;
+			database.add(skull);
+
 			Respawn(database, player);
 		}
 	}

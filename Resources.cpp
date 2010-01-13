@@ -338,6 +338,7 @@ void Resources::LoadTestMap(Database* db)
 	// Preload meshs
 	LoadMesh("Merman.dae", "Revolver");
 	LoadMesh("Bullets.dae", "RevolverBullet");
+	LoadMesh("skull.dae", "Skull");
 
 	db->add(4, 0, 6, 180,      new MeshEntity("suzanne.dae", "Suzanne"));
 	

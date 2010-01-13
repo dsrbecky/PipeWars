@@ -50,7 +50,7 @@ class HUD: Layer
 		RenderNumber(sprite, digits, 457, top, localPlayer->inventory[Ammo_Revolver + localPlayer->selectedWeapon]);
 
 		IDirect3DTexture9* weaponImage = weapons[localPlayer->selectedWeapon];
-		if (localPlayer->selectedWeapon == Weapon_Revolver && localPlayer->inventory[Weapon_Revolver > 1]) {
+		if (localPlayer->selectedWeapon == Weapon_Revolver && localPlayer->inventory[Weapon_Revolver] > 1) {
 			weaponImage = weaponDualRevolver;
 		}
 		pos.x = 580; sprite->Draw(weaponImage, NULL, NULL, &pos, 0xFFFFFFFF);
