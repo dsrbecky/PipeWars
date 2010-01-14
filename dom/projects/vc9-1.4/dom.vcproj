@@ -19,7 +19,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="..\..\..\bin\"
-			IntermediateDirectory="..\..\..\bin\obj\$(ProjectName)"
+			IntermediateDirectory="..\..\..\bin\dom-obj-d\"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -101,7 +101,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="..\..\..\bin\"
-			IntermediateDirectory="..\..\..\bin\obj\$(ProjectName)"
+			IntermediateDirectory="..\..\..\bin\dom-obj-r\"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"

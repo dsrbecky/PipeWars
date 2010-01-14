@@ -323,7 +323,7 @@ public:
 
 			PowerUp* skull = new PowerUp(Skull, "skull.dae", "Skull");
 			skull->position = player->position;
-			skull->rechargeAt = DXUTGetTime() + 60;
+			skull->rechargeAt = (float)DXUTGetTime() + 60;
 			database.add(skull);
 
 			Respawn(database, player);

@@ -36,6 +36,7 @@ public:
 		RenderKey("Alt+Enter", "Toggle full screen");
 		RenderKey("", "");
 		RenderKey("", "");
+		RenderKey("", "");
 
 		RenderHeader("Credits:");
 		RenderKey("Programming", "David Srbecky");
@@ -51,6 +52,7 @@ public:
 		RenderKey("Alt+Z", "Z-Buffer");
 		RenderKey("Alt+X", "Alpha blending");
 		RenderKey("Alt+B", "Bounding boxes");
+		RenderKey("Alt+N", "Other player's names");
 		RenderKey("Alt+G", "Grid");
 		RenderKey("Alt+C", "Frustum culling");
 		RenderKey("Alt+V", "Debug frustum");

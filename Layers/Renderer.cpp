@@ -8,6 +8,7 @@
 extern Database db;
 extern Database serverDb;
 extern Player* localPlayer;
+extern Resources resources;
 
 extern float stat_netDatabaseUpdateSize;
 
@@ -323,7 +324,6 @@ public:
 			if (mesh->isPipeOrTank)
 				stat_pipesRendered++;
 
-
 			if (keyToggled_Alt['B']) {
 				RenderBoundingBox(dev, mesh->boundingBox);
 			}
@@ -331,10 +331,53 @@ public:
 			dev->SetTransform(D3DTS_VIEW, &oldView);
 		}
 
+		// Render player names
+		if (!keyToggled_Alt['N'])
+			RenderPlayerNames(dev, matProj, matView);
+
 		hiQualityPipes = min(hiQualityPipes, stat_pipesRendered + 4); // Do not outgrow by more then 4
 
 		if (keyToggled_Alt['G']) RenderGrid(dev);
 		if (!keyToggled_Alt['F']) RenderFrameStats(dev);
+	}
+
+	void RenderPlayerNames(IDirect3DDevice9* dev, D3DXMATRIX& matProj, D3DXMATRIX& matView)
+	{
+		dev->SetRenderState(D3DRS_ZENABLE, false);
+		{ DbLoop_Players(db, it)
+			if (player != localPlayer) {
+				D3DVIEWPORT9 unitViewport = {0, 0, 100, 100, 0, 1};
+				D3DXVECTOR3 worldPos = player->position;
+				worldPos.y += 0.6f;
+				D3DXVECTOR3 screenPos;
+				D3DXMATRIXA16 matWorld;
+				D3DXMatrixIdentity(&matWorld);
+				D3DXVec3Project(&screenPos, &worldPos, &unitViewport, &matProj, &matView, &matWorld);
+
+				// Clip the point to screen corners if it is behind you
+				screenPos.x = (screenPos.x / 50) - 1;
+				screenPos.y = (screenPos.y / 50) - 1;
+				if (screenPos.z > unitViewport.MaxZ) {
+					screenPos.y /= abs(screenPos.x) + (float)Epsilon;
+					screenPos.x = screenPos.x > 0 ? 1.0f : -1.0f;
+					if (screenPos.y < -1 || screenPos.y > 1) {
+						screenPos.x /= abs(screenPos.y);
+						screenPos.y = screenPos.y > 0 ? 1.0f : -1.0f;
+					}
+					screenPos.x *= -1;
+					screenPos.y *= -1;
+				}
+				screenPos.x = (screenPos.x + 1) / 2 * DXUTGetWindowWidth();
+				screenPos.y = (screenPos.y + 1) / 2 * DXUTGetWindowHeight();
+
+				RECT textSize = {0, 0, 0, 0};
+				resources.LoadFont(dev)->DrawTextA(NULL, player->name, -1, &textSize, DT_NOCLIP | DT_SINGLELINE | DT_CALCRECT, player->colorArmoutDetail);
+				RECT rect = {(int)screenPos.x - textSize.right / 2, (int)screenPos.y - textSize.bottom, 0, 0};
+				rect.left = max(4, min(DXUTGetWindowWidth() - textSize.right - 4, rect.left));
+				rect.top  = max(keyToggled_Alt['F'] ? 4 : 24, min(DXUTGetWindowHeight() - textSize.bottom - 64 - 4, rect.top));
+				resources.LoadFont(dev)->DrawTextA(NULL, player->name, -1, &rect, DT_NOCLIP | DT_SINGLELINE, player->colorArmoutDetail);
+			}
+		}
 	}
 
 	void RenderBoundingBox(IDirect3DDevice9* dev, BoundingBox& bb)
